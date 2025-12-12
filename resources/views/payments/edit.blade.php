@@ -126,10 +126,27 @@
                                 <label class="block text-sm font-medium text-gray-700">Bukti Pembayaran (Optional)</label>
 
                                 @if($payment->receipt_file)
-                                    <p class="text-sm text-gray-500 mb-1">File saat ini:
+                                    <p class="text-sm text-gray-500 mb-2">File saat ini:
                                         <a href="{{ asset('storage/'.$payment->receipt_file) }}" target="_blank"
                                             class="text-blue-600 underline">Lihat / Download</a>
                                     </p>
+
+                                    {{-- PREVIEW GAMBAR/FILE --}}
+                                    @php
+                                        $mime = Storage::disk('public')->mimeType($payment->receipt_file);
+                                    @endphp
+
+                                    @if (str_starts_with($mime, 'image'))
+                                        <img src="{{ asset('storage/'.$payment->receipt_file) }}" 
+                                            alt="Bukti Pembayaran" 
+                                            class="max-w-xs h-auto border rounded-lg mb-4">
+                                    @elseif ($mime == 'application/pdf')
+                                        <p class="text-sm text-yellow-600 mb-2">
+                                            (Tipe PDF, tidak ditampilkan *inline* di *browser*.)
+                                        </p>
+                                    @endif
+                                    {{-- AKHIR PREVIEW --}}
+
                                 @endif
 
                                 <input type="file" name="receipt_file" accept="image/*,.pdf"
