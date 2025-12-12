@@ -152,7 +152,8 @@ class PaymentController extends Controller
         $totalAmount = $payments->sum('total');
 
         if ($request->has('download')) {
-            $pdf = Pdf::loadView('payments.report', compact('payments', 'totalAmount'));
+            // $pdf = Pdf::loadView('payments.report', compact('payments', 'totalAmount'));
+            $pdf = Pdf::loadView('payments.report_pdf', compact('payments', 'totalAmount'));
             return $pdf->download('payment-report-' . date('Y-m-d') . '.pdf');
         }
 

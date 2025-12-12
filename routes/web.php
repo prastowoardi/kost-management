@@ -32,10 +32,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('tenants/{tenant}/status', [TenantController::class, 'updateStatus'])->name('tenants.status');
     
     // Payments Management
+    Route::get('/payments/report', [PaymentController::class, 'report'])->name('payments.report');
+    Route::get('reports/payments', [PaymentController::class, 'report'])->name('reports.payments');
     Route::resource('payments', PaymentController::class);
     Route::patch('payments/{payment}/status', [PaymentController::class, 'updateStatus'])->name('payments.status');
     Route::get('payments/{payment}/receipt', [PaymentController::class, 'downloadReceipt'])->name('payments.receipt');
-    Route::get('reports/payments', [PaymentController::class, 'report'])->name('reports.payments');
     
     // Facilities Management
     Route::resource('facilities', FacilityController::class);
