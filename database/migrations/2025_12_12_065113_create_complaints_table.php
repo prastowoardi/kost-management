@@ -19,7 +19,7 @@ return new class extends Migration
             $table->enum('status', ['open', 'in_progress', 'resolved', 'closed'])->default('open');
             $table->text('response')->nullable();
             $table->date('resolved_date')->nullable();
-            $table->string('image')->nullable();
+            $table->json('images')->nullable();
             $table->timestamps();
         });
     }

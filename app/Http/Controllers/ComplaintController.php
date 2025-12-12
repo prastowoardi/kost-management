@@ -32,14 +32,20 @@ class ComplaintController extends Controller
             'description' => 'required|string',
             'category' => 'required|in:facility,cleanliness,security,other',
             'priority' => 'required|in:low,medium,high',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
+            'images' => 'nullable|array|max:5',
+            'images.*' => 'image|mimes:jpeg,png,jpg|max:2048'
         ]);
 
         $tenant = Tenant::find($validated['tenant_id']);
         $validated['room_id'] = $tenant->room_id;
 
-        if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('complaints', 'public');
+        // Handle multiple images
+        if ($request->hasFile('images')) {
+            $imagePaths = [];
+            foreach ($request->file('images') as $image) {
+                $imagePaths[] = $image->store('complaints', 'public');
+            }
+            $validated['images'] = $imagePaths;
         }
 
         Complaint::create($validated);
@@ -71,17 +77,39 @@ class ComplaintController extends Controller
             'status' => 'required|in:open,in_progress,resolved,closed',
             'response' => 'nullable|string',
             'resolved_date' => 'nullable|date',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
+            'images' => 'nullable|array|max:5',
+            'images.*' => 'image|mimes:jpeg,png,jpg|max:2048',
+            'remove_images' => 'nullable|array' // IDs gambar yang akan dihapus
         ]);
 
         $tenant = Tenant::find($validated['tenant_id']);
         $validated['room_id'] = $tenant->room_id;
 
-        if ($request->hasFile('image')) {
-            if ($complaint->image) {
-                Storage::disk('public')->delete($complaint->image);
+        // Handle remove images
+        if ($request->has('remove_images')) {
+            $currentImages = $complaint->images ?? [];
+            foreach ($request->remove_images as $imageToRemove) {
+                if (($key = array_search($imageToRemove, $currentImages)) !== false) {
+                    Storage::disk('public')->delete($imageToRemove);
+                    unset($currentImages[$key]);
+                }
             }
-            $validated['image'] = $request->file('image')->store('complaints', 'public');
+            $validated['images'] = array_values($currentImages);
+        }
+
+        // Handle new images
+        if ($request->hasFile('images')) {
+            $currentImages = $validated['images'] ?? $complaint->images ?? [];
+            
+            // Check total images limit
+            if (count($currentImages) + count($request->file('images')) > 5) {
+                return back()->with('error', 'Maksimal 5 foto!');
+            }
+            
+            foreach ($request->file('images') as $image) {
+                $currentImages[] = $image->store('complaints', 'public');
+            }
+            $validated['images'] = $currentImages;
         }
 
         $complaint->update($validated);
@@ -92,8 +120,11 @@ class ComplaintController extends Controller
 
     public function destroy(Complaint $complaint)
     {
-        if ($complaint->image) {
-            Storage::disk('public')->delete($complaint->image);
+        // Delete all images
+        if ($complaint->images) {
+            foreach ($complaint->images as $image) {
+                Storage::disk('public')->delete($image);
+            }
         }
 
         $complaint->delete();

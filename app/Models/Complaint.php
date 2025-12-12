@@ -19,11 +19,12 @@ class Complaint extends Model
         'status',
         'response',
         'resolved_date',
-        'image'
+        'images'
     ];
 
     protected $casts = [
         'resolved_date' => 'date',
+        'images' => 'array' // Cast ke array untuk JSON
     ];
 
     public function tenant()

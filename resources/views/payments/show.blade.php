@@ -1,154 +1,168 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Detail Pembayaran') }}
-        </h2>
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('Detail Pembayaran') }}
+            </h2>
+            <div class="flex gap-2">
+                <a href="{{ route('payments.receipt', $payment) }}" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                    📄 Download Kwitansi
+                </a>
+                <a href="{{ route('payments.edit', $payment) }}" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    ✏️ Edit
+                </a>
+                <a href="{{ route('payments.index') }}" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+                    ← Kembali
+                </a>
+            </div>
+        </div>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    
-                    <div class="mb-6 border-b pb-4">
-                        <h3 class="text-lg font-semibold text-blue-600">Informasi Umum</h3>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
-                        
-                        {{-- Tenant dan Kamar --}}
+            
+            <!-- Invoice Header -->
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                <div class="p-8">
+                    <div class="flex justify-between items-start mb-6">
                         <div>
-                            <p class="text-sm font-medium text-gray-500">Penghuni</p>
-                            <p class="text-base font-semibold">{{ $payment->tenant->name ?? 'N/A' }}</p>
+                            <h3 class="text-3xl font-bold text-gray-800">Invoice</h3>
+                            <p class="text-gray-600 mt-1">{{ $payment->invoice_number }}</p>
                         </div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-500">Kamar</p>
-                            <p class="text-base font-semibold">{{ $payment->room->room_number ?? 'N/A' }}</p>
-                        </div>
-
-                        {{-- Periode dan Tanggal --}}
-                        <div>
-                            <p class="text-sm font-medium text-gray-500">Periode Bulan</p>
-                            <p class="text-base font-semibold">
-                                {{ \Carbon\Carbon::parse($payment->period_month)->translatedFormat('F Y') }}
-                            </p>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-500">Tanggal Pembayaran</p>
-                            <p class="text-base font-semibold">
-                                {{ \Carbon\Carbon::parse($payment->payment_date)->translatedFormat('d F Y') }}
-                            </p>
-                        </div>
-
-                        {{-- Status dan Metode --}}
-                        <div>
-                            <p class="text-sm font-medium text-gray-500">Status</p>
-                            @php
-                                $statusClass = [
-                                    'paid' => 'bg-green-100 text-green-800',
-                                    'pending' => 'bg-yellow-100 text-yellow-800',
-                                    'overdue' => 'bg-red-100 text-red-800',
-                                ][$payment->status] ?? 'bg-gray-100 text-gray-800';
-                            @endphp
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusClass }}">
-                                {{ ucfirst($payment->status) }}
+                        <div class="text-right">
+                            <span class="px-4 py-2 inline-flex text-sm font-semibold rounded-full 
+                                @if($payment->status == 'paid') bg-green-100 text-green-800
+                                @elseif($payment->status == 'pending') bg-yellow-100 text-yellow-800
+                                @else bg-red-100 text-red-800 @endif">
+                                {{ strtoupper($payment->status) }}
                             </span>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-500">Metode Pembayaran</p>
-                            <p class="text-base font-semibold">{{ ucfirst($payment->payment_method) }}</p>
-                        </div>
-
-                    </div>
-
-                    <div class="my-6 border-b border-t pt-4 pb-4">
-                        <h3 class="text-lg font-semibold text-blue-600">Detail Biaya</h3>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
-                        {{-- Jumlah Bayar --}}
-                        <div>
-                            <p class="text-sm font-medium text-gray-500">Jumlah Bayar (Pokok)</p>
-                            <p class="text-lg font-bold text-gray-800">
-                                Rp {{ number_format($payment->amount, 0, ',', '.') }}
-                            </p>
-                        </div>
-
-                        {{-- Denda --}}
-                        <div>
-                            <p class="text-sm font-medium text-gray-500">Denda Keterlambatan</p>
-                            <p class="text-lg font-bold text-red-600">
-                                Rp {{ number_format($payment->late_fee, 0, ',', '.') }}
-                            </p>
-                        </div>
-
-                        {{-- Total --}}
-                        <div class="md:col-span-2 mt-4 pt-4 border-t">
-                            <p class="text-sm font-medium text-gray-500">Total Pembayaran</p>
-                            <p class="text-2xl font-extrabold text-blue-700">
-                                Rp {{ number_format($payment->total, 0, ',', '.') }}
+                            <p class="text-sm text-gray-600 mt-2">
+                                {{ $payment->payment_date->format('d F Y') }}
                             </p>
                         </div>
                     </div>
 
-                    <div class="my-6 border-b border-t pt-4 pb-4">
-                        <h3 class="text-lg font-semibold text-blue-600">Catatan & Bukti</h3>
+                    <div class="grid grid-cols-2 gap-6 mb-6 border-t pt-6">
+                        <!-- Informasi Penghuni -->
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-3">Informasi Penghuni</h4>
+                            <div class="space-y-2">
+                                <div class="flex items-start">
+                                    @if($payment->tenant->photo)
+                                    <img src="{{ asset('storage/' . $payment->tenant->photo) }}" 
+                                            class="h-16 w-16 rounded-full object-cover mr-4" 
+                                            alt="{{ $payment->tenant->name }}">
+                                    @else
+                                    <div class="h-16 w-16 rounded-full bg-gray-300 flex items-center justify-center mr-4">
+                                        <span class="text-gray-600 font-bold text-xl">{{ substr($payment->tenant->name, 0, 1) }}</span>
+                                    </div>
+                                    @endif
+                                    <div>
+                                        <p class="font-semibold text-gray-900">{{ $payment->tenant->name }}</p>
+                                        <p class="text-sm text-gray-600">{{ $payment->tenant->email }}</p>
+                                        <p class="text-sm text-gray-600">{{ $payment->tenant->phone }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Informasi Kamar -->
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-3">Informasi Kamar</h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Nomor Kamar:</span>
+                                    <span class="font-semibold text-gray-900">{{ $payment->room->room_number }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Tipe:</span>
+                                    <span class="font-semibold text-gray-900">{{ ucfirst($payment->room->type) }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Harga Sewa:</span>
+                                    <span class="font-semibold text-gray-900">Rp {{ number_format($payment->room->price, 0, ',', '.') }}</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="mb-4">
-                        <p class="text-sm font-medium text-gray-500">Catatan</p>
-                        <p class="text-base italic text-gray-700">{{ $payment->notes ?? 'Tidak ada catatan.' }}</p>
+                    <!-- Detail Pembayaran -->
+                    <div class="border-t pt-6">
+                        <h4 class="font-semibold text-gray-800 mb-4">Detail Pembayaran</h4>
+                        <div class="bg-gray-50 rounded-lg p-4 space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Periode:</span>
+                                <span class="font-semibold text-gray-900">{{ $payment->period_month->format('F Y') }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Tanggal Pembayaran:</span>
+                                <span class="font-semibold text-gray-900">{{ $payment->payment_date->format('d F Y') }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Metode Pembayaran:</span>
+                                <span class="font-semibold text-gray-900">{{ ucfirst(str_replace('-', ' ', $payment->payment_method ?? '-')) }}</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <div>
-                        <p class="text-sm font-medium text-gray-500">Bukti Pembayaran</p>
-                        @if ($payment->receipt_file)
-                            <a href="{{ asset('storage/' . $payment->receipt_file) }}" target="_blank"
-                            class="inline-flex items-center text-base text-blue-600 hover:text-blue-800 underline mt-1 mb-3">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                Lihat / Unduh File Bukti
-                            </a>
-
-                            {{-- PREVIEW GAMBAR/FILE --}}
-                            @php
-                                // Anda perlu memastikan Storage diimport di Controller!
-                                $mime = Storage::disk('public')->mimeType($payment->receipt_file);
-                            @endphp
-
-                            @if (str_starts_with($mime, 'image'))
-                                <img src="{{ asset('storage/'.$payment->receipt_file) }}" 
-                                    alt="Bukti Pembayaran" 
-                                    class="max-w-sm h-auto border rounded-lg">
-                            @elseif ($mime == 'application/pdf')
-                                <p class="text-base text-yellow-600">
-                                    Tipe PDF: Gunakan tautan di atas untuk melihat/mengunduh.
-                                </p>
+                    <!-- Rincian Biaya -->
+                    <div class="border-t pt-6 mt-6">
+                        <div class="space-y-3">
+                            <div class="flex justify-between text-lg">
+                                <span class="text-gray-600">Biaya Sewa:</span>
+                                <span class="font-semibold text-gray-900">Rp {{ number_format($payment->amount, 0, ',', '.') }}</span>
+                            </div>
+                            @if($payment->late_fee > 0)
+                            <div class="flex justify-between text-lg">
+                                <span class="text-gray-600">Denda Keterlambatan:</span>
+                                <span class="font-semibold text-red-600">Rp {{ number_format($payment->late_fee, 0, ',', '.') }}</span>
+                            </div>
                             @endif
-                            {{-- AKHIR PREVIEW --}}
-
-                        @else
-                            <p class="text-base text-gray-500 mt-1">Tidak ada bukti pembayaran diunggah.</p>
-                        @endif
+                            <div class="border-t pt-3 flex justify-between text-2xl font-bold">
+                                <span class="text-gray-800">TOTAL:</span>
+                                <span class="text-blue-600">Rp {{ number_format($payment->total, 0, ',', '.') }}</span>
+                            </div>
+                        </div>
                     </div>
-                    
-                    {{-- Tombol Aksi --}}
-                    <div class="mt-8 flex justify-end space-x-3">
-                        <a href="{{ route('payments.index') }}"
-                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
-                            Kembali
-                        </a>
-                        <a href="{{ route('payments.edit', $payment->id) }}"
-                            class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600">
-                            Edit Pembayaran
-                        </a>
-                        {{-- Tambahkan tombol download jika Anda memiliki rute download receipt --}}
-                        {{-- <a href="{{ route('payments.downloadReceipt', $payment->id) }}"
-                            class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">
-                            Cetak Kwitansi
-                        </a> --}}
+
+                    <!-- Catatan -->
+                    @if($payment->notes)
+                    <div class="border-t pt-6 mt-6">
+                        <h4 class="font-semibold text-gray-800 mb-2">Catatan:</h4>
+                        <p class="text-gray-600 bg-gray-50 p-4 rounded-lg">{{ $payment->notes }}</p>
+                    </div>
+                    @endif
+
+                    <!-- Bukti Pembayaran -->
+                    @if($payment->receipt_file)
+                    <div class="border-t pt-6 mt-6">
+                        <h4 class="font-semibold text-gray-800 mb-3">Bukti Pembayaran:</h4>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            @if(Str::endsWith($payment->receipt_file, '.pdf'))
+                                <a href="{{ asset('storage/' . $payment->receipt_file) }}" 
+                                    target="_blank"
+                                    class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                                    📄 Lihat PDF
+                                </a>
+                            @else
+                                <img src="{{ asset('storage/' . $payment->receipt_file) }}" 
+                                        alt="Bukti Pembayaran" 
+                                        class="max-w-md rounded-lg border border-gray-300">
+                            @endif
+                        </div>
+                    </div>
+                    @endif
+
+                    <!-- Timestamp -->
+                    <div class="border-t pt-4 mt-6 text-sm text-gray-500">
+                        <div class="flex justify-between">
+                            <span>Dibuat: {{ $payment->created_at->format('d F Y H:i') }}</span>
+                            <span>Diupdate: {{ $payment->updated_at->format('d F Y H:i') }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 </x-app-layout>
