@@ -13,8 +13,12 @@ class FacilitySeeder extends Seeder
             // Room facilities
             ['name' => 'AC', 'type' => 'room', 'quantity' => 1, 'condition' => 'good', 'description' => 'Air Conditioner'],
             ['name' => 'Kasur', 'type' => 'room', 'quantity' => 1, 'condition' => 'good', 'description' => 'Tempat tidur single'],
+            ['name' => 'Bantal', 'type' => 'room', 'quantity' => 1, 'condition' => 'good', 'description' => 'Bantal tidur'],
+            ['name' => 'Guling', 'type' => 'room', 'quantity' => 1, 'condition' => 'good', 'description' => 'Guling'],
+            ['name' => 'Sprei', 'type' => 'room', 'quantity' => 1, 'condition' => 'good', 'description' => 'Sprei'],
             ['name' => 'Lemari', 'type' => 'room', 'quantity' => 1, 'condition' => 'good', 'description' => 'Lemari pakaian'],
-            ['name' => 'Meja Belajar', 'type' => 'room', 'quantity' => 1, 'condition' => 'good', 'description' => 'Meja dan kursi belajar'],
+            ['name' => 'Meja', 'type' => 'room', 'quantity' => 1, 'condition' => 'good', 'description' => 'Meja'],
+            ['name' => 'Kursi', 'type' => 'room', 'quantity' => 1, 'condition' => 'good', 'description' => 'kursi'],
             ['name' => 'Kamar Mandi Dalam', 'type' => 'room', 'quantity' => 1, 'condition' => 'good', 'description' => 'Kamar mandi pribadi'],
             ['name' => 'Wi-Fi', 'type' => 'room', 'quantity' => 1, 'condition' => 'good', 'description' => 'Internet wireless'],
             
