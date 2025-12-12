@@ -51,8 +51,9 @@
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Jumlah Bayar (Rp)</label>
-                                    <input type="number" name="amount" id="amount" value="{{ old('amount') }}" required
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <input type="text" name="amount" id="amount" value="{{ old('amount') }}" placeholder="0"
+                                        onkeyup="formatRupiah(this)"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-800">
                                     @error('amount')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -60,8 +61,9 @@
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Denda Keterlambatan (Rp)</label>
-                                    <input type="number" name="late_fee" value="{{ old('late_fee', 0) }}"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <input type="text" name="late_fee" id="late_fee" value="{{ old('late_fee') }}" placeholder="0"
+                                        onkeyup="formatRupiah(this)"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-800">
                                     @error('late_fee')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -113,14 +115,78 @@
         </div>
     </div>
 
-    <script>
-        // Auto-fill amount based on selected tenant
-        document.getElementById('tenant_id').addEventListener('change', function() {
-            const selectedOption = this.options[this.selectedIndex];
-            const price = selectedOption.getAttribute('data-price');
-            if (price) {
-                document.getElementById('amount').value = price;
+<script>
+    /**
+     * Fungsi Utama: Memformat input menjadi Rupiah (pemisah ribuan: titik)
+     * Fungsi ini sekarang lebih aman dengan membuang karakter non-digit dan desimal.
+     */
+    function formatRupiah(input) {
+        // Ambil nilai input. Pertama, hapus semua karakter non-digit (0-9)
+        // KECUALI jika Anda menggunakan desimal, tapi untuk Rupiah bulat kita buang semua.
+        let number_string = input.value.replace(/[^0-9]/g, '').toString();
+
+        // Jika nilai dari DB adalah 1500000.00, ini mungkin menghasilkan 150000000.
+        // Solusi: Kita pastikan formatnya bersih sebelum diproses.
+        
+        // Cek apakah ada desimal sisa dan buang (misal dari DB: 1500000.00)
+        if (number_string.includes('.')) {
+            number_string = number_string.split('.')[0];
+        }
+
+        let sisa = number_string.length % 3,
+            rupiah = number_string.substr(0, sisa),
+            ribuan = number_string.substr(sisa).match(/\d{3}/gi);
+
+        // Tambahkan titik sebagai pemisah
+        if (ribuan) {
+            separator = sisa ? '.' : '';
+            rupiah += separator + ribuan.join('.');
+        }
+
+        input.value = rupiah;
+    }
+    
+    // Bersihkan Format Sebelum Form Disubmit
+    const paymentForm = document.querySelector('form');
+    paymentForm.addEventListener('submit', function() {
+        const amountInput = document.getElementById('amount');
+        const lateFeeInput = document.getElementById('late_fee');
+        
+        // Hapus semua titik/koma (separator) agar backend menerima angka murni (e.g., 1000000)
+        amountInput.value = amountInput.value.replace(/\./g, '').replace(/,/g, '');
+        lateFeeInput.value = lateFeeInput.value.replace(/\./g, '').replace(/,/g, '');
+    });
+
+    // Inisialisasi: Format Nilai Lama (old value) Saat Halaman Dimuat
+    document.addEventListener('DOMContentLoaded', function() {
+        const amountInput = document.getElementById('amount');
+        const lateFeeInput = document.getElementById('late_fee');
+
+        if (amountInput.value) {
+            formatRupiah(amountInput);
+        }
+        if (lateFeeInput.value) {
+            formatRupiah(lateFeeInput);
+        }
+    });
+
+    // Autofill: Mengisi Jumlah Bayar Saat Penghuni Dipilih (dan Langsung Diformat)
+    document.getElementById('tenant_id').addEventListener('change', function() {
+        const amountInput = document.getElementById('amount');
+        const selectedOption = this.options[this.selectedIndex];
+        let price = selectedOption.getAttribute('data-price'); // Nilai DB: 1500000.00
+        
+        if (price) {
+            // PERBAIKAN: Hapus bagian desimal (.00) dari harga DB
+            if (price.includes('.')) {
+                price = price.split('.')[0]; 
             }
-        });
-    </script>
+            
+            amountInput.value = price; // Nilai murni masuk (e.g., 1500000)
+            formatRupiah(amountInput); // Tampilan diformat (e.g., 1.500.000)
+        } else {
+            amountInput.value = '';
+        }
+    });
+</script>
 </x-app-layout>

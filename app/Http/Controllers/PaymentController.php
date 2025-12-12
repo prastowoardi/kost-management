@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Payment;
 use App\Models\Tenant;
+use App\Http\Requests\StorePaymentRequest;
 use App\Models\Room;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -28,11 +29,21 @@ class PaymentController extends Controller
 
     public function store(Request $request)
     {
+        $data = $request->all();
+
+        $amountClean = preg_replace('/[^0-9]/', '', $data['amount']);
+        $lateFeeClean = preg_replace('/[^0-9]/', '', $data['late_fee']);
+        
+        $data['amount'] = (int)$amountClean;
+        $data['late_fee'] = ($lateFeeClean === '') ? 0 : (int)$lateFeeClean;
+        
+        $request->merge($data);
+        
         $validated = $request->validate([
             'tenant_id' => 'required|exists:tenants,id',
             'payment_date' => 'required|date',
             'period_month' => 'required|date',
-            'amount' => 'required|numeric|min:0',
+            'amount' => 'required|numeric|min:0', 
             'late_fee' => 'nullable|numeric|min:0',
             'payment_method' => 'required|in:cash,transfer,e-wallet',
             'notes' => 'nullable|string',
@@ -41,7 +52,7 @@ class PaymentController extends Controller
 
         $tenant = Tenant::find($validated['tenant_id']);
         $validated['room_id'] = $tenant->room_id;
-        $validated['late_fee'] = $validated['late_fee'] ?? 0;
+        // $validated['late_fee'] = $validated['late_fee'] ?? 0;
         $validated['total'] = $validated['amount'] + $validated['late_fee'];
         $validated['status'] = 'paid';
 
@@ -69,6 +80,16 @@ class PaymentController extends Controller
 
     public function update(Request $request, Payment $payment)
     {
+        $data = $request->all();
+
+        $amountClean = preg_replace('/[^0-9]/', '', $data['amount']);
+        $lateFeeClean = preg_replace('/[^0-9]/', '', $data['late_fee'] ?? ''); 
+
+        $data['amount'] = (int)$amountClean;
+        $data['late_fee'] = ($lateFeeClean === '') ? 0 : (int)$lateFeeClean; 
+        
+        $request->merge($data);
+
         $validated = $request->validate([
             'tenant_id' => 'required|exists:tenants,id',
             'payment_date' => 'required|date',
@@ -83,8 +104,7 @@ class PaymentController extends Controller
 
         $tenant = Tenant::find($validated['tenant_id']);
         $validated['room_id'] = $tenant->room_id;
-        $validated['late_fee'] = $validated['late_fee'] ?? 0;
-        $validated['total'] = $validated['amount'] + $validated['late_fee'];
+        $validated['total'] = $validated['amount'] + $validated['late_fee']; // Penjumlahan aman
 
         if ($request->hasFile('receipt_file')) {
             if ($payment->receipt_file) {

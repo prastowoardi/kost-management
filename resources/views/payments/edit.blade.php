@@ -43,7 +43,7 @@
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Periode Bulan</label>
                                     <input type="month" name="period_month"
-                                        value="{{ old('period_month', $payment->period_month) }}" required
+                                        value="{{ old('period_month', \Carbon\Carbon::parse($payment->period_month)->format('Y-m')) }}" required
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                     @error('period_month')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -53,7 +53,7 @@
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Tanggal Pembayaran</label>
                                     <input type="date" name="payment_date"
-                                        value="{{ old('payment_date', $payment->payment_date) }}" required
+                                        value="{{ old('payment_date', \Carbon\Carbon::parse($payment->payment_date)->format('Y-m-d')) }}" required
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                     @error('payment_date')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -65,25 +65,21 @@
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Jumlah Bayar (Rp)</label>
-                                    <input type="number" id="amount" name="amount"
-                                        value="{{ old('amount', $payment->amount) }}" required
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                    @error('amount')
+                                    <input type="text" name="amount" id="amount" value="{{ old('amount', $payment->amount) }}" placeholder="0" onkeyup="formatRupiah(this)" 
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-800">                                    @error('amount')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Denda Keterlambatan (Rp)</label>
-                                    <input type="number" name="late_fee"
-                                        value="{{ old('late_fee', $payment->late_fee) }}"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                    @error('late_fee')
+                                    <input type="text" name="late_fee" id="late_fee" value="{{ old('late_fee', $payment->late_fee) }}" placeholder="0" onkeyup="formatRupiah(this)" 
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-800">                                    @error('late_fee')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>
                             </div>
-
+                            
                             {{-- Metode pembayaran --}}
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Metode Pembayaran</label>
@@ -91,12 +87,26 @@
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
 
                                     <option value="">Pilih Metode</option>
-                                    <option value="cash" {{ $payment->payment_method == 'cash' ? 'selected' : '' }}>Cash</option>
-                                    <option value="transfer" {{ $payment->payment_method == 'transfer' ? 'selected' : '' }}>Transfer Bank</option>
-                                    <option value="e-wallet" {{ $payment->payment_method == 'e-wallet' ? 'selected' : '' }}>E-Wallet</option>
+                                    <option value="cash" {{ old('payment_method', $payment->payment_method) == 'cash' ? 'selected' : '' }}>Cash</option>
+                                    <option value="transfer" {{ old('payment_method', $payment->payment_method) == 'transfer' ? 'selected' : '' }}>Transfer Bank</option>
+                                    <option value="e-wallet" {{ old('payment_method', $payment->payment_method) == 'e-wallet' ? 'selected' : '' }}>E-Wallet</option>
 
                                 </select>
                                 @error('payment_method')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            
+                            {{-- Status Pembayaran --}}
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Status Pembayaran</label>
+                                <select name="status" required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <option value="pending" {{ old('status', $payment->status) == 'pending' ? 'selected' : '' }}>Pending</option>
+                                    <option value="paid" {{ old('status', $payment->status) == 'paid' ? 'selected' : '' }}>Paid</option>
+                                    <option value="overdue" {{ old('status', $payment->status) == 'overdue' ? 'selected' : '' }}>Overdue</option>
+                                </select>
+                                @error('status')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
@@ -118,7 +128,7 @@
                                 @if($payment->receipt_file)
                                     <p class="text-sm text-gray-500 mb-1">File saat ini:
                                         <a href="{{ asset('storage/'.$payment->receipt_file) }}" target="_blank"
-                                           class="text-blue-600 underline">Lihat / Download</a>
+                                            class="text-blue-600 underline">Lihat / Download</a>
                                     </p>
                                 @endif
 
@@ -147,13 +157,69 @@
         </div>
     </div>
 
-    {{-- Auto-fill amount when tenant is changed --}}
+    {{-- KODE JAVASCRIPT LENGKAP UNTUK FORMATTING DAN AUTOFIL --}}
     <script>
+        function formatRupiah(input) {
+            let value = input.value;
+            
+            if (value.includes('.')) {
+                value = value.split('.')[0]; 
+            }
+            
+            let number_string = value.replace(/[^0-9]/g, '').toString();
+            
+            if (number_string.includes('.')) {
+                number_string = number_string.split('.')[0];
+            }
+
+            let sisa = number_string.length % 3,
+                rupiah = number_string.substr(0, sisa),
+                ribuan = number_string.substr(sisa).match(/\d{3}/gi);
+
+            if (ribuan) {
+                separator = sisa ? '.' : '';
+                rupiah += separator + ribuan.join('.');
+            }
+
+            input.value = rupiah;
+        }
+
+        const paymentForm = document.querySelector('form');
+        
+        paymentForm.addEventListener('submit', function() {
+            const amountInput = document.getElementById('amount');
+            const lateFeeInput = document.getElementById('late_fee');
+            
+            amountInput.value = amountInput.value.replace(/\./g, '').replace(/,/g, '');
+            lateFeeInput.value = lateFeeInput.value.replace(/\./g, '').replace(/,/g, '');
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const amountInput = document.getElementById('amount');
+            const lateFeeInput = document.getElementById('late_fee');
+            
+            if (amountInput && amountInput.value) {
+                formatRupiah(amountInput);
+            }
+            if (lateFeeInput && lateFeeInput.value) {
+                formatRupiah(lateFeeInput);
+            }
+        });
+
         document.getElementById('tenant_id').addEventListener('change', function() {
+            const amountInput = document.getElementById('amount');
             const selectedOption = this.options[this.selectedIndex];
-            const price = selectedOption.getAttribute('data-price');
+            let price = selectedOption.getAttribute('data-price');
+            
             if (price) {
-                document.getElementById('amount').value = price;
+                if (price.includes('.')) {
+                    price = price.split('.')[0]; 
+                }
+                
+                amountInput.value = price;
+                formatRupiah(amountInput);
+            } else {
+                amountInput.value = '';
             }
         });
     </script>
