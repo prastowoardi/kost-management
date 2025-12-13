@@ -1,4 +1,4 @@
-name: Deploy Laravel to VPS
+name: Deploy Project to VPS
 
 on:
   push:
