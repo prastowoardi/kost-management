@@ -26,6 +26,93 @@
             </div>
             @endif
 
+            {{-- FILTER FORM START --}}
+            <div class="mb-6 bg-white shadow-md rounded-lg p-4">
+                <form method="GET" action="{{ route('payments.index') }}" class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-4 items-end">
+                    
+                    @php
+                        // Ambil filter yang sedang aktif, atau set default ke bulan/tahun saat ini
+                        $currentMonth = request('filter_month', date('n'));
+                        $currentYear = request('filter_year', date('Y'));
+                        
+                        $months = [
+                            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                        ];
+                        $startYear = date('Y') - 3; // Mulai 3 tahun ke belakang
+                        $endYear = date('Y') + 1;  // Sampai tahun depan
+                    @endphp
+
+                    {{-- FILTER: BULAN --}}
+                    <div>
+                        <label for="filter_month" class="block text-sm font-medium text-gray-700">Bulan</label>
+                        <select name="filter_month" id="filter_month"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="">Semua</option>
+                            @foreach($months as $num => $name)
+                                <option value="{{ $num }}" {{ (string)request('filter_month', $currentMonth) == (string)$num ? 'selected' : '' }}>
+                                    {{ $name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- FILTER: TAHUN --}}
+                    <div>
+                        <label for="filter_year" class="block text-sm font-medium text-gray-700">Tahun</label>
+                        <select name="filter_year" id="filter_year"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="">Semua</option>
+                            @for($year = $endYear; $year >= $startYear; $year--)
+                                <option value="{{ $year }}" {{ (string)request('filter_year', $currentYear) == (string)$year ? 'selected' : '' }}>
+                                    {{ $year }}
+                                </option>
+                            @endfor
+                        </select>
+                    </div>
+
+                    {{-- FILTER: PENGHUNI --}}
+                    <div>
+                        <label for="tenant_id" class="block text-sm font-medium text-gray-700">Penghuni</label>
+                        <select name="tenant_id" id="tenant_id"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="">Semua Penghuni</option>
+                            @foreach($tenants as $tenant)
+                                <option value="{{ $tenant->id }}" 
+                                    {{ request('tenant_id') == $tenant->id ? 'selected' : '' }}>
+                                    {{ $tenant->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    
+                    {{-- FILTER: INVOICE NUMBER SEARCH --}}
+                    <div>
+                        <label for="invoice_number" class="block text-sm font-medium text-gray-700">Nomor Invoice</label>
+                        <input type="text" name="invoice_number" id="invoice_number"
+                                value="{{ request('invoice_number') }}"
+                                placeholder="Cari No. Invoice..."
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+
+                    {{-- TOMBOL AKSI --}}
+                    <div class="flex space-x-2 lg:col-span-1">
+                        <button type="submit"
+                                class="w-full px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700">
+                            Filter
+                        </button>
+                        {{-- Tombol Reset --}}
+                        <a href="{{ route('payments.index') }}"
+                           class="w-full px-4 py-2 bg-gray-300 text-gray-700 font-semibold rounded-md hover:bg-gray-400 text-center">
+                            Reset
+                        </a>
+                    </div>
+                </form>
+            </div>
+            {{-- FILTER FORM END --}}
+
+
             <div class="bg-white shadow-sm rounded-lg">
                 <div class="p-4 sm:p-6">
 
@@ -80,11 +167,14 @@
                                         <a href="{{ route('payments.show', $payment) }}" class="text-blue-600 hover:text-blue-900 block sm:inline">Detail</a>
                                         <a href="{{ route('payments.receipt', $payment) }}" class="text-green-600 hover:text-green-900 block sm:inline">Kwitansi</a>
                                         <a href="{{ route('payments.edit', $payment) }}" class="text-indigo-600 hover:text-indigo-900 block sm:inline">Edit</a>
-                                        <form action="{{ route('payments.destroy', $payment) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus pembayaran ini?')">
+                                        <form id="delete-payment-{{ $payment->id }}" action="{{ route('payments.destroy', $payment) }}" method="POST" class="inline">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900 block sm:inline">Hapus</button>
                                         </form>
+                                        <button onclick="confirmDelete('delete-payment-{{ $payment->id }}', 'Pembayaran {{ $payment->invoice_number }}')"
+                                                class="text-red-600 hover:text-red-900">
+                                            Hapus
+                                        </button>
                                     </td>
                                 </tr>
                                 @empty
@@ -100,7 +190,7 @@
                     </div>
 
                     <div class="mt-4">
-                        {{ $payments->links() }}
+                        {{ $payments->appends(request()->query())->links() }}
                     </div>
 
                 </div>
@@ -108,4 +198,12 @@
 
         </div>
     </div>
+    
+    <script>
+        window.confirmDelete = function (formId, itemName) {
+            if (confirm(`Apakah Anda yakin ingin menghapus data ${itemName}? Data ini tidak dapat dikembalikan.`)) {
+                document.getElementById(formId).submit();
+            }
+        }
+    </script>
 </x-app-layout>

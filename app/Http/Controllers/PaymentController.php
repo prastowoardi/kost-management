@@ -9,16 +9,34 @@ use App\Models\Room;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 
 class PaymentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $payments = Payment::with(['tenant', 'room'])
-                            ->orderBy('created_at', 'desc')
-                            ->paginate(15);
+        $tenants = Tenant::orderBy('name')->get();
         
-        return view('payments.index', compact('payments'));
+        $query = Payment::with(['tenant', 'room'])
+                        ->orderBy('created_at', 'desc');
+
+        if ($request->filled('period')) {
+            $period = Carbon::createFromFormat('Y-m', $request->input('period')); 
+            $query->whereMonth('period_month', $period->month)
+                    ->whereYear('period_month', $period->year);
+        }
+
+        if ($request->filled('tenant_id')) {
+            $query->where('tenant_id', $request->input('tenant_id'));
+        }
+
+        if ($request->filled('invoice_number')) {
+            $query->where('invoice_number', 'like', '%' . $request->input('invoice_number') . '%');
+        }
+
+        $payments = $query->paginate(15)->appends($request->query());
+
+        return view('payments.index', compact('payments', 'tenants'));
     }
 
     public function create()
