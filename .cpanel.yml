@@ -1,6 +1,19 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/serd6214/public_html/git
-    - /bin/cp -R * $DEPLOYPATH
+    # 1. Tentukan path tujuan inti aplikasi (harus di luar public_html)
+    - export APP_PATH=/home/serd6214/kost-management-app/
     
+    # 2. Tentukan path tujuan publik (di mana domain Anda mengarah)
+    # Asumsi domain Anda mengarah ke public_html
+    - export PUBLIC_PATH=/home/serd6214/public_html/
+
+    # 3. Salin SELURUH proyek ke lokasi non-publik
+    # Ini menyalin semua termasuk .env, vendor, dll. ke tempat yang aman.
+    - /bin/cp -R * $APP_PATH
+
+    # 4. Salin ISI folder 'public' ke folder publik domain Anda
+    - /bin/cp -R public/* $PUBLIC_PATH
+
+    # 5. Hapus folder 'public' yang tersisa di dalam folder non-publik (Opsional, untuk kerapihan)
+    - /bin/rm -rf $APP_PATH/public
