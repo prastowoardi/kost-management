@@ -8,6 +8,7 @@ use App\Http\Controllers\TenantController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\FacilityController;
 use App\Http\Controllers\ComplaintController;
+use App\Http\Controllers\FinanceController;
 use Illuminate\Support\Facades\Route;
 
 // Redirect root ke login
@@ -17,7 +18,7 @@ Route::get('/', function () {
 
 // Middleware auth untuk semua route yang memerlukan login
 Route::middleware(['auth', 'verified'])->group(function () {
-    
+
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->middleware(['auth', 'verified'])
@@ -49,6 +50,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Finance
+    Route::get('finances/dashboard', [FinanceController::class, 'dashboard'])->name('finances.dashboard');
+    Route::get('finances/report', [FinanceController::class, 'report'])->name('finances.report');
+    Route::resource('finances', FinanceController::class);
 });
 
 // Include authentication routes

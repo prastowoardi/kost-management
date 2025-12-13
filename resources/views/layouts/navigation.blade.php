@@ -1,3 +1,4 @@
+{{-- resources/views/layouts/navigation.blade.php --}}
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -6,7 +7,7 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}" class="text-xl font-bold text-gray-800">
-                        🏠 Serrata Kos
+                        🏠 Kos Management
                     </a>
                 </div>
 
@@ -26,6 +27,10 @@
                     
                     <x-nav-link :href="route('payments.index')" :active="request()->routeIs('payments.*')">
                         {{ __('Pembayaran') }}
+                    </x-nav-link>
+                    
+                    <x-nav-link :href="route('finances.dashboard')" :active="request()->routeIs('finances.*')">
+                        {{ __('Keuangan') }}
                     </x-nav-link>
                     
                     <x-nav-link :href="route('facilities.index')" :active="request()->routeIs('facilities.*')">
@@ -101,6 +106,10 @@
             
             <x-responsive-nav-link :href="route('payments.index')" :active="request()->routeIs('payments.*')">
                 {{ __('Pembayaran') }}
+            </x-responsive-nav-link>
+            
+            <x-responsive-nav-link :href="route('finances.dashboard')" :active="request()->routeIs('finances.*')">
+                {{ __('Keuangan') }}
             </x-responsive-nav-link>
             
             <x-responsive-nav-link :href="route('facilities.index')" :active="request()->routeIs('facilities.*')">

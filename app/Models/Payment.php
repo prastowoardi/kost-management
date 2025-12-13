@@ -29,6 +29,11 @@ class Payment extends Model
         'period_month' => 'date',
     ];
 
+    public function finance()
+    {
+        return $this->hasOne(Finance::class);
+    }
+
     public function tenant()
     {
         return $this->belongsTo(Tenant::class);

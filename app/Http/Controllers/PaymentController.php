@@ -4,8 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Payment;
 use App\Models\Tenant;
-use App\Http\Requests\StorePaymentRequest;
-use App\Models\Room;
+use App\Models\Finance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -16,22 +15,22 @@ class PaymentController extends Controller
     public function index(Request $request)
     {
         $tenants = Tenant::orderBy('name')->get();
-        
+
         $query = Payment::with(['tenant', 'room'])
-                        ->orderBy('created_at', 'desc');
+            ->orderBy('created_at', 'desc');
 
         if ($request->filled('period')) {
-            $period = Carbon::createFromFormat('Y-m', $request->input('period')); 
+            $period = Carbon::createFromFormat('Y-m', $request->period);
             $query->whereMonth('period_month', $period->month)
                     ->whereYear('period_month', $period->year);
         }
 
         if ($request->filled('tenant_id')) {
-            $query->where('tenant_id', $request->input('tenant_id'));
+            $query->where('tenant_id', $request->tenant_id);
         }
 
         if ($request->filled('invoice_number')) {
-            $query->where('invoice_number', 'like', '%' . $request->input('invoice_number') . '%');
+            $query->where('invoice_number', 'like', "%{$request->invoice_number}%");
         }
 
         $payments = $query->paginate(15)->appends($request->query());
@@ -47,41 +46,54 @@ class PaymentController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->all();
+        // Bersihkan format rupiah
+        $request->merge([
+            'amount' => (int) preg_replace('/[^0-9]/', '', $request->amount),
+            'late_fee' => (int) preg_replace('/[^0-9]/', '', $request->late_fee ?? 0),
+        ]);
 
-        $amountClean = preg_replace('/[^0-9]/', '', $data['amount']);
-        $lateFeeClean = preg_replace('/[^0-9]/', '', $data['late_fee']);
-        
-        $data['amount'] = (int)$amountClean;
-        $data['late_fee'] = ($lateFeeClean === '') ? 0 : (int)$lateFeeClean;
-        
-        $request->merge($data);
-        
         $validated = $request->validate([
             'tenant_id' => 'required|exists:tenants,id',
             'payment_date' => 'required|date',
             'period_month' => 'required|date',
-            'amount' => 'required|numeric|min:0', 
+            'amount' => 'required|numeric|min:0',
             'late_fee' => 'nullable|numeric|min:0',
             'payment_method' => 'required|in:cash,transfer,e-wallet',
             'notes' => 'nullable|string',
             'receipt_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048'
         ]);
 
-        $tenant = Tenant::find($validated['tenant_id']);
+        $tenant = Tenant::findOrFail($validated['tenant_id']);
+
         $validated['room_id'] = $tenant->room_id;
-        // $validated['late_fee'] = $validated['late_fee'] ?? 0;
         $validated['total'] = $validated['amount'] + $validated['late_fee'];
         $validated['status'] = 'paid';
 
         if ($request->hasFile('receipt_file')) {
-            $validated['receipt_file'] = $request->file('receipt_file')->store('receipts', 'public');
+            $validated['receipt_file'] = $request->file('receipt_file')
+                ->store('receipts', 'public');
         }
 
-        Payment::create($validated);
+        $payment = Payment::create($validated);
+        $payment->load(['room', 'tenant']);
+
+        // === FINANCE AUTO CREATE ===
+        Finance::create([
+            'type' => 'income',
+            'category' => 'Pembayaran Sewa',
+            'transaction_date' => $payment->payment_date,
+            'amount' => $payment->total,
+            'description' =>
+                'Pembayaran Sewa ' .
+                Carbon::parse($payment->period_month)->translatedFormat('F Y') .
+                ' - Kamar ' . $payment->room->room_number .
+                ' (' . $payment->tenant->name . ')',
+            'notes' => 'Dicatat otomatis dari pembayaran',
+            'payment_id' => $payment->id,
+        ]);
 
         return redirect()->route('payments.index')
-                        ->with('success', 'Pembayaran berhasil ditambahkan');
+            ->with('success', 'Pembayaran berhasil ditambahkan');
     }
 
     public function show(Payment $payment)
@@ -98,15 +110,10 @@ class PaymentController extends Controller
 
     public function update(Request $request, Payment $payment)
     {
-        $data = $request->all();
-
-        $amountClean = preg_replace('/[^0-9]/', '', $data['amount']);
-        $lateFeeClean = preg_replace('/[^0-9]/', '', $data['late_fee'] ?? ''); 
-
-        $data['amount'] = (int)$amountClean;
-        $data['late_fee'] = ($lateFeeClean === '') ? 0 : (int)$lateFeeClean; 
-        
-        $request->merge($data);
+        $request->merge([
+            'amount' => (int) preg_replace('/[^0-9]/', '', $request->amount),
+            'late_fee' => (int) preg_replace('/[^0-9]/', '', $request->late_fee ?? 0),
+        ]);
 
         $validated = $request->validate([
             'tenant_id' => 'required|exists:tenants,id',
@@ -120,25 +127,67 @@ class PaymentController extends Controller
             'receipt_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048'
         ]);
 
-        $tenant = Tenant::find($validated['tenant_id']);
+        $tenant = Tenant::findOrFail($validated['tenant_id']);
+
         $validated['room_id'] = $tenant->room_id;
-        $validated['total'] = $validated['amount'] + $validated['late_fee']; // Penjumlahan aman
+        $validated['total'] = $validated['amount'] + $validated['late_fee'];
 
         if ($request->hasFile('receipt_file')) {
             if ($payment->receipt_file) {
                 Storage::disk('public')->delete($payment->receipt_file);
             }
-            $validated['receipt_file'] = $request->file('receipt_file')->store('receipts', 'public');
+            $validated['receipt_file'] = $request->file('receipt_file')
+                ->store('receipts', 'public');
         }
 
+        $oldStatus = $payment->status;
+
         $payment->update($validated);
+        $payment->load(['room', 'tenant']);
+
+        $finance = Finance::where('payment_id', $payment->id)->first();
+
+        if ($validated['status'] === 'paid') {
+            $description =
+                'Pembayaran Sewa ' .
+                Carbon::parse($payment->period_month)->translatedFormat('F Y') .
+                ' - Kamar ' . $payment->room->room_number .
+                ' (' . $payment->tenant->name . ')';
+
+            if ($finance) {
+                $finance->update([
+                    'transaction_date' => $payment->payment_date,
+                    'amount' => $payment->total,
+                    'description' => $description,
+                ]);
+            } else {
+                Finance::create([
+                    'type' => 'income',
+                    'category' => 'Pembayaran Sewa',
+                    'transaction_date' => $payment->payment_date,
+                    'amount' => $payment->total,
+                    'description' => $description,
+                    'notes' => 'Dicatat otomatis dari update pembayaran',
+                    'payment_id' => $payment->id,
+                ]);
+            }
+        }
+
+        if ($oldStatus === 'paid' && $validated['status'] !== 'paid' && $finance) {
+            $finance->delete();
+        }
 
         return redirect()->route('payments.index')
-                        ->with('success', 'Pembayaran berhasil diupdate');
+            ->with('success', 'Pembayaran berhasil diupdate');
     }
 
     public function destroy(Payment $payment)
     {
+        $finance = Finance::where('payment_id', $payment->id)->first();
+        if ($finance) {
+            $finance->delete();
+        }
+
         if ($payment->receipt_file) {
             Storage::disk('public')->delete($payment->receipt_file);
         }
@@ -146,7 +195,7 @@ class PaymentController extends Controller
         $payment->delete();
 
         return redirect()->route('payments.index')
-                        ->with('success', 'Pembayaran berhasil dihapus');
+            ->with('success', 'Pembayaran berhasil dihapus');
     }
 
     public function updateStatus(Request $request, Payment $payment)
@@ -155,46 +204,39 @@ class PaymentController extends Controller
             'status' => 'required|in:pending,paid,overdue'
         ]);
 
+        $oldStatus = $payment->status;
         $payment->update($validated);
+        $payment->load(['room', 'tenant']);
 
-        return redirect()->back()
-                        ->with('success', 'Status pembayaran berhasil diupdate');
+        $finance = Finance::where('payment_id', $payment->id)->first();
+
+        if ($validated['status'] === 'paid' && !$finance) {
+            Finance::create([
+                'type' => 'income',
+                'category' => 'Pembayaran Sewa',
+                'transaction_date' => $payment->payment_date,
+                'amount' => $payment->total,
+                'description' =>
+                    'Pembayaran Sewa ' .
+                    Carbon::parse($payment->period_month)->translatedFormat('F Y') .
+                    ' - Kamar ' . $payment->room->room_number .
+                    ' (' . $payment->tenant->name . ')',
+                'notes' => 'Dicatat dari update status',
+                'payment_id' => $payment->id,
+            ]);
+        }
+
+        if ($oldStatus === 'paid' && $validated['status'] !== 'paid' && $finance) {
+            $finance->delete();
+        }
+
+        return back()->with('success', 'Status pembayaran berhasil diperbarui');
     }
 
     public function downloadReceipt(Payment $payment)
     {
         $payment->load(['tenant', 'room']);
-        
         $pdf = Pdf::loadView('payments.receipt', compact('payment'));
-        
         return $pdf->download('receipt-' . $payment->invoice_number . '.pdf');
-    }
-
-    public function report(Request $request)
-    {
-        $query = Payment::with(['tenant', 'room']);
-
-        if ($request->filled('start_date')) {
-            $query->where('payment_date', '>=', $request->start_date);
-        }
-
-        if ($request->filled('end_date')) {
-            $query->where('payment_date', '<=', $request->end_date);
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        $payments = $query->orderBy('payment_date', 'desc')->get();
-        $totalAmount = $payments->sum('total');
-
-        if ($request->has('download')) {
-            // $pdf = Pdf::loadView('payments.report', compact('payments', 'totalAmount'));
-            $pdf = Pdf::loadView('payments.report_pdf', compact('payments', 'totalAmount'));
-            return $pdf->download('payment-report-' . date('Y-m-d') . '.pdf');
-        }
-
-        return view('payments.report', compact('payments', 'totalAmount'));
     }
 }
