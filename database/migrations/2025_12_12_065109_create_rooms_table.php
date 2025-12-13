@@ -17,6 +17,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->integer('capacity')->default(1);
             $table->decimal('size', 8, 2)->nullable();
+            $table->json('images')->nullable();
             $table->timestamps();
         });
     }
