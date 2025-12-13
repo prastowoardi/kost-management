@@ -39,13 +39,15 @@ class RoomController extends Controller
         ]);
 
         // Handle multiple images
+        $imagePaths = [];
         if ($request->hasFile('images')) {
-            $imagePaths = [];
             foreach ($request->file('images') as $image) {
                 $imagePaths[] = $image->store('rooms', 'public');
             }
-            $validated['images'] = $imagePaths;
         }
+        
+        // Store as JSON
+        $validated['images'] = json_encode($imagePaths);
 
         $room = Room::create($validated);
         
@@ -74,56 +76,66 @@ class RoomController extends Controller
     public function update(Request $request, Room $room)
     {
         $validated = $request->validate([
-            'room_number' => 'required|unique:rooms,room_number,' . $room->id,
+            'room_number' => 'required|unique:rooms,room_number,'.$room->id,
             'type' => 'required|in:single,double,shared',
             'price' => 'required|numeric|min:0',
             'capacity' => 'required|integer|min:1',
-            'size' => 'nullable|numeric|min:0',
             'status' => 'required|in:available,occupied,maintenance',
+            'size' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
             'facilities' => 'nullable|array',
-            'images' => 'nullable|array|max:5',
-            'images.*' => 'image|mimes:jpeg,png,jpg|max:2048',
-            'remove_images' => 'nullable|array'
+            'keep_images' => 'nullable|array',
+            'new_images' => 'nullable|array|max:5',
+            'new_images.*' => 'image|mimes:jpeg,png,jpg|max:2048'
         ]);
 
-        // Handle remove images
-        if ($request->has('remove_images')) {
-            $currentImages = $room->images ?? [];
-            foreach ($request->remove_images as $imageToRemove) {
-                if (($key = array_search($imageToRemove, $currentImages)) !== false) {
-                    Storage::disk('public')->delete($imageToRemove);
-                    unset($currentImages[$key]);
-                }
+        // Get old images data
+        $oldImages = is_string($room->images) 
+            ? json_decode($room->images, true) 
+            : ($room->images ?? []);
+        
+        // Images to keep from old ones
+        $keepImages = $request->input('keep_images', []);
+        
+        // Calculate deleted images
+        $deletedImages = array_diff($oldImages, $keepImages);
+
+        // Delete removed images from storage
+        foreach ($deletedImages as $deletedImage) {
+            if (Storage::disk('public')->exists($deletedImage)) {
+                Storage::disk('public')->delete($deletedImage);
             }
-            $validated['images'] = array_values($currentImages);
         }
 
-        // Handle new images
-        if ($request->hasFile('images')) {
-            $currentImages = $validated['images'] ?? $room->images ?? [];
-            
-            // Check total images limit
-            if (count($currentImages) + count($request->file('images')) > 5) {
-                return back()->with('error', 'Maksimal 5 foto!');
+        // Start with kept images
+        $finalImages = $keepImages;
+        
+        // Upload and add new images
+        if ($request->hasFile('new_images')) {
+            foreach ($request->file('new_images') as $image) {
+                $path = $image->store('rooms', 'public');
+                $finalImages[] = $path;
             }
-            
-            foreach ($request->file('images') as $image) {
-                $currentImages[] = $image->store('rooms', 'public');
-            }
-            $validated['images'] = $currentImages;
         }
+        
+        // Update validated data with final images
+        $validated['images'] = json_encode($finalImages);
+        
+        // Remove non-database fields
+        unset($validated['keep_images']);
+        unset($validated['new_images']);
 
         $room->update($validated);
         
+        // Sync facilities
         if ($request->has('facilities')) {
             $room->facilities()->sync($request->facilities);
         } else {
             $room->facilities()->detach();
         }
-
-        return redirect()->route('rooms.index')
-                        ->with('success', 'Kamar berhasil diupdate');
+        
+        return redirect()->route('rooms.show', $room)
+            ->with('success', 'Kamar berhasil diupdate!');
     }
 
     public function destroy(Room $room)
@@ -134,9 +146,15 @@ class RoomController extends Controller
         }
 
         // Delete all images
-        if ($room->images) {
-            foreach ($room->images as $image) {
-                Storage::disk('public')->delete($image);
+        $images = is_string($room->images) 
+            ? json_decode($room->images, true) 
+            : ($room->images ?? []);
+            
+        if (!empty($images)) {
+            foreach ($images as $image) {
+                if (Storage::disk('public')->exists($image)) {
+                    Storage::disk('public')->delete($image);
+                }
             }
         }
 

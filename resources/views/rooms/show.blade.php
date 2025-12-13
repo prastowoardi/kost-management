@@ -24,17 +24,54 @@
                 <div class="lg:col-span-2 space-y-6">
                     
                     <!-- Images Gallery -->
-                    @if($room->images && count($room->images) > 0)
+                    @php
+                        $images = is_string($room->images) ? json_decode($room->images, true) : $room->images;
+                        $firstImage = $images && count($images) > 0 ? asset('storage/' . $images[0]) : null;
+                    @endphp
+                    
+                    @if($images && count($images) > 0)
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Foto Kamar</h3>
-                            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                @foreach($room->images as $image)
-                                <img src="{{ asset('storage/' . $image) }}" 
-                                        alt="Foto Kamar" 
-                                        class="w-full h-48 object-cover rounded-lg border border-gray-300 cursor-pointer hover:opacity-75 transition"
-                                        onclick="openImageModal('{{ asset('storage/' . $image) }}')">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                                📸 Foto Kamar ({{ count($images) }} foto)
+                            </h3>
+                            
+                            <!-- Main Image -->
+                            <div class="mb-4">
+                                <img id="mainImage" 
+                                        src="{{ $firstImage }}" 
+                                        alt="Foto Kamar Utama" 
+                                        class="w-full h-96 object-cover rounded-lg border-2 border-gray-300 cursor-pointer hover:border-blue-500 transition"
+                                        data-full-src="{{ $firstImage }}">
+                            </div>
+                            
+                            <!-- Thumbnail Grid -->
+                            <div class="grid grid-cols-4 md:grid-cols-5 gap-3">
+                                @foreach($images as $index => $image)
+                                @php $imagePath = asset('storage/' . $image); @endphp
+                                <div class="relative group">
+                                    <img src="{{ $imagePath }}" 
+                                            alt="Foto Kamar {{ $index + 1 }}" 
+                                            class="w-full h-20 object-cover rounded-lg border-2 border-gray-300 cursor-pointer hover:border-blue-500 transition {{ $index === 0 ? 'ring-2 ring-blue-500' : '' }}"
+                                            data-full-src="{{ $imagePath }}">
+                                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition rounded-lg flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/>
+                                        </svg>
+                                    </div>
+                                </div>
                                 @endforeach
+                            </div>
+                        </div>
+                    </div>
+                    @else
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="p-6">
+                            <div class="text-center py-8">
+                                <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <p class="mt-2 text-gray-500">Belum ada foto kamar</p>
                             </div>
                         </div>
                     </div>
@@ -194,21 +231,77 @@
         </div>
     </div>
 
-    <!-- Image Modal -->
-    <div id="imageModal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4" onclick="closeImageModal()">
-        <div class="max-w-4xl max-h-full">
-            <img id="modalImage" src="" alt="Full Image" class="max-w-full max-h-[90vh] object-contain rounded-lg">
+    <!-- Image Modal (Full Screen View) -->
+    <div id="imageModal" 
+            class="hidden fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4" 
+            onclick="closeImageModal()">
+        <button onclick="closeImageModal()" 
+                class="absolute top-4 right-4 text-white hover:text-gray-300 transition">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+        <div class="max-w-6xl max-h-full w-full flex items-center justify-center">
+            <img id="modalImage" 
+                    src="" 
+                    alt="Full Image" 
+                    class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+                    onclick="event.stopPropagation()">
         </div>
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mainImage = document.getElementById('mainImage');
+            const thumbnails = document.querySelectorAll('[data-full-src]');
+            
+            // Click main image to open modal
+            if (mainImage) {
+                mainImage.addEventListener('click', function() {
+                    openImageModal(this.src);
+                });
+            }
+            
+            // Click thumbnails to change main image
+            thumbnails.forEach(thumbnail => {
+                if (thumbnail !== mainImage) {
+                    thumbnail.addEventListener('click', function() {
+                        const imageSrc = this.getAttribute('data-full-src');
+                        mainImage.src = imageSrc;
+                        mainImage.setAttribute('data-full-src', imageSrc);
+                        
+                        // Remove ring from all thumbnails
+                        thumbnails.forEach(t => {
+                            if (t !== mainImage) {
+                                t.classList.remove('ring-2', 'ring-blue-500');
+                            }
+                        });
+                        
+                        // Add ring to clicked thumbnail
+                        this.classList.add('ring-2', 'ring-blue-500');
+                    });
+                }
+            });
+        });
+
+        // Open image in modal
         function openImageModal(imageSrc) {
             document.getElementById('modalImage').src = imageSrc;
             document.getElementById('imageModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
         }
 
+        // Close modal
         function closeImageModal() {
             document.getElementById('imageModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
         }
+
+        // Close modal with ESC key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeImageModal();
+            }
+        });
     </script>
 </x-app-layout>
