@@ -84,6 +84,7 @@ class ComplaintController extends Controller
 
         $tenant = Tenant::find($validated['tenant_id']);
         $validated['room_id'] = $tenant->room_id;
+        $newStatus = $validated['status'];
 
         // Handle remove images
         if ($request->has('remove_images')) {
@@ -110,6 +111,14 @@ class ComplaintController extends Controller
                 $currentImages[] = $image->store('complaints', 'public');
             }
             $validated['images'] = $currentImages;
+        }
+    
+        if ($newStatus == 'resolved' || $newStatus == 'closed') {
+            // Gunakan now() untuk mencatat tanggal dan waktu lengkap saat update status
+            $validated['resolved_date'] = now(); 
+        } else {
+            // Jika statusnya kembali ke Open/In Progress, hapus resolved_date
+            $validated['resolved_date'] = null;
         }
 
         $complaint->update($validated);

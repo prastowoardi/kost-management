@@ -105,7 +105,7 @@
                     {{-- RESPON/RESOLUSI --}}
                     @if($complaint->response)
                     <div class="mb-6 border-t pt-4">
-                        <h4 class="text-lg font-semibold text-blue-700 mb-2">Respon & Resolusi Manajemen</h4>
+                        <h4 class="text-lg font-semibold text-blue-700 mb-2">Respon</h4>
                         <div class="p-4 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg shadow-sm">
                             <p class="text-base text-gray-800 whitespace-pre-line">{{ $complaint->response }}</p>
                             @if($complaint->resolved_date)

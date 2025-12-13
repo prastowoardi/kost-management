@@ -73,11 +73,14 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <a href="{{ route('rooms.show', $room) }}" class="text-blue-600 hover:text-blue-900 mr-3">Detail</a>
                                         <a href="{{ route('rooms.edit', $room) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
-                                        <form action="{{ route('rooms.destroy', $room) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus kamar ini?')">
+                                        <form id="delete-room-{{ $room->id }}" action="{{ route('rooms.destroy', $room) }}" method="POST" class="inline">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900">Hapus</button>
                                         </form>
+                                        <button onclick="confirmDelete(event, 'delete-room-{{ $room->id }}', 'Kamar {{ $room->room_number }}')" 
+                                                class="text-red-600 hover:text-red-900">
+                                            Hapus
+                                        </button>
                                     </td>
                                 </tr>
                                 @empty

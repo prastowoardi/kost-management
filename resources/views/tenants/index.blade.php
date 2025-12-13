@@ -106,15 +106,14 @@
                                             Edit
                                         </a>
 
-                                        <form action="{{ route('tenants.destroy', $tenant) }}" method="POST"
-                                                class="inline"
-                                                onsubmit="return confirm('Yakin ingin menghapus penghuni ini?')">
+                                        <form id="delete-tenant-{{ $tenant->id }}" action="{{ route('tenants.destroy', $tenant) }}" method="POST" class="inline">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900 block sm:inline">
-                                                Hapus
-                                            </button>
                                         </form>
+                                        <button onclick="confirmDelete(event, 'delete-tenant-{{ $tenant->id }}', 'Penghuni {{ $tenant->name }}')"
+                                                class="text-red-600 hover:text-red-900">
+                                            Hapus
+                                        </button>
                                     </td>
                                 </tr>
                                 @empty

@@ -171,7 +171,7 @@
                                             @csrf
                                             @method('DELETE')
                                         </form>
-                                        <button onclick="confirmDelete('delete-payment-{{ $payment->id }}', 'Pembayaran {{ $payment->invoice_number }}')"
+                                        <button onclick="confirmDelete(event, 'delete-payment-{{ $payment->id }}', 'Pembayaran {{ $payment->invoice_number }}')"
                                                 class="text-red-600 hover:text-red-900">
                                             Hapus
                                         </button>
@@ -200,7 +200,7 @@
     </div>
     
     <script>
-        window.confirmDelete = function (formId, itemName) {
+        window.confirmDelete = function (event, formId, itemName) {
             if (confirm(`Apakah Anda yakin ingin menghapus data ${itemName}? Data ini tidak dapat dikembalikan.`)) {
                 document.getElementById(formId).submit();
             }

@@ -75,13 +75,14 @@
                                         <a href="{{ route('facilities.edit', $facility) }}" class="text-indigo-600 hover:text-indigo-900 block sm:inline">
                                             Edit
                                         </a>
-                                        <form action="{{ route('facilities.destroy', $facility) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus fasilitas ini?')">
+                                        <form id="delete-facility-{{ $facility->id }}" action="{{ route('facilities.destroy', $facility) }}" method="POST" class="inline">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900 block sm:inline">
-                                                Hapus
-                                            </button>
                                         </form>
+                                        <button onclick="confirmDelete(event, 'delete-facility-{{ $facility->id }}', 'Fasilitas {{ $facility->name }}')"
+                                                class="text-red-600 hover:text-red-900">
+                                            Hapus
+                                        </button>
                                     </td>
                                 </tr>
                                 @empty

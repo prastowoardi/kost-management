@@ -79,11 +79,14 @@
                                         <div class="flex flex-col space-y-1 sm:flex-row sm:space-x-2 sm:space-y-0 justify-center">
                                             <a href="{{ route('complaints.show', $complaint) }}" class="text-blue-600 hover:text-blue-800">Detail</a>
                                             <a href="{{ route('complaints.edit', $complaint) }}" class="text-indigo-600 hover:text-indigo-800">Edit</a>
-                                            <form action="{{ route('complaints.destroy', $complaint) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus keluhan ini? Tindakan ini tidak dapat dibatalkan.')">
+                                            <form id="delete-complaint-{{ $complaint->id }}" action="{{ route('complaints.destroy', $complaint) }}" method="POST" class="inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="text-red-600 hover:text-red-800 p-0 m-0 leading-none">Hapus</button>
                                             </form>
+                                            <button onclick="confirmDelete(event, 'delete-complaint-{{ $complaint->id }}', 'Keluhan ini')"
+                                                    class="text-red-600 hover:text-red-900">
+                                                Hapus
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
