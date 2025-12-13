@@ -3,3 +3,4 @@ deployment:
   tasks:
     - export DEPLOYPATH=/home/serd6214/public_html/git
     - /bin/cp -R * $DEPLOYPATH
+    
