@@ -16,7 +16,12 @@ class Room extends Model
         'status',
         'description',
         'capacity',
-        'size'
+        'size',
+        'images'
+    ];
+
+    protected $casts = [
+        'images' => 'array'
     ];
 
     public function tenants()

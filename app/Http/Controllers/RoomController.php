@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Room;
 use App\Models\Facility;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class RoomController extends Controller
 {
@@ -32,8 +33,19 @@ class RoomController extends Controller
             'capacity' => 'required|integer|min:1',
             'size' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
-            'facilities' => 'nullable|array'
+            'facilities' => 'nullable|array',
+            'images' => 'nullable|array|max:5',
+            'images.*' => 'image|mimes:jpeg,png,jpg|max:2048'
         ]);
+
+        // Handle multiple images
+        if ($request->hasFile('images')) {
+            $imagePaths = [];
+            foreach ($request->file('images') as $image) {
+                $imagePaths[] = $image->store('rooms', 'public');
+            }
+            $validated['images'] = $imagePaths;
+        }
 
         $room = Room::create($validated);
         
@@ -69,8 +81,38 @@ class RoomController extends Controller
             'size' => 'nullable|numeric|min:0',
             'status' => 'required|in:available,occupied,maintenance',
             'description' => 'nullable|string',
-            'facilities' => 'nullable|array'
+            'facilities' => 'nullable|array',
+            'images' => 'nullable|array|max:5',
+            'images.*' => 'image|mimes:jpeg,png,jpg|max:2048',
+            'remove_images' => 'nullable|array'
         ]);
+
+        // Handle remove images
+        if ($request->has('remove_images')) {
+            $currentImages = $room->images ?? [];
+            foreach ($request->remove_images as $imageToRemove) {
+                if (($key = array_search($imageToRemove, $currentImages)) !== false) {
+                    Storage::disk('public')->delete($imageToRemove);
+                    unset($currentImages[$key]);
+                }
+            }
+            $validated['images'] = array_values($currentImages);
+        }
+
+        // Handle new images
+        if ($request->hasFile('images')) {
+            $currentImages = $validated['images'] ?? $room->images ?? [];
+            
+            // Check total images limit
+            if (count($currentImages) + count($request->file('images')) > 5) {
+                return back()->with('error', 'Maksimal 5 foto!');
+            }
+            
+            foreach ($request->file('images') as $image) {
+                $currentImages[] = $image->store('rooms', 'public');
+            }
+            $validated['images'] = $currentImages;
+        }
 
         $room->update($validated);
         
@@ -89,6 +131,13 @@ class RoomController extends Controller
         if ($room->activeTenant) {
             return redirect()->route('rooms.index')
                             ->with('error', 'Tidak dapat menghapus kamar yang masih ditempati');
+        }
+
+        // Delete all images
+        if ($room->images) {
+            foreach ($room->images as $image) {
+                Storage::disk('public')->delete($image);
+            }
         }
 
         $room->delete();
