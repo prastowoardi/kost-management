@@ -1,4 +1,3 @@
-{{-- resources/views/layouts/navigation.blade.php --}}
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -56,7 +55,7 @@
                                 </a>
                                 <a href="{{ route('payments.index') }}" 
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('payments.index') ? 'bg-gray-50 font-semibold' : '' }}">
-                                    <span class="mr-2">💳</span> Pembayaran Kamar
+                                    <span class="mr-2">💳</span> Pembayaran Sewa
                                 </a>
                                 <a href="{{ route('finances.report') }}" 
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('finances.report') ? 'bg-gray-50 font-semibold' : '' }}">
@@ -73,6 +72,12 @@
                     <x-nav-link :href="route('complaints.index')" :active="request()->routeIs('complaints.*')">
                         {{ __('Keluhan') }}
                     </x-nav-link>
+                    
+                    @if(auth()->user()->isAdmin())
+                    <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
+                        {{ __('Users') }}
+                    </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -157,6 +162,12 @@
             <x-responsive-nav-link :href="route('complaints.index')" :active="request()->routeIs('complaints.*')">
                 {{ __('Keluhan') }}
             </x-responsive-nav-link>
+            
+            @if(auth()->user()->isAdmin())
+            <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
+                {{ __('Users') }}
+            </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

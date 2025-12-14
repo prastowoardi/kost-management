@@ -2,27 +2,48 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        // Hapus user lama jika ada
-        User::where('email', 'admin@kos.com')->delete();
-        
-        // Buat user admin baru
-        User::create([
-            'name' => 'Admin Kos',
-            'email' => 'admin@kos.com',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-        ]);
+        // Admin Account
+        User::updateOrCreate(
+            ['email' => 'admin@kos.com'],
+            [
+                'name' => 'Admin Kos',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
+                'is_active' => true,
+                'email_verified_at' => now(),
+            ]
+        );
 
-        echo "✅ User admin@kos.com berhasil dibuat!\n";
-        echo "   Email: admin@kos.com\n";
-        echo "   Password: password\n";
+        // Staff Account
+        User::updateOrCreate(
+            ['email' => 'staff@kos.com'],
+            [
+                'name' => 'Staff Kos',
+                'password' => Hash::make('password'),
+                'role' => 'staff',
+                'is_active' => true,
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // Tenant Account
+        User::updateOrCreate(
+            ['email' => 'tenant@kos.com'],
+            [
+                'name' => 'John Doe',
+                'password' => Hash::make('password'),
+                'role' => 'tenant',
+                'is_active' => true,
+                'email_verified_at' => now(),
+            ]
+        );
     }
 }
