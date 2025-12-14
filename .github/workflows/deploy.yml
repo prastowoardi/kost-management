@@ -10,11 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repo
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2️⃣ Setup SSH
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
@@ -22,42 +20,48 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-      # 3️⃣ Deploy ke VPS
       - name: Deploy to VPS
         run: |
-          ssh -o StrictHostKeyChecking=no \
-          ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
             set -e
 
             cd ${{ secrets.VPS_PATH }}
 
-            echo "🚧 Maintenance mode..."
+            echo "🔻 Enable maintenance mode"
             php artisan down || true
 
             echo "📥 Pull latest code..."
             git reset --hard
             git pull origin main
 
-            echo "📦 Composer install..."
-            composer install --no-dev --optimize-autoloader --no-interaction
+            echo "📦 Install PHP dependencies"
+            composer install --no-dev --optimize-autoloader
 
-            echo "📦 NPM install & build..."
-            npm install
+            echo "📦 Install & build frontend"
+            npm ci
             npm run build
 
-            echo "🧹 Clear & optimize Laravel cache..."
-            php artisan optimize:clear
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
-
-            echo "🗄️ Run migration..."
+            echo "🗄️ Run migrations"
             php artisan migrate --force
 
-            echo "🔐 Fix permission..."
+            echo "🧹 Clear & rebuild cache"
+            php artisan optimize:clear
+            php artisan config:clear
+            php artisan route:clear
+            php artisan view:clear
+            php artisan cache:clear
+            php artisan optimize
+
+            echo "🔐 Fix permissions"
             chown -R www-data:www-data .
             chmod -R 775 storage bootstrap/cache
 
-            echo "🚀 App up!"
+            echo "🔁 Restart services"
+            systemctl restart php8.4-fpm
+            systemctl reload nginx
+
+            echo "🔺 Disable maintenance mode"
             php artisan up
+
+            echo "✅ Deploy finished successfully"
           EOF
