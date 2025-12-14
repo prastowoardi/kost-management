@@ -239,4 +239,10 @@ class PaymentController extends Controller
         $pdf = Pdf::loadView('payments.receipt', compact('payment'));
         return $pdf->download('receipt-' . $payment->invoice_number . '.pdf');
     }
+
+    public function receipt(Payment $payment)
+    {
+        $payment->load(['tenant', 'room']);
+        return view('payments.receipt', compact('payment'));
+    }
 }

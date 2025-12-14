@@ -5,7 +5,7 @@
                 {{ __('Pembayaran') }}
             </h2>
             <div class="flex space-x-3"> 
-                <a href="{{ route('reports.payments') }}"
+                <a href="{{ route('payments.index') }}"
                     class="inline-flex justify-center items-center px-3 py-2 sm:px-4 sm:py-2 bg-green-600 text-white text-xs sm:text-sm font-semibold tracking-widest rounded-md hover:bg-green-700">
                     📊 Laporan
                 </a>

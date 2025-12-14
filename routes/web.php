@@ -9,6 +9,7 @@ use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\FacilityController;
 use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -44,6 +45,17 @@ Route::middleware(['auth', 'verified', 'role:admin,staff'])->group(function () {
         Route::put('/{finance}', [FinanceController::class, 'update'])->name('update');
         Route::delete('/{finance}', [FinanceController::class, 'destroy'])->name('destroy');
     });
+
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/payments', [ReportController::class, 'payments'])->name('payments');
+        Route::get('/finances', [ReportController::class, 'finances'])->name('finances');
+        Route::get('/rooms', [ReportController::class, 'rooms'])->name('rooms');
+        Route::get('/tenants', [ReportController::class, 'tenants'])->name('tenants');
+    });
+
+    Route::resource('payments', PaymentController::class);
+    Route::put('payments/{payment}/status', [PaymentController::class, 'updateStatus'])->name('payments.updateStatus');
+    Route::get('payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt');
     
     // Facilities Management
     Route::resource('facilities', FacilityController::class);
