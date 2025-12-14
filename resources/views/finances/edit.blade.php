@@ -14,26 +14,27 @@
                         @method('PUT')
                         
                         <div class="grid grid-cols-1 gap-6">
+                            
                             <div x-data="{ type: '{{ old('type', $finance->type) }}' }">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Tipe Transaksi</label>
                                 <div class="grid grid-cols-2 gap-4">
                                     <label class="relative flex items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition"
-                                           :class="type === 'income' ? 'border-green-500 bg-green-50' : 'border-gray-300'">
+                                            :class="type === 'income' ? 'border-green-500 bg-green-50' : 'border-gray-300'">
                                         <input type="radio" name="type" value="income" 
-                                               class="sr-only" 
-                                               x-model="type"
-                                               {{ old('type', $finance->type) == 'income' ? 'checked' : '' }}>
+                                                class="sr-only" 
+                                                x-model="type"
+                                                {{ old('type', $finance->type) == 'income' ? 'checked' : '' }}>
                                         <div class="text-center">
                                             <div class="text-3xl mb-2">💰</div>
                                             <div class="font-semibold text-green-600">Pemasukan</div>
                                         </div>
                                     </label>
                                     <label class="relative flex items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition"
-                                           :class="type === 'expense' ? 'border-red-500 bg-red-50' : 'border-gray-300'">
+                                            :class="type === 'expense' ? 'border-red-500 bg-red-50' : 'border-gray-300'">
                                         <input type="radio" name="type" value="expense" 
-                                               class="sr-only"
-                                               x-model="type"
-                                               {{ old('type', $finance->type) == 'expense' ? 'checked' : '' }}>
+                                                class="sr-only"
+                                                x-model="type"
+                                                {{ old('type', $finance->type) == 'expense' ? 'checked' : '' }}>
                                         <div class="text-center">
                                             <div class="text-3xl mb-2">💸</div>
                                             <div class="font-semibold text-red-600">Pengeluaran</div>
@@ -76,17 +77,18 @@
                             </div>
 
                             <div x-data="{
-                                // Initial value diambil dari $finance->amount atau old('amount')
-                                initialAmount: '{{ old('amount', $finance->amount) }}', 
+                                // Perbaikan: Pastikan nilai awal (initial) adalah integer/angka murni
+                                amountClean: '{{ old('amount', (int)$finance->amount) }}', 
                                 amountDisplay: '',
-                                amountClean: '{{ old('amount', $finance->amount) }}',
 
+                                // Fungsi untuk format tampilan dan membersihkan nilai yang disubmit
                                 formatNumber() {
-                                    // 1. Bersihkan nilai tampilan dari semua karakter non-angka
+                                    // 1. Bersihkan tampilan (hanya sisakan angka)
+                                    // Gunakan regex untuk mengeliminasi semua yang BUKAN digit 0-9
                                     let rawValue = this.amountDisplay.replace(/[^0-9]/g, '');
                                     
-                                    // 2. Simpan nilai murni ke hidden input (yang akan disubmit)
-                                    this.amountClean = rawValue;
+                                    // 2. Update nilai murni untuk submit (INI HARUS SELALU BERSIH)
+                                    this.amountClean = rawValue; 
 
                                     // 3. Format untuk tampilan
                                     if (rawValue !== '') {
@@ -97,24 +99,30 @@
                                     } else {
                                         this.amountDisplay = '';
                                     }
+                                },
+                                // Fungsi inisialisasi untuk menampilkan nilai yang sudah diformat saat load
+                                initDisplay() {
+                                    // Hanya format jika amountClean memiliki nilai
+                                    if (this.amountClean && this.amountClean !== '') {
+                                        this.amountDisplay = Number(this.amountClean).toLocaleString('id-ID', {
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 0
+                                        });
+                                    }
                                 }
                             }" 
-                            x-init="
-                                // Set nilai display saat inisialisasi (sekali saja)
-                                amountDisplay = Number(initialAmount).toLocaleString('id-ID'); 
-                                amountClean = initialAmount;
-                            ">
+                            x-init="initDisplay()"> 
                                 
                                 <label class="block text-sm font-medium text-gray-700">Jumlah (Rp)</label>
                                 
-                                {{-- INPUT VISIBLE (DIFORMAT) --}}
+                                {{-- INPUT VISIBLE (TAMPILAN DIFORMAT: 200.000) --}}
                                 <input type="text" 
                                     x-model="amountDisplay" 
                                     x-on:input="formatNumber()"
                                     required 
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 
-                                {{-- INPUT HIDDEN (NILAI MURNI UNTUK SUBMIT KE BACKEND) --}}
+                                {{-- INPUT HIDDEN (NILAI MURNI UNTUK SUBMIT: 200000) --}}
                                 <input type="hidden" name="amount" x-model="amountClean">
                                 
                                 @error('amount')
@@ -161,7 +169,6 @@
                                 @enderror
                             </div>
                         </div>
-
                         <div class="mt-6 flex items-center justify-end gap-3">
                             <a href="{{ route('finances.index') }}" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
                                 Batal
