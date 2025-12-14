@@ -197,67 +197,87 @@ class FinanceController extends Controller
     {
         $month = $request->input('month', now()->month);
         $year = $request->input('year', now()->year);
-
-    
-        $finances = Finance::month($month, $year)
-                            ->orderBy('transaction_date')
-                            ->get();
-
-        $totalIncome = Finance::income()->month($month, $year)->sum('amount');
-        $totalExpense = Finance::expense()->month($month, $year)->sum('amount');
+        
+        $startDate = \Carbon\Carbon::createFromDate($year, $month, 1)->startOfMonth();
+        $endDate = \Carbon\Carbon::createFromDate($year, $month, 1)->endOfMonth();
+        
+        $finances = Finance::whereBetween('transaction_date', [$startDate, $endDate])
+            ->orderBy('transaction_date', 'desc')
+            ->get();
+        
+        $totalIncome = Finance::where('type', 'income')
+            ->whereBetween('transaction_date', [$startDate, $endDate])
+            ->sum('amount');
+        
+        $totalExpense = Finance::where('type', 'expense')
+            ->whereBetween('transaction_date', [$startDate, $endDate])
+            ->sum('amount');
+        
         $balance = $totalIncome - $totalExpense;
-
-        $incomeByCategory = Finance::income()
-                                    ->month($month, $year)
-                                    ->select('category', DB::raw('SUM(amount) as total'))
-                                    ->groupBy('category')
-                                    ->get();
-
-        $expenseByCategory = Finance::expense()
-                                    ->month($month, $year)
-                                    ->select('category', DB::raw('SUM(amount) as total'))
-                                    ->groupBy('category')
-                                    ->get();
-
+        
+        $incomeByCategory = Finance::where('type', 'income')
+            ->whereBetween('transaction_date', [$startDate, $endDate])
+            ->selectRaw('category, SUM(amount) as total')
+            ->groupBy('category')
+            ->get();
+        
+        $expenseByCategory = Finance::where('type', 'expense')
+            ->whereBetween('transaction_date', [$startDate, $endDate])
+            ->selectRaw('category, SUM(amount) as total')
+            ->groupBy('category')
+            ->get();
+        
+        // Monthly Trend
         $monthlyTrend = [];
         for ($i = 5; $i >= 0; $i--) {
             $date = now()->subMonths($i);
-            $m = $date->month;
-            $y = $date->year;
+            $monthStart = $date->copy()->startOfMonth();
+            $monthEnd = $date->copy()->endOfMonth();
+            
+            $income = Finance::where('type', 'income')
+                ->whereBetween('transaction_date', [$monthStart, $monthEnd])
+                ->sum('amount');
+            
+            $expense = Finance::where('type', 'expense')
+                ->whereBetween('transaction_date', [$monthStart, $monthEnd])
+                ->sum('amount');
             
             $monthlyTrend[] = [
-                'month' => $date->format('M Y'),
-                'income' => Finance::income()->month($m, $y)->sum('amount'),
-                'expense' => Finance::expense()->month($m, $y)->sum('amount'),
+                'month' => $date->format('F Y'),
+                'income' => $income,
+                'expense' => $expense,
             ];
         }
-
-        if ($request->has('download')) {
-            $pdf = Pdf::loadView('finances.report-pdf', compact(
-                'finances',
-                'totalIncome',
-                'totalExpense',
-                'balance',
-                'incomeByCategory',
-                'expenseByCategory',
-                'month',
-                'year'
-            ));
-            
-            return $pdf->download('laporan-keuangan-' . $year . '-' . $month . '.pdf');
-        }
-
-        return view('finances.report', compact(
-            'finances',
-            'totalIncome',
-            'totalExpense',
+        
+        $data = compact(
+            'finances', 
+            'month', 
+            'year', 
+            'totalIncome', 
+            'totalExpense', 
             'balance',
             'incomeByCategory',
             'expenseByCategory',
-            'monthlyTrend',
-            'month',
-            'year'
-        ));
+            'monthlyTrend'
+        );
+        
+        // Check if download PDF
+        if ($request->has('download') && $request->download === 'pdf') {
+            return $this->downloadPdf($data);
+        }
+        
+        return view('finances.report', $data);
+    }
+
+    private function downloadPdf($data)
+    {
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('finances.report-pdf', $data);
+        
+        $filename = 'laporan-keuangan-' . 
+                    \Carbon\Carbon::create()->month($data['month'])->format('F') . 
+                    '-' . $data['year'] . '.pdf';
+        
+        return $pdf->download($filename);
     }
 
     public function dashboard()

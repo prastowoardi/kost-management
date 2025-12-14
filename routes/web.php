@@ -39,6 +39,7 @@ Route::middleware(['auth', 'verified', 'role:admin,staff'])->group(function () {
         Route::get('/report', [FinanceController::class, 'report'])->name('report');
         Route::get('/create', [FinanceController::class, 'create'])->name('create');
         Route::post('/', [FinanceController::class, 'store'])->name('store');
+        Route::get('/{finance}', [FinanceController::class, 'show'])->name('show'); // ✅ TAMBAHKAN INI
         Route::get('/{finance}/edit', [FinanceController::class, 'edit'])->name('edit');
         Route::put('/{finance}', [FinanceController::class, 'update'])->name('update');
         Route::delete('/{finance}', [FinanceController::class, 'destroy'])->name('destroy');
