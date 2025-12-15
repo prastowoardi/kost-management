@@ -8,16 +8,15 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
-            <!-- Filter Section -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6 no-print">
                 <div class="p-6">
                     <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Bulan</label>
                             <select name="month" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 @for($m = 1; $m <= 12; $m++)
-                                <option value="{{ $m }}" {{ $month == $m ? 'selected' : '' }}>
-                                    {{ \Carbon\Carbon::create()->month($m)->format('F') }}
+                                <option value="{{ $m }}" {{ (int)$month == $m ? 'selected' : '' }}>
+                                    {{ \Carbon\Carbon::createFromDate(null, $m, 1)->format('F') }}
                                 </option>
                                 @endfor
                             </select>
@@ -26,7 +25,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">Tahun</label>
                             <select name="year" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 @for($y = now()->year; $y >= now()->year - 5; $y--)
-                                <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
+                                <option value="{{ $y }}" {{ (int)$year == $y ? 'selected' : '' }}>{{ $y }}</option>
                                 @endfor
                             </select>
                         </div>
@@ -48,7 +47,6 @@
                 </div>
             </div>
 
-            <!-- Summary Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div class="bg-gradient-to-br from-green-500 to-green-600 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-white">
@@ -70,7 +68,6 @@
                 </div>
             </div>
 
-            <!-- Income by Category -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
@@ -80,15 +77,15 @@
                             @foreach($incomeByCategory as $item)
                             <div class="flex items-center justify-between">
                                 <div class="flex-1">
-                                    <p class="text-sm font-medium text-gray-900">{{ $item->category }}</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ $item['category'] }}</p>
                                     <div class="mt-1 bg-gray-200 rounded-full h-2">
                                         <div class="bg-green-500 h-2 rounded-full" 
-                                             style="width: {{ $totalIncome > 0 ? ($item->total / $totalIncome * 100) : 0 }}%"></div>
+                                             style="width: {{ $totalIncome > 0 ? ($item['total'] / $totalIncome * 100) : 0 }}%"></div>
                                     </div>
                                 </div>
                                 <div class="ml-4 text-right">
-                                    <p class="text-sm font-semibold text-green-600">Rp {{ number_format($item->total, 0, ',', '.') }}</p>
-                                    <p class="text-xs text-gray-500">{{ $totalIncome > 0 ? number_format($item->total / $totalIncome * 100, 1) : 0 }}%</p>
+                                    <p class="text-sm font-semibold text-green-600">Rp {{ number_format($item['total'], 0, ',', '.') }}</p>
+                                    <p class="text-xs text-gray-500">{{ $totalIncome > 0 ? number_format($item['total'] / $totalIncome * 100, 1) : 0 }}%</p>
                                 </div>
                             </div>
                             @endforeach
@@ -99,7 +96,6 @@
                     </div>
                 </div>
 
-                <!-- Expense by Category -->
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
                         <h3 class="text-lg font-semibold text-gray-800 mb-4">Pengeluaran per Kategori</h3>
@@ -108,15 +104,15 @@
                             @foreach($expenseByCategory as $item)
                             <div class="flex items-center justify-between">
                                 <div class="flex-1">
-                                    <p class="text-sm font-medium text-gray-900">{{ $item->category }}</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ $item['category'] }}</p>
                                     <div class="mt-1 bg-gray-200 rounded-full h-2">
                                         <div class="bg-red-500 h-2 rounded-full" 
-                                             style="width: {{ $totalExpense > 0 ? ($item->total / $totalExpense * 100) : 0 }}%"></div>
+                                             style="width: {{ $totalExpense > 0 ? ($item['total'] / $totalExpense * 100) : 0 }}%"></div>
                                     </div>
                                 </div>
                                 <div class="ml-4 text-right">
-                                    <p class="text-sm font-semibold text-red-600">Rp {{ number_format($item->total, 0, ',', '.') }}</p>
-                                    <p class="text-xs text-gray-500">{{ $totalExpense > 0 ? number_format($item->total / $totalExpense * 100, 1) : 0 }}%</p>
+                                    <p class="text-sm font-semibold text-red-600">Rp {{ number_format($item['total'], 0, ',', '.') }}</p>
+                                    <p class="text-xs text-gray-500">{{ $totalExpense > 0 ? number_format($item['total'] / $totalExpense * 100, 1) : 0 }}%</p>
                                 </div>
                             </div>
                             @endforeach
@@ -128,10 +124,9 @@
                 </div>
             </div>
 
-            <!-- Monthly Trend -->
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Tren 6 Bulan Terakhir</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Tren 12 Bulan Terakhir</h3>
                     <div class="overflow-x-auto">
                         <table class="min-w-full">
                             <thead class="border-b">
@@ -153,7 +148,7 @@
                                         Rp {{ number_format($trend['expense'], 0, ',', '.') }}
                                     </td>
                                     @php
-                                        $trendBalance = $trend['income'] - $trend['expense'];
+                                        $trendBalance = $trend['balance']; // Sudah dihitung di controller
                                     @endphp
                                     <td class="py-3 px-4 text-sm text-right font-bold {{ $trendBalance >= 0 ? 'text-blue-600' : 'text-orange-600' }}">
                                         Rp {{ number_format($trendBalance, 0, ',', '.') }}
@@ -166,11 +161,11 @@
                 </div>
             </div>
 
-            <!-- Detailed Transactions -->
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">
-                        Detail Transaksi - {{ \Carbon\Carbon::create()->month($month)->format('F') }} {{ $year }}
+                        Detail Transaksi - 
+                        {{ \Carbon\Carbon::createFromDate($year, $month, 1)->format('F Y') }}
                     </h3>
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">

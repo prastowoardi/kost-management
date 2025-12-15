@@ -13,7 +13,8 @@ use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    // return view('welcome');
+    return redirect()->route('login');
 });
 
 // Routes for Admin & Staff only
@@ -35,6 +36,10 @@ Route::middleware(['auth', 'verified', 'role:admin,staff'])->group(function () {
     
     // Finance Management
     Route::prefix('finances')->name('finances.')->group(function () {
+        Route::get('/finances', [FinanceController::class, 'index'])->name('finances.index');
+        Route::get('/finances/{finance}/edit', [FinanceController::class, 'edit'])->name('finances.edit');
+        Route::put('/finances/{finance}', [FinanceController::class, 'update'])->name('finances.update');
+        Route::get('/finances/report', [FinanceController::class, 'report'])->name('finances.report');
         Route::get('/', [FinanceController::class, 'index'])->name('index');
         Route::get('/dashboard', [FinanceController::class, 'dashboard'])->name('dashboard');
         Route::get('/report', [FinanceController::class, 'report'])->name('report');
