@@ -92,4 +92,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::middleware(['auth', 'verified', 'role:admin,staff'])->group(function () {
+    Route::post('payments/{payment}/send-whatsapp', [PaymentController::class, 'sendWhatsApp'])
+        ->name('payments.sendWhatsApp');
+});
+
 require __DIR__.'/auth.php';

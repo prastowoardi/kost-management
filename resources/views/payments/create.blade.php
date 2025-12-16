@@ -110,6 +110,19 @@
                         </div>
 
                         <div class="mt-6 flex items-center justify-end gap-3">
+                            <label class="flex items-center">
+                                <input type="checkbox" 
+                                    name="send_whatsapp" 
+                                    value="1"
+                                    {{ old('send_whatsapp', true) ? 'checked' : '' }}
+                                    class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200">
+                                <span class="ml-2 text-sm text-gray-700">
+                                    📱 Kirim kwitansi via WhatsApp
+                                </span>
+                            </label>
+                            <p class="ml-6 text-xs text-gray-500">
+                                Kwitansi akan dikirim ke nomor: {{ $payment->tenant->phone ?? 'Tidak tersedia' }}
+                            </p>
                             <a href="{{ route('payments.index') }}" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
                                 Batal
                             </a>

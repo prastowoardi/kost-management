@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'fonnte' => [
+        'api_key' => env('FONNTE_API_KEY'),
+        'device_id' => env('FONNTE_DEVICE_ID'),
+        'base_url' => 'https://api.fonnte.com',
+    ],
 ];

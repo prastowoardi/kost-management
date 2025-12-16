@@ -8,10 +8,18 @@ use App\Models\Finance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\WhatsAppService;
 use Carbon\Carbon;
 
 class PaymentController extends Controller
 {
+    protected $whatsapp;
+
+    public function __construct(WhatsAppService $whatsapp)
+    {
+        $this->whatsapp = $whatsapp;
+    }
+
     public function index(Request $request)
     {
         $tenants = Tenant::orderBy('name')->get();
@@ -60,7 +68,8 @@ class PaymentController extends Controller
             'late_fee' => 'nullable|numeric|min:0',
             'payment_method' => 'required|in:cash,transfer,e-wallet',
             'notes' => 'nullable|string',
-            'receipt_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048'
+            'receipt_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'send_whatsapp' => 'boolean',
         ]);
 
         $tenant = Tenant::findOrFail($validated['tenant_id']);
@@ -92,8 +101,13 @@ class PaymentController extends Controller
             'payment_id' => $payment->id,
         ]);
 
+        if ($request->boolean('send_whatsapp') && $payment->tenant->phone) {
+            $this->whatsapp->sendReceipt($payment->tenant->phone, $payment);
+        }
+
         return redirect()->route('payments.index')
-            ->with('success', 'Pembayaran berhasil ditambahkan');
+            ->with('success', 'Pembayaran berhasil ditambahkan' . 
+                ($request->boolean('send_whatsapp') ? ' dan kwitansi dikirim via WhatsApp!' : ''));
     }
 
     public function show(Payment $payment)
@@ -124,7 +138,8 @@ class PaymentController extends Controller
             'status' => 'required|in:pending,paid,overdue',
             'payment_method' => 'nullable|in:cash,transfer,e-wallet',
             'notes' => 'nullable|string',
-            'receipt_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048'
+            'receipt_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'send_whatsapp' => 'boolean',
         ]);
 
         $tenant = Tenant::findOrFail($validated['tenant_id']);
@@ -177,8 +192,15 @@ class PaymentController extends Controller
             $finance->delete();
         }
 
+        if ($request->boolean('send_whatsapp') && 
+            $payment->status == 'paid' && 
+            $payment->tenant->phone) {
+            $this->whatsapp->sendReceipt($payment->tenant->phone, $payment);
+        }
+
         return redirect()->route('payments.index')
-            ->with('success', 'Pembayaran berhasil diupdate');
+            ->with('success', 'Pembayaran berhasil diupdate' . 
+                ($request->boolean('send_whatsapp') ? ' dan kwitansi dikirim via WhatsApp!' : ''));
     }
 
     public function destroy(Payment $payment)
@@ -244,5 +266,35 @@ class PaymentController extends Controller
     {
         $payment->load(['tenant', 'room']);
         return view('payments.receipt', compact('payment'));
+    }
+
+    public function sendWhatsApp(Payment $payment)
+    {
+        if (!$payment->tenant->phone) {
+            return back()->with('error', 'Nomor WhatsApp penghuni tidak tersedia!');
+        }
+
+        $sent = $this->whatsapp->sendReceipt($payment->tenant->phone, $payment);
+
+        if ($sent) {
+            return back()->with('success', 'Kwitansi berhasil dikirim via WhatsApp!');
+        }
+
+        return back()->with('error', 'Gagal mengirim kwitansi via WhatsApp!');
+    }
+
+    public function sendWhatsAppWeb(Payment $payment)
+    {
+        if (!$payment->tenant->phone) {
+            return back()->with('error', 'Nomor WhatsApp tidak tersedia!');
+        }
+
+        $whatsapp = new WhatsAppService();
+        $message = $whatsapp->generateReceiptMessage($payment);
+        $phone = $whatsapp->formatPhoneNumber($payment->tenant->phone);
+        
+        $url = "https://wa.me/$phone?text=" . urlencode($message);
+        
+        return redirect()->away($url);
     }
 }
