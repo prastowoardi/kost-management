@@ -28,10 +28,15 @@ class FacilitySeeder extends Seeder
             ['name' => 'CCTV', 'type' => 'common', 'quantity' => 8, 'condition' => 'good', 'description' => 'Kamera keamanan'],
         ];
 
+        $count = 0;
         foreach ($facilities as $facility) {
-            Facility::create($facility);
+            Facility::updateOrCreate(
+                ['name' => $facility['name']],
+                $facility
+            );
+            $count++;
         }
 
-        echo "✅ " . count($facilities) . " fasilitas berhasil dibuat!\n";
+        echo "✅ " . $count . " fasilitas berhasil di-sync (dibuat/diupdate)!\n";
     }
 }

@@ -42,7 +42,12 @@ jobs:
             npm run build
 
             echo "🗄️ Run migrations"
+            # Menjalankan SEMUA migration yang tertunda
             php artisan migrate --force
+
+            echo "⚠️ Run ALL Seeders (PASTIKAN SEMUA SEEDER IDEMPOTENT!)"
+            # Menjalankan SEMUA seeder yang terdaftar di DatabaseSeeder.php
+            php artisan db:seed --force || true
 
             echo "🧹 Clear & rebuild cache"
             php artisan optimize:clear
