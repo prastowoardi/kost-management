@@ -117,7 +117,7 @@
                         🏠
                     </div>
                     <div class="text-left">
-                        <h1 class="text-2xl font-bold">Kos Management</h1>
+                        <h1 class="text-2xl font-bold">Serrata Kos</h1>
                         <p class="text-sm text-gray-600">Sistem Manajemen Kos</p>
                     </div>
                 </div>
