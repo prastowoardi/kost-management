@@ -5,7 +5,8 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
+    {{-- INITIALIZE ALPINE.JS DENGAN transactionType --}}
+    <div class="py-12" x-data="{ transactionType: '{{ old('type', $finance->type) }}' }"> 
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
@@ -16,14 +17,14 @@
                         <div class="grid grid-cols-1 gap-6">
                             
                             {{-- BLOK TIPE TRANSAKSI --}}
-                            <div x-data="{ type: '{{ old('type', $finance->type) }}' }">
+                            <div> {{-- x-data dihapus dari sini, pindah ke py-12 --}}
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Tipe Transaksi</label>
                                 <div class="grid grid-cols-2 gap-4">
                                     <label class="relative flex items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition"
-                                           :class="type === 'income' ? 'border-green-500 bg-green-50' : 'border-gray-300'">
+                                           :class="transactionType === 'income' ? 'border-green-500 bg-green-50' : 'border-gray-300 hover:border-green-500'">
                                         <input type="radio" name="type" value="income" 
                                                class="sr-only" 
-                                               x-model="type"
+                                               x-model="transactionType" {{-- Ganti type menjadi transactionType --}}
                                                {{ old('type', $finance->type) == 'income' ? 'checked' : '' }}>
                                         <div class="text-center">
                                             <div class="text-3xl mb-2">💰</div>
@@ -31,10 +32,10 @@
                                         </div>
                                     </label>
                                     <label class="relative flex items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition"
-                                           :class="type === 'expense' ? 'border-red-500 bg-red-50' : 'border-gray-300'">
+                                           :class="transactionType === 'expense' ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-red-500'">
                                         <input type="radio" name="type" value="expense" 
                                                class="sr-only"
-                                               x-model="type"
+                                               x-model="transactionType" {{-- Ganti type menjadi transactionType --}}
                                                {{ old('type', $finance->type) == 'expense' ? 'checked' : '' }}>
                                         <div class="text-center">
                                             <div class="text-3xl mb-2">💸</div>
@@ -48,17 +49,17 @@
                             </div>
 
                             {{-- BLOK KATEGORI --}}
-                            <div x-data="{ type: '{{ old('type', $finance->type) }}' }">
+                            <div>
                                 <label class="block text-sm font-medium text-gray-700">Kategori</label>
                                 <select name="category" required 
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                     <option value="">Pilih Kategori</option>
-                                    <optgroup label="Pemasukan" x-show="type === 'income'">
+                                    <optgroup label="Pemasukan" x-show="transactionType === 'income'">
                                         @foreach($incomeCategories as $cat)
                                         <option value="{{ $cat }}" {{ old('category', $finance->category) == $cat ? 'selected' : '' }}>{{ $cat }}</option>
                                         @endforeach
                                     </optgroup>
-                                    <optgroup label="Pengeluaran" x-show="type === 'expense'">
+                                    <optgroup label="Pengeluaran" x-show="transactionType === 'expense'">
                                         @foreach($expenseCategories as $cat)
                                         <option value="{{ $cat }}" {{ old('category', $finance->category) == $cat ? 'selected' : '' }}>{{ $cat }}</option>
                                         @endforeach
@@ -68,7 +69,7 @@
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
-
+                            
                             {{-- BLOK TANGGAL --}}
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Tanggal Transaksi</label>
@@ -87,7 +88,6 @@
 
                                 formatNumber() {
                                     let rawValue = this.amountDisplay.replace(/[^0-9]/g, '');
-                                    
                                     this.amountClean = rawValue; // Nilai murni untuk submit
 
                                     if (rawValue !== '') {
