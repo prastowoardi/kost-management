@@ -98,10 +98,10 @@
             <!-- Chart & Recent Transactions -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 
-                <!-- Monthly Trend Chart -->
+                <!-- Anually Trend Chart -->
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Tren 6 Bulan Terakhir</h3>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Ringkasan Setahun Terakhir</h3>
                         <div class="overflow-x-auto">
                             <table class="min-w-full">
                                 <thead>

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use App\Models\Category;
 
 class FinanceController extends Controller
 {
@@ -66,9 +67,6 @@ class FinanceController extends Controller
             'endDate'  
         ));
     }
-    
-    // ... (create, store, show, edit, update, destroy - tidak diubah)
-    // Catatan: Pastikan logika sanitasi angka (str_replace) di store dan update sudah benar.
 
     public function report(Request $request)
     {
@@ -223,5 +221,108 @@ class FinanceController extends Controller
             'recentTransactions',
             'monthlyTrend'
         ));
+    }
+
+    public function create()
+    {
+        return view('finances.create', $this->getCategories());
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'type' => 'required|in:income,expense',
+            'category' => 'required|string|max:255',
+            'amount' => 'required|numeric|min:0',
+            'transaction_date' => 'required|date',
+            'description' => 'nullable|string',
+        ]);
+
+        Finance::create($validated);
+
+        return redirect()->route('finances.index')
+            ->with('success', 'Data keuangan berhasil ditambahkan!');
+    }
+
+    public function show(Finance $finance)
+    {
+        return view('finances.show', compact('finance'));
+    }
+
+    public function edit(Finance $finance)
+    {
+        return view('finances.edit', array_merge(compact('finance'), $this->getCategories()));
+    }
+
+    public function update(Request $request, Finance $finance)
+    {
+        $validated = $request->validate([
+            'type' => 'required|in:income,expense',
+            'category' => 'required|string|max:255',
+            'amount' => 'required|numeric|min:0',
+            'transaction_date' => 'required|date',
+            'description' => 'nullable|string',
+        ]);
+
+        $finance->update($validated);
+
+        return redirect()->route('finances.index')
+            ->with('success', 'Data keuangan berhasil diupdate!');
+    }
+
+    public function destroy(Finance $finance)
+    {
+        $finance->delete();
+
+        return redirect()->route('finances.index')
+            ->with('success', 'Data keuangan berhasil dihapus!');
+    }
+
+    // private function getCategories()
+    // {
+    //     $incomeCategories = [
+    //         'Pembayaran Sewa',
+    //         'Deposit',
+    //         'Denda Keterlambatan',
+    //         'Biaya Listrik',
+    //         'Biaya Air',
+    //         'Lainnya'
+    //     ];
+
+    //     $expenseCategories = [
+    //         'Gaji Karyawan',
+    //         'Listrik',
+    //         'Air',
+    //         'Internet',
+    //         'Perawatan Bangunan',
+    //         'Perbaikan Fasilitas',
+    //         'Kebersihan',
+    //         'Keamanan',
+    //         'Pajak',
+    //         'Lainnya'
+    //     ];
+
+    //     return compact('incomeCategories', 'expenseCategories');
+    // }
+    private function getCategories()
+    {
+        $categories = Category::where('is_active', true)
+                                ->orderBy('name', 'asc')
+                                ->get();
+
+        $incomeCategories = $categories
+            ->where('type', 'income')
+            ->pluck('name')
+            ->toArray();
+
+        $expenseCategories = $categories
+            ->where('type', 'expense')
+            ->pluck('name')
+            ->toArray();
+
+        // Catatan: Jika ingin menyimpan array sebagai Collection, 
+        // bisa menghilangkan ->toArray()
+
+        return compact('incomeCategories', 'expenseCategories');
     }
 }

@@ -19,14 +19,19 @@ class RoomSeeder extends Seeder
 
         $roomFacilities = Facility::where('type', 'room')->pluck('id')->toArray();
 
+        $count = 0;
         foreach ($rooms as $roomData) {
-            $room = Room::create($roomData);
-            // Attach facilities to room
+            $room = Room::updateOrCreate(
+                ['room_number' => $roomData['room_number']],
+                $roomData                                  
+            );
+            $count++;
+        
             if (!empty($roomFacilities)) {
-                $room->facilities()->attach($roomFacilities);
+                $room->facilities()->sync($roomFacilities);
             }
         }
 
-        echo "✅ " . count($rooms) . " kamar berhasil dibuat!\n";
+        echo "✅ " . $count . " kamar berhasil di-sync (dibuat/diupdate)!\n";
     }
 }
