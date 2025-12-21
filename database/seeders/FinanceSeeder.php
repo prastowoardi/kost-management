@@ -112,6 +112,7 @@ class FinanceSeeder extends Seeder
             ],
         ];
 
+        $count = 0;
         foreach ($finances as $data) {
             Finance::updateOrCreate(
                 [
