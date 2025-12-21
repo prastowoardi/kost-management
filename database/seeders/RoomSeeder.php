@@ -13,8 +13,8 @@ class RoomSeeder extends Seeder
         $rooms = [
             ['room_number' => '101', 'type' => 'single', 'price' => 850000, 'capacity' => 1, 'size' => 12, 'status' => 'available', 'description' => 'Kamar ukuran 3x4m'],
             ['room_number' => '102', 'type' => 'single', 'price' => 850000, 'capacity' => 1, 'size' => 12, 'status' => 'available', 'description' => 'Kamar ukuran 3x4m'],
-            ['room_number' => '103', 'type' => 'double', 'price' => 1000000, 'capacity' => 1, 'size' => 18, 'status' => 'available', 'description' => 'Kamar ukuran 3x4m'],
-            ['room_number' => '104', 'type' => 'double', 'price' => 1000000, 'capacity' => 1, 'size' => 18, 'status' => 'available', 'description' => 'Kamar ukuran 3x4m'],
+            ['room_number' => '103', 'type' => 'single', 'price' => 850000, 'capacity' => 1, 'size' => 12, 'status' => 'available', 'description' => 'Kamar ukuran 3x4m'],
+            ['room_number' => '104', 'type' => 'single', 'price' => 850000, 'capacity' => 1, 'size' => 12, 'status' => 'available', 'description' => 'Kamar ukuran 3x4m'],
         ];
 
         $roomFacilities = Facility::where('type', 'room')->pluck('id')->toArray();
