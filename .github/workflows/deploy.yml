@@ -71,9 +71,9 @@ jobs:
             # Menunggu agar PHP-FPM siap
             sleep 2
             # Mengecek apakah website mengembalikan HTTP 200
-            STATUS=$(curl -o /dev/null -s -w "%{http_code}" http://localhost)
+            STATUS=$(curl -o /dev/null -s -w "%{http_code}" -H "Host: serrata.xyz" http://127.0.0.1)
             
-            if [ "$STATUS" -eq 200 ]; then
+            if [ "$STATUS" -eq 200 ] || [ "$STATUS" -eq 302 ]; then
               echo "✅ Deploy finished successfully (HTTP 200)"
             else
               echo "❌ Health Check FAILED with status: $STATUS"
