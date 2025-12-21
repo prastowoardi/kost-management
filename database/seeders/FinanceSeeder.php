@@ -127,6 +127,9 @@ class FinanceSeeder extends Seeder
                     'notes' => $data['notes'],
                 ]
             );
+            $count++;
         }
+
+        echo "✅ " . $count . " data finance berhasil di-sync (dibuat/diupdate)!\n";
     }
 }
