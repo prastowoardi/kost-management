@@ -33,6 +33,7 @@ Route::middleware(['auth', 'verified', 'role:admin,staff'])->group(function () {
     // Payments Management
     Route::resource('payments', PaymentController::class);
     Route::put('payments/{payment}/status', [PaymentController::class, 'updateStatus'])->name('payments.updateStatus');
+    Route::post('payments/{payment}/send-wa', [PaymentController::class, 'sendGatewayWA'])->name('payments.sendWa');
     
     // Finance Management
     Route::prefix('finances')->name('finances.')->group(function () {
@@ -60,7 +61,6 @@ Route::middleware(['auth', 'verified', 'role:admin,staff'])->group(function () {
 
     Route::resource('payments', PaymentController::class);
     Route::put('payments/{payment}/status', [PaymentController::class, 'updateStatus'])->name('payments.updateStatus');
-    Route::get('payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt');
     
     // Facilities Management
     Route::resource('facilities', FacilityController::class);
@@ -91,5 +91,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt'])
+    ->name('payments.receipt');
 
 require __DIR__.'/auth.php';
