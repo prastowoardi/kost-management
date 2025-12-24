@@ -73,9 +73,12 @@ app.post('/send-image', async (req, res) => {
         console.log(`Kwitansi : ${url || 'URL tidak terlampir'}`); 
 
         browser = await puppeteer.launch({
-            headless: "new",
+            headless: true,
             args: [
                 '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-accelerated-2d-canvas',
                 '--disable-gpu',
                 '--transparent-background-color=#00000000'
             ]
