@@ -3,377 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kwitansi Pembayaran - {{ $payment->invoice_number }}</title>
+    <title>Kwitansi - {{ $payment->invoice_number }}</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        html, body { 
+            background-color: transparent !important; 
+            background: transparent !important;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            padding: 30px; /* Ruang agar shadow tidak terpotong saat di-screenshot */
         }
+
+        .no-print { text-align: right; max-width: 550px; margin: 0 auto 10px auto; }
+        .btn-print { background: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
         
-        body {
-            font-family: 'Arial', sans-serif;
-            font-size: 14px;
-            line-height: 1.6;
-            color: #333;
-            padding: 20px;
-            background: #f5f5f5;
+        .card { 
+            background: #ffffff !important; 
+            max-width: 550px; 
+            margin: 0 auto; 
+            border-radius: 24px !important; /* Sudut lebih bulat sesuai gambar */
+            overflow: hidden; /* Memotong header biru agar ikut bulat */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); 
+            border: none; 
         }
+
+        .header { background: #1e40af; color: white; padding: 35px 20px; text-align: center; border: none; }
+        .header h1 { margin: 0; font-size: 26px; letter-spacing: 1px; font-weight: 800; }
+        .header p { margin: 5px 0 0 0; font-size: 12px; opacity: 0.9; text-transform: uppercase; font-weight: 600; }
         
-        .receipt-container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border: 2px solid #2563eb;
-            border-radius: 8px;
-            overflow: hidden;
-        }
+        .content { padding: 35px; }
+        .inv-box { background: #eff6ff; border: 2px dashed #bfdbfe; border-radius: 12px; padding: 15px; text-align: center; margin-bottom: 25px; }
+        .inv-label { font-size: 10px; color: #60a5fa; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
+        .inv-number { font-size: 22px; color: #1e40af; font-weight: bold; font-family: 'Courier New', monospace; }
         
-        .receipt-header {
-            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        
-        .receipt-header h1 {
-            font-size: 28px;
-            margin-bottom: 5px;
-        }
-        
-        .receipt-header .subtitle {
-            font-size: 16px;
-            opacity: 0.9;
-        }
-        
-        .receipt-body {
-            padding: 30px;
-        }
-        
-        .info-section {
-            margin-bottom: 25px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        
-        .info-label {
-            font-weight: 600;
-            color: #64748b;
-            min-width: 150px;
-        }
-        
-        .info-value {
-            color: #1e293b;
-            font-weight: 500;
-            text-align: right;
-            flex: 1;
-        }
-        
-        .invoice-number {
-            background: #eff6ff;
-            border: 2px dashed #2563eb;
-            padding: 15px;
-            text-align: center;
-            border-radius: 8px;
-            margin-bottom: 25px;
-        }
-        
-        .invoice-number .label {
-            font-size: 12px;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
-        }
-        
-        .invoice-number .number {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2563eb;
-        }
-        
-        .payment-details {
-            background: #f8fafc;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-        }
-        
-        .payment-details h3 {
-            color: #1e293b;
-            margin-bottom: 15px;
-            font-size: 16px;
-        }
-        
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        
-        .detail-row:last-child {
-            border-bottom: none;
-        }
-        
-        .detail-label {
-            color: #475569;
-        }
-        
-        .detail-value {
-            font-weight: 600;
-            color: #1e293b;
-        }
-        
-        .total-section {
-            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 20px;
-        }
-        
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .total-label {
-            font-size: 18px;
-            font-weight: 600;
-        }
-        
-        .total-amount {
-            font-size: 32px;
-            font-weight: bold;
-        }
-        
-        .status-badge {
-            display: inline-block;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 14px;
-            text-transform: uppercase;
-        }
-        
-        .status-paid {
-            background: #dcfce7;
-            color: #166534;
-        }
-        
-        .status-pending {
-            background: #fef3c7;
-            color: #92400e;
-        }
-        
-        .notes {
-            background: #fefce8;
-            border-left: 4px solid #eab308;
-            padding: 15px;
-            margin-top: 25px;
-            border-radius: 4px;
-        }
-        
-        .notes strong {
-            color: #854d0e;
-            display: block;
-            margin-bottom: 5px;
-        }
-        
-        .notes p {
-            color: #713f12;
-            font-size: 13px;
-        }
-        
-        .signature-section {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 50px;
-            padding-top: 30px;
-            border-top: 1px solid #e5e7eb;
-        }
-        
-        .signature-box {
-            text-align: center;
-            width: 40%;
-        }
-        
-        .signature-line {
-            border-top: 2px solid #333;
-            margin-top: 80px;
-            padding-top: 10px;
-            font-weight: 600;
-        }
-        
-        .footer {
-            text-align: center;
-            padding: 20px;
-            background: #f8fafc;
-            color: #64748b;
-            font-size: 12px;
-        }
-        
-        .print-button {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #2563eb;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        
-        .print-button:hover {
-            background: #1e40af;
-        }
-        
-        @media print {
-            body {
-                background: white;
-                padding: 0;
-            }
-            
-            .receipt-container {
-                border: none;
-                box-shadow: none;
-            }
-            
-            .print-button {
-                display: none;
-            }
-        }
+        .grid { display: flex; flex-wrap: wrap; margin-bottom: 20px; }
+        .col { flex: 1; min-width: 200px; margin-bottom: 20px; }
+        .label { font-size: 11px; color: #94a3b8; font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 6px; }
+        .value { font-size: 15px; font-weight: 800; color: #1e293b; }
+        .room-val { font-size: 19px; color: #2563eb; }
+
+        .total-box { background: #1e293b; color: white; padding: 25px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+        .total-label { font-size: 13px; opacity: 0.8; font-weight: 600; }
+        .total-amount { font-size: 26px; font-weight: 800; color: #60a5fa; }
+
+        .footer-note { margin-top: 35px; border-top: 1px solid #f1f5f9; padding-top: 20px; text-align: center; font-size: 11px; color: #94a3b8; line-height: 1.5; }
+
+        @media print { .no-print { display: none; } body { padding: 0; } .card { box-shadow: none; } }
     </style>
 </head>
 <body>
-    <button class="print-button" onclick="window.print()">🖨️ Cetak Kwitansi</button>
-    
-    <div class="receipt-container">
-        <!-- Header -->
-        <div class="receipt-header">
-            <h1>🏠 Serrata Kos</h1>
-            <div class="subtitle">KWITANSI PEMBAYARAN</div>
+
+    <div class="card">
+        <div class="header">
+            <h1>SERRATA KOS</h1>
+            <p>Kwitansi Pembayaran Resmi</p>
         </div>
-        
-        <!-- Body -->
-        <div class="receipt-body">
-            <!-- Invoice Number -->
-            <div class="invoice-number">
-                <div class="label">Nomor Invoice</div>
-                <div class="number">{{ $payment->invoice_number }}</div>
+
+        <div class="content">
+            <div class="inv-box">
+                <div class="inv-label">Nomor Invoice</div>
+                <div class="inv-number">{{ $payment->invoice_number }}</div>
             </div>
-            
-            <!-- Tenant Information -->
-            <div class="info-section">
-                <h3 style="color: #1e293b; margin-bottom: 15px; font-size: 16px;">Informasi Penghuni</h3>
-                <div class="info-row">
-                    <div class="info-label">Nama Lengkap</div>
-                    <div class="info-value">{{ $payment->tenant->name }}</div>
+
+            <div class="grid">
+                <div class="col">
+                    <span class="label">Nama Penghuni</span>
+                    <span class="value">{{ $payment->tenant->name }}</span>
+                    <br><br>
+                    <span class="label">Nomor Kamar</span>
+                    <span class="value room-val">{{ $payment->room->room_number }}</span>
                 </div>
-                <div class="info-row">
-                    <div class="info-label">Email</div>
-                    <div class="info-value">{{ $payment->tenant->email }}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">No. Telepon</div>
-                    <div class="info-value">{{ $payment->tenant->phone ?? '-' }}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Nomor Kamar</div>
-                    <div class="info-value">{{ $payment->room->room_number }}</div>
+                <div class="col">
+                    <span class="label">Periode</span>
+                    <span class="value">{{ \Carbon\Carbon::parse($payment->period_month)->translatedFormat('F Y') }}</span>
+                    <br><br>
+                    <span class="label">Status</span>
+                    <span style="background: #dcfce7; color: #166534; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold;">
+                        LUNAS
+                    </span>
                 </div>
             </div>
-            
-            <!-- Payment Details -->
-            <div class="payment-details">
-                <h3>Rincian Pembayaran</h3>
-                
-                <div class="detail-row">
-                    <div class="detail-label">Periode</div>
-                    <div class="detail-value">{{ $payment->period_month->format('F Y') }}</div>
-                </div>
-                
-                <div class="detail-row">
-                    <div class="detail-label">Tanggal Pembayaran</div>
-                    <div class="detail-value">{{ $payment->payment_date->format('d F Y') }}</div>
-                </div>
-                
-                <div class="detail-row">
-                    <div class="detail-label">Metode Pembayaran</div>
-                    <div class="detail-value">{{ ucfirst($payment->payment_method ?? 'Cash') }}</div>
-                </div>
-                
-                <div class="detail-row">
-                    <div class="detail-label">Status</div>
-                    <div class="detail-value">
-                        <span class="status-badge {{ $payment->status == 'paid' ? 'status-paid' : 'status-pending' }}">
-                            {{ $payment->status == 'paid' ? 'Lunas' : 'Pending' }}
-                        </span>
-                    </div>
-                </div>
-                
-                @if($payment->notes)
-                <div class="detail-row">
-                    <div class="detail-label">Catatan</div>
-                    <div class="detail-value">{{ $payment->notes }}</div>
-                </div>
-                @endif
+
+            <div class="total-box">
+                <span class="total-label">TOTAL DIBAYARKAN</span>
+                <span class="total-amount">Rp {{ number_format($payment->total, 0, ',', '.') }}</span>
             </div>
-            
-            <!-- Total Amount -->
-            <div class="total-section">
-                <div class="total-row">
-                    <div class="total-label">TOTAL PEMBAYARAN</div>
-                    <div class="total-amount">Rp {{ number_format($payment->total, 0, ',', '.') }}</div>
-                </div>
+
+            <div class="footer-note">
+                Diterbitkan secara elektronik pada {{ date('d/m/Y H:i') }}<br>
+                Serrata Kos
             </div>
-            
-            <!-- Notes -->
-            @if($payment->status == 'paid')
-            <div class="notes">
-                <strong>✓ Pembayaran Lunas</strong>
-                <p>Terima kasih atas pembayaran Anda. Kwitansi ini merupakan bukti pembayaran yang sah.</p>
-            </div>
-            @else
-            <div class="notes">
-                <strong>⚠️ Status Pending</strong>
-                <p>Pembayaran masih dalam proses verifikasi. Silakan hubungi pengelola kos untuk informasi lebih lanjut.</p>
-            </div>
-            @endif
-            
-            <!-- Signature -->
-            <div class="signature-section">
-                <div class="signature-box">
-                    <div>Penerima,</div>
-                    <div class="signature-line">
-                        Ibu Kos
-                    </div>
-                </div>
-                <div class="signature-box">
-                    <div>Penghuni,</div>
-                    <div class="signature-line">
-                        {{ $payment->tenant->name }}
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Footer -->
-        <div class="footer">
-            <p>Dicetak pada: {{ now()->format('d F Y, H:i:s') }}</p>
-            <p>Kwitansi ini dibuat secara elektronik dan sah tanpa tanda tangan basah</p>
         </div>
     </div>
+
 </body>
 </html>

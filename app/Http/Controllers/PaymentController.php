@@ -7,6 +7,7 @@ use App\Models\Tenant;
 use App\Models\Finance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 
@@ -46,7 +47,6 @@ class PaymentController extends Controller
 
     public function store(Request $request)
     {
-        // Bersihkan format rupiah
         $request->merge([
             'amount' => (int) preg_replace('/[^0-9]/', '', $request->amount),
             'late_fee' => (int) preg_replace('/[^0-9]/', '', $request->late_fee ?? 0),
@@ -64,36 +64,102 @@ class PaymentController extends Controller
         ]);
 
         $tenant = Tenant::findOrFail($validated['tenant_id']);
-
         $validated['room_id'] = $tenant->room_id;
         $validated['total'] = $validated['amount'] + $validated['late_fee'];
         $validated['status'] = 'paid';
 
         if ($request->hasFile('receipt_file')) {
-            $validated['receipt_file'] = $request->file('receipt_file')
-                ->store('receipts', 'public');
+            $validated['receipt_file'] = $request->file('receipt_file')->store('receipts', 'public');
         }
 
         $payment = Payment::create($validated);
         $payment->load(['room', 'tenant']);
 
-        // === FINANCE AUTO CREATE ===
         Finance::create([
             'type' => 'income',
             'category' => 'Pembayaran Sewa',
             'transaction_date' => $payment->payment_date,
             'amount' => $payment->total,
-            'description' =>
-                'Pembayaran Sewa ' .
-                Carbon::parse($payment->period_month)->translatedFormat('F Y') .
-                ' - Kamar ' . $payment->room->room_number .
-                ' (' . $payment->tenant->name . ')',
+            'description' => 'Pembayaran Sewa ' . Carbon::parse($payment->period_month)->translatedFormat('F Y') . ' - Kamar ' . $payment->room->room_number . ' (' . $payment->tenant->name . ')',
             'notes' => 'Dicatat otomatis dari pembayaran',
             'payment_id' => $payment->id,
         ]);
 
-        return redirect()->route('payments.index')
-            ->with('success', 'Pembayaran berhasil ditambahkan');
+        $this->sendWhatsAppReceipt($payment);
+
+        return redirect()->route('payments.index')->with('success', 'Pembayaran berhasil & Nota dikirim via WA');
+    }
+
+    public function sendWhatsAppReceipt(Payment $payment)
+    {
+        $payment->load(['tenant', 'room']);
+        $phone = $payment->tenant->phone;
+
+        if (!$phone) return false;
+
+        try {
+            $pdf = Pdf::loadView('payments.receipt', compact('payment'));
+            
+            $fileName = 'temp_receipt_' . $payment->id . '.pdf';
+            $filePath = 'temp/' . $fileName;
+            Storage::disk('public')->put($filePath, $pdf->output());
+            $absolutePath = storage_path('app/public/' . $filePath);
+
+            Http::post('http://localhost:3000/send-pdf', [
+                'number' => $phone,
+                'message' => "Halo {$payment->tenant->name}, berikut nota pembayaran kos untuk periode " . Carbon::parse($payment->period_month)->translatedFormat('F Y'),
+                'file_path' => $absolutePath
+            ]);
+
+            Storage::disk('public')->delete($filePath);
+
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    public function sendGatewayWA(Payment $payment)
+    {
+        try {
+            $tenantName = $payment->tenant->name;
+            $period = \Carbon\Carbon::parse($payment->period_month)->translatedFormat('F Y');
+            $invoice = $payment->invoice_number;
+            $total = number_format($payment->total, 0, ',', '.');
+
+            $message = "Halo {$tenantName},\n\n";
+            $message .= "Pembayaran kos periode {$period} telah kami terima.\n\n";
+            $message .= "Detail:\n";
+            $message .= "* No. Invoice: {$invoice}\n";
+            $message .= "* Total: Rp {$total}\n\n";
+            $message .= "Terima kasih.";
+
+            $html = view('payments.receipt', compact('payment'))->render();
+
+            $response = Http::timeout(60)->post('http://127.0.0.1:3000/send-image', [
+                'number'  => $payment->tenant->phone,
+                'message' => $message,
+                'html'    => $html
+            ]);
+
+            if ($response->successful()) {
+                return response()->json([
+                    'status'  => 'success',
+                    'message' => 'Kwitansi dan pesan berhasil dikirim!'
+                ]);
+            }
+
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Gateway gagal mengirim pesan.'
+            ], 500);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function show(Payment $payment)

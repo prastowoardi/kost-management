@@ -13,6 +13,9 @@
 /.zed
 /auth.json
 /node_modules
+/whatsapp-gateway/node_modules
+/whatsapp-gateway/sessions
+/whatsapp-gateway/.wwebjs_cache/
 /public/build
 /public/hot
 /public/storage
