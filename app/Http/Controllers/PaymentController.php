@@ -86,36 +86,32 @@ class PaymentController extends Controller
         ]);
 
         $this->sendWhatsAppReceipt($payment);
-
-        return redirect()->route('payments.index')->with('success', 'Pembayaran berhasil & Nota dikirim via WA');
+        return redirect()->route('payments.index')->with('success', 'Pembayaran berhasil dicatat dan kwitansi dikirim via WA');
     }
 
     public function sendWhatsAppReceipt(Payment $payment)
     {
-        $payment->load(['tenant', 'room']);
-        $phone = $payment->tenant->phone;
-
-        if (!$phone) return false;
-
         try {
-            $pdf = Pdf::loadView('payments.receipt', compact('payment'));
+            $tenant = $payment->tenant;
+            $period = \Carbon\Carbon::parse($payment->period_month)->translatedFormat('F Y');
             
-            $fileName = 'temp_receipt_' . $payment->id . '.pdf';
-            $filePath = 'temp/' . $fileName;
-            Storage::disk('public')->put($filePath, $pdf->output());
-            $absolutePath = storage_path('app/public/' . $filePath);
+            $message = "Halo {$tenant->name},\n\n";
+            $message .= "Pembayaran kos periode {$period} telah kami terima.\n\n";
+            $message .= "Detail:\n";
+            $message .= "* No. Invoice: {$payment->invoice_number}\n";
+            $message .= "* Total: Rp " . number_format($payment->total, 0, ',', '.') . "\n\n";
+            $message .= "Terima kasih.";
 
-            Http::post('http://localhost:3000/send-pdf', [
-                'number' => $phone,
-                'message' => "Halo {$payment->tenant->name}, berikut nota pembayaran kos untuk periode " . Carbon::parse($payment->period_month)->translatedFormat('F Y'),
-                'file_path' => $absolutePath
+            $html = view('payments.receipt', compact('payment'))->render();
+
+            Http::timeout(30)->post('http://127.0.0.1:3000/send-image', [
+                'number'  => $tenant->phone,
+                'message' => $message,
+                'html'    => $html,
+                'url'     => route('payments.receipt', $payment->id)
             ]);
-
-            Storage::disk('public')->delete($filePath);
-
-            return true;
         } catch (\Exception $e) {
-            return false;
+            \Log::error("Gagal kirim WA otomatis: " . $e->getMessage());
         }
     }
 

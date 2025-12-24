@@ -84,7 +84,7 @@ app.post('/send-image', async (req, res) => {
         const page = await browser.newPage();
         
         await page.setViewport({ 
-            width: 800, 
+            width: 750, 
             height: 1000, 
             deviceScaleFactor: 2 
         });
