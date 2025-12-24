@@ -1,59 +1,61 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Serrata Kos Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🛠 Instalasi Laravel (Main App)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+1. **Clone & Install Dependencies**
+    ```bash
+    composer install
+    npm install && npm run build
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+2. **Konfigurasi Environment**
+    ```bash
+    cp .env.example .env
+    php artisan key:generate
+    ```
+    
+    Sesuaikan DB_DATABASE, DB_USERNAME, dan DB_PASSWORD di file .env.
 
-## Learning Laravel
+3. **Migrasi Database**
+    ```bash
+    php artisan migrate --seed
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+4. **Jalankan Aplikasi**
+    ```bash
+    php artisan serve
+    npm run dev
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+🟢 **WhatsApp Gateway (Node.js + Puppeteer)**
+    Gateway ini berfungsi merender HTML menjadi gambar transparan dan mengirimkannya via WhatsApp.
 
-## Laravel Sponsors
+1. **Persiapan VPS Ubuntu (Wajib)**
+    Puppeteer membutuhkan library sistem Linux agar Chrome dapat berjalan tanpa tampilan (headless). Jalankan ini di terminal VPS:
+    ```bash
+    sudo apt-get update && sudo apt-get install -y libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libasound2 libpango-1.0-0 libpangocairo-1.0-0 libxshmfence1 libx11-xcb1 fonts-liberation libxfixes3 libxrender1
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+2. **Instalasi Gateway**
+    ```bash
+    cd /var/www/kost-management/whatsapp-gateway
+    npm install
+    sudo npm install pm2 -g
 
-### Premium Partners
+3. Menjalankan & Cara Lihat QR Code
+    Gunakan PM2 untuk menjalankan service di latar belakang:
+    ```bash
+    # Menjalankan aplikasi pertama kali
+    pm2 start server.cjs --name "wa-gateway"
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+    # CARA LIHAT QR CODE (Untuk Scan)
+    pm2 logs wa-gateway --lines 100
+    ```
 
-## Contributing
+    Gunakan fitur "Tautkan Perangkat" di WhatsApp HP untuk scan QR yang muncul di terminal
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+4. **Cara Ganti Akun WhatsApp**
+    - Jika ingin mengganti nomor WA pengirim:
+    - Hentikan service: pm2 stop wa-gateway
+    - Hapus sesi lama: rm -rf .wwebjs_auth (di dalam folder whatsapp-gateway)
+    - Mulai ulang: pm2 restart wa-gateway
+    - Scan ulang: Jalankan pm2 logs wa-gateway untuk melihat QR baru.
