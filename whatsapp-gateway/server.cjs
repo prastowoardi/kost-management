@@ -3,15 +3,38 @@ const qrcode = require('qrcode-terminal');
 const express = require('express');
 const puppeteer = require('puppeteer');
 const path = require('path');
+const os = require('os');
 
 const app = express();
 app.use(express.json());
 
+const getChromePath = () => {
+    const platform = os.platform();
+    if (platform === 'darwin') {
+        return '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+    } else if (platform === 'win32') {
+        return 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+    } else {
+        return null; 
+    }
+};
+
+const chromePath = getChromePath();
+
 const client = new Client({
     authStrategy: new LocalAuth({ dataPath: './sessions' }),
+    webVersionCache: {
+        type: 'remote',
+        remotePath: 'https://raw.githubusercontent.com/pedroslopez/whatsapp-web.js/v1.23.0/version.json',
+    },
     puppeteer: {
+        executablePath: chromePath || undefined,
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        args: [
+            '--no-sandbox', 
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage'
+        ]
     }
 });
 
@@ -73,6 +96,7 @@ app.post('/send-image', async (req, res) => {
         console.log(`Kwitansi : ${url || 'URL tidak terlampir'}`); 
 
         browser = await puppeteer.launch({
+            executablePath: chromePath || undefined,
             headless: true,
             args: [
                 '--no-sandbox',
@@ -85,7 +109,7 @@ app.post('/send-image', async (req, res) => {
         });
 
         const page = await browser.newPage();
-        
+
         await page.setViewport({ 
             width: 750, 
             height: 1000, 
@@ -125,5 +149,6 @@ app.post('/send-image', async (req, res) => {
         if (browser) await browser.close();
     }
 });
+
 app.listen(3000, () => console.log('WA Gateway berjalan di port 3000'));
 client.initialize();
