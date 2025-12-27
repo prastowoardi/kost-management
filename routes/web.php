@@ -11,6 +11,7 @@ use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\BroadcastController;
 
 Route::get('/', function () {
     // return view('welcome');
@@ -68,6 +69,10 @@ Route::middleware(['auth', 'verified', 'role:admin,staff'])->group(function () {
     // Complaints Management
     Route::resource('complaints', ComplaintController::class);
     Route::put('complaints/{complaint}/status', [ComplaintController::class, 'updateStatus'])->name('complaints.updateStatus');
+
+    Route::get('/broadcast', [BroadcastController::class, 'index'])->name('broadcast.index');
+    Route::post('/broadcast/send', [BroadcastController::class, 'send'])->name('broadcast.send');
+    Route::get('/broadcast/history', [BroadcastController::class, 'history'])->name('broadcast.history');
 });
 
 // Routes for Admin only
