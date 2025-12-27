@@ -71,7 +71,12 @@ jobs:
             cd ..
 
             echo "🔄 Restart Queue Worker"
-            pm2 restart "php artisan queue:work" --name "laravel-worker"
+            cd ${{ secrets.VPS_PATH }}
+            pm2 delete laravel-worker || true
+            pm2 start "php artisan queue:work" --name "laravel-worker"
+
+            echo "💾 Save PM2 process list"
+            pm2 save
 
             echo "🔺 Disable maintenance mode"
             php artisan up
