@@ -44,7 +44,7 @@
                                 x-transition:leave-end="opacity-0 scale-95"
                                 class="absolute left-0 top-full mt-0 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50"
                                 style="display: none;">
-                            <div class="py-1">
+                            <div class="py-1 text-left">
                                 <a href="{{ route('finances.dashboard') }}" 
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('finances.dashboard') ? 'bg-gray-50 font-semibold' : '' }}">
                                     <span class="mr-2">📊</span> Dashboard Keuangan
@@ -90,7 +90,6 @@
                                 <x-dropdown-link :href="route('broadcast.index')">
                                     {{ __('Kirim Pesan') }}
                                 </x-dropdown-link>
-
                                 <x-dropdown-link :href="route('broadcast.history')">
                                     {{ __('Riwayat Broadcast') }}
                                 </x-dropdown-link>
@@ -124,7 +123,6 @@
                         <x-dropdown-link :href="route('profile.edit')">
                             {{ __('Profile') }}
                         </x-dropdown-link>
-
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <x-dropdown-link :href="route('logout')"
@@ -149,7 +147,7 @@
     </div>
 
     <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
+    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden bg-white border-t border-gray-100 shadow-inner">
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
@@ -163,21 +161,30 @@
                 {{ __('Penghuni') }}
             </x-responsive-nav-link>
             
-            <!-- Mobile Keuangan Group -->
-            <div class="border-t border-b border-gray-200 py-2">
-                <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Keuangan</div>
-                <x-responsive-nav-link :href="route('finances.dashboard')" :active="request()->routeIs('finances.dashboard')">
-                    📊 Dashboard Keuangan
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('finances.index')" :active="request()->routeIs('finances.index')">
-                    💰 Pencatatan Keuangan
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('payments.index')" :active="request()->routeIs('payments.index')">
-                    💳 Pembayaran Sewa
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('finances.report')" :active="request()->routeIs('finances.report')">
-                    📄 Laporan Keuangan
-                </x-responsive-nav-link>
+            <div x-data="{ openFin: {{ request()->routeIs('finances.*') || request()->routeIs('payments.*') ? 'true' : 'false' }} }">
+                <button @click="openFin = !openFin" class="w-full flex justify-between items-center pl-3 pr-4 py-2 border-l-4 border-transparent text-left text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300 transition duration-150 ease-in-out">
+                    <span class="flex items-center">
+                        {{ __('Keuangan') }}
+                    </span>
+                    <svg class="h-4 w-4 transform transition-transform" :class="{ 'rotate-180': openFin }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+
+                <div x-show="openFin" x-cloak class="bg-gray-50 border-l-4 border-indigo-200">
+                    <x-responsive-nav-link :href="route('finances.dashboard')" :active="request()->routeIs('finances.dashboard')" class="pl-8">
+                        📊 Dashboard Keuangan
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('finances.index')" :active="request()->routeIs('finances.index')" class="pl-8">
+                        💰 Pencatatan Keuangan
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('payments.index')" :active="request()->routeIs('payments.index')" class="pl-8">
+                        💳 Pembayaran Sewa
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('finances.report')" :active="request()->routeIs('finances.report')" class="pl-8">
+                        📄 Laporan Keuangan
+                    </x-responsive-nav-link>
+                </div>
             </div>
             
             <x-responsive-nav-link :href="route('facilities.index')" :active="request()->routeIs('facilities.*')">
@@ -188,13 +195,21 @@
                 {{ __('Keluhan') }}
             </x-responsive-nav-link>
             
-            <div class="pt-2 pb-1 border-t border-gray-200">
-                <div class="px-4 font-medium text-base text-gray-600">{{ __('Broadcast WhatsApp') }}</div>
-                <div class="mt-3 space-y-1">
-                    <x-responsive-nav-link :href="route('broadcast.index')" :active="request()->routeIs('broadcast.index')">
+            <div x-data="{ openBroadcast: {{ request()->routeIs('broadcast.*') ? 'true' : 'false' }} }">
+                <button @click="openBroadcast = !openBroadcast" class="w-full flex justify-between items-center pl-3 pr-4 py-2 border-l-4 border-transparent text-left text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300 transition duration-150 ease-in-out">
+                    <span class="flex items-center">
+                        {{ __('Broadcast WhatsApp') }}
+                    </span>
+                    <svg class="h-4 w-4 transform transition-transform" :class="{ 'rotate-180': openBroadcast }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+
+                <div x-show="openBroadcast" x-cloak class="bg-gray-50 border-l-4 border-indigo-200">
+                    <x-responsive-nav-link :href="route('broadcast.index')" :active="request()->routeIs('broadcast.index')" class="pl-8">
                         {{ __('Kirim Pesan') }}
                     </x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('broadcast.history')" :active="request()->routeIs('broadcast.history')">
+                    <x-responsive-nav-link :href="route('broadcast.history')" :active="request()->routeIs('broadcast.history')" class="pl-8">
                         {{ __('Riwayat Broadcast') }}
                     </x-responsive-nav-link>
                 </div>
