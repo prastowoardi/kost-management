@@ -69,4 +69,48 @@ class BroadcastController extends Controller
         $history = Broadcast::with('logs')->latest()->paginate(10);
         return view('broadcast.history', compact('history'));
     }
+
+    public function showChat($id)
+    {
+        $tenant = Tenant::with('room')->findOrFail($id);
+        $chats = [];
+        $error = null;
+
+        try {
+            $response = Http::timeout(10)->get('http://127.0.0.1:3000/get-chats', [
+                'number' => $tenant->phone,
+            ]);
+
+            if ($response->successful()) {
+                $chats = $response->json()['data'];
+            }
+        } catch (\Exception $e) {
+            $error = "Gateway Offline";
+        }
+
+        return view('broadcast.chat-view', compact('tenant', 'chats', 'error'));
+    }
+
+    public function sendPersonal(Request $request)
+    {
+        $request->validate([
+            'message' => 'required', 
+            'phone' => 'required'
+        ]);
+
+        try {
+            $response = Http::timeout(10)->post('http://127.0.0.1:3000/send-message', [
+                'number' => $request->phone,
+                'message' => $request->message,
+            ]);
+
+            if ($response->successful()) {
+                return back()->with('status', 'Pesan terkirim!');
+            }
+            
+            return back()->withErrors(['msg' => 'Gateway merespon dengan error.']);
+        } catch (\Exception $e) {
+            return back()->withErrors(['msg' => 'Gagal terhubung ke Gateway WA.']);
+        }
+    }
 }
