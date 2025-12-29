@@ -150,5 +150,30 @@ app.post('/send-image', async (req, res) => {
     }
 });
 
+app.get('/get-chats', async (req, res) => {
+    const { number } = req.query;
+    try {
+        if (!number) return res.status(400).json({ status: 'error', message: 'Nomor HP diperlukan' });
+
+        let formattedNumber = number.replace(/\D/g, '');
+        if (formattedNumber.startsWith('0')) formattedNumber = '62' + formattedNumber.substring(1);
+        const chatId = formattedNumber + "@c.us";
+
+        const chat = await client.getChatById(chatId);
+        const messages = await chat.fetchMessages({ limit: 20 });
+
+        const history = messages.map(msg => ({
+            fromMe: msg.fromMe,
+            body: msg.body,
+            timestamp: new Date(msg.timestamp * 1000).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+            type: msg.type
+        }));
+
+        res.json({ status: 'success', data: history });
+    } catch (err) {
+        res.status(500).json({ status: 'error', message: 'Belum ada percakapan' });
+    }
+});
+
 app.listen(3000, () => console.log('WA Gateway berjalan di port 3000'));
 client.initialize();

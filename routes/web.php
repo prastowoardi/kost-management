@@ -73,6 +73,8 @@ Route::middleware(['auth', 'verified', 'role:admin,staff'])->group(function () {
     Route::get('/broadcast', [BroadcastController::class, 'index'])->name('broadcast.index');
     Route::post('/broadcast/send', [BroadcastController::class, 'send'])->name('broadcast.send');
     Route::get('/broadcast/history', [BroadcastController::class, 'history'])->name('broadcast.history');
+    Route::get('/broadcast/chat/{id}', [BroadcastController::class, 'showChat'])->name('broadcast.chat');
+    Route::post('/broadcast/send-personal', [BroadcastController::class, 'sendPersonal'])->name('broadcast.send-personal');
 });
 
 // Routes for Admin only

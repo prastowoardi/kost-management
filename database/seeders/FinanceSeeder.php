@@ -110,6 +110,14 @@ class FinanceSeeder extends Seeder
                 'description' => 'Tabungan mas',
                 'notes' => null,
             ],
+            [
+                'type' => 'income',
+                'category' => 'Lainnya',
+                'transaction_date' => '2025-12-29',
+                'amount' => 57200000.00,
+                'description' => 'Pembayaran termin 3',
+                'notes' => null,
+            ],
         ];
 
         $count = 0;
