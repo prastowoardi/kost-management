@@ -111,7 +111,7 @@ class FinanceSeeder extends Seeder
                 'notes' => null,
             ],
             [
-                'type' => 'income',
+                'type' => 'expense',
                 'category' => 'Lainnya',
                 'transaction_date' => '2025-12-29',
                 'amount' => 57200000.00,
