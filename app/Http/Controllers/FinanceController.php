@@ -230,6 +230,9 @@ class FinanceController extends Controller
 
     public function store(Request $request)
     {
+        $cleanAmount = preg_replace('/[^0-9]/', '', $request->amount);
+        $request->merge(['amount' => $cleanAmount]);
+        
         $validated = $request->validate([
             'type' => 'required|in:income,expense',
             'category' => 'required|string|max:255',
@@ -256,15 +259,33 @@ class FinanceController extends Controller
 
     public function update(Request $request, Finance $finance)
     {
+        $cleanAmount = preg_replace('/[^0-9]/', '', $request->amount);
+        $request->merge(['amount' => $cleanAmount]);
+
+        if ($request->has('amount')) {
+            $request->merge([
+                'amount' => str_replace('.', '', $request->amount)
+            ]);
+        }
+
         $validated = $request->validate([
             'type' => 'required|in:income,expense',
             'category' => 'required|string|max:255',
             'amount' => 'required|numeric|min:0',
             'transaction_date' => 'required|date',
-            'description' => 'nullable|string',
+            'description' => 'required|string',
+            'notes' => 'nullable|string',
         ]);
 
+        if ($request->hasFile('receipt_file')) {
+            if ($finance->receipt_file) {
+                Storage::disk('public')->delete($finance->receipt_file);
+            }
+            $validated['receipt_file'] = $request->file('receipt_file')->store('receipts', 'public');
+        }
+
         $finance->update($validated);
+        $finance->touch(); 
 
         return redirect()->route('finances.index')
             ->with('success', 'Data keuangan berhasil diupdate!');
