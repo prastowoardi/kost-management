@@ -25,7 +25,7 @@ const client = new Client({
     authStrategy: new LocalAuth({ dataPath: './sessions' }),
     webVersionCache: {
         type: 'remote',
-        remotePath: 'https://raw.githubusercontent.com/pedroslopez/whatsapp-web.js/v1.23.0/version.json',
+        remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-js/main/dist/wppconnect-wa.js',
     },
     puppeteer: {
         executablePath: chromePath || undefined,
@@ -33,7 +33,8 @@ const client = new Client({
         args: [
             '--no-sandbox', 
             '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage'
+            '--disable-dev-shm-usage',
+            '--disable-extensions'
         ]
     }
 });
@@ -44,6 +45,13 @@ client.on('qr', (qr) => {
 });
 
 client.on('ready', () => console.log('WhatsApp Gateway Ready!'));
+
+client.on('disconnected', (reason) => {
+    console.log('User was logged out', reason);
+    setTimeout(() => {
+        client.initialize();
+    }, 5000);
+});
 
 app.post('/send-pdf', async (req, res) => {
     const { number, message, file_path } = req.body;
@@ -69,11 +77,16 @@ app.post('/send-message', async (req, res) => {
         if (formattedNumber.startsWith('0')) formattedNumber = '62' + formattedNumber.substring(1);
         const chatId = formattedNumber + "@c.us";
 
+        console.log(`\n--- Mengirim Pesan ---`);
+        console.log(`Tujuan : ${formattedNumber}`);
+        console.log(`Isi    : ${message}`);
+
         await client.sendMessage(chatId, message);
         console.log(`Pesan terkirim ke ${formattedNumber}`);
+
         res.json({ status: 'success' });
     } catch (err) {
-        console.error(err);
+        console.error(`Gagal kirim ke ${number}:`, err.message);
         res.status(500).json({ status: 'error', message: err.message });
     }
 });
@@ -91,7 +104,7 @@ app.post('/send-image', async (req, res) => {
         if (formattedNumber.startsWith('0')) formattedNumber = '62' + formattedNumber.substring(1);
         const chatId = formattedNumber + "@c.us";
 
-        console.log(`\n--- Memproses Kiriman Baru ---`);
+        console.log(`\n--- Mengirim Kwitansi ---`);
         console.log(`Tujuan   : ${formattedNumber}`);
         console.log(`Kwitansi : ${url || 'URL tidak terlampir'}`); 
 
@@ -150,28 +163,25 @@ app.post('/send-image', async (req, res) => {
     }
 });
 
-app.get('/get-chats', async (req, res) => {
-    const { number } = req.query;
+app.post('/send-message', async (req, res) => {
+    const { number, message } = req.body;
+
+    if (!number || !message) {
+        return res.status(400).json({ status: false, message: 'Nomor atau pesan kosong' });
+    }
+
+    const formattedNumber = number.includes('@c.us') ? number : `${number}@c.us`;
+
     try {
-        if (!number) return res.status(400).json({ status: 'error', message: 'Nomor HP diperlukan' });
+        if (!client.info || !client.info.wid) {
+            throw new Error('WhatsApp belum terhubung (belum scan QR)');
+        }
 
-        let formattedNumber = number.replace(/\D/g, '');
-        if (formattedNumber.startsWith('0')) formattedNumber = '62' + formattedNumber.substring(1);
-        const chatId = formattedNumber + "@c.us";
-
-        const chat = await client.getChatById(chatId);
-        const messages = await chat.fetchMessages({ limit: 20 });
-
-        const history = messages.map(msg => ({
-            fromMe: msg.fromMe,
-            body: msg.body,
-            timestamp: new Date(msg.timestamp * 1000).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-            type: msg.type
-        }));
-
-        res.json({ status: 'success', data: history });
-    } catch (err) {
-        res.status(500).json({ status: 'error', message: 'Belum ada percakapan' });
+        await client.sendMessage(formattedNumber, message);
+        res.status(200).json({ status: true, message: 'Pesan terkirim' });
+    } catch (error) {
+        console.error("Gagal kirim pesan:", error.message);
+        res.status(500).json({ status: false, message: 'Gagal kirim: ' + error.message });
     }
 });
 
