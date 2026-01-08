@@ -12,6 +12,8 @@
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700" rel="stylesheet" />
+        
+        <script src="https://cdn.jsdelivr.net/npm/spotlight.js@0.7.8/dist/spotlight.bundle.js"></script>
 
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
             @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -39,11 +41,9 @@
 
         <nav id="navbar" class="fixed top-0 inset-x-0 z-50 transition-all duration-500 ease-in-out px-4 py-4">
             <div id="navbar-bg" class="max-w-6xl mx-auto h-16 flex justify-between items-center px-8 transition-all duration-500 rounded-2xl">
-                
                 <div id="logo-text" class="text-xl font-extrabold tracking-tight text-white flex items-center gap-2 transition-colors duration-500">
                     <span>🛖 Serrata</span><span class="text-blue-400">.</span>
                 </div>
-                
                 <div id="menu-text" class="flex gap-8 items-center font-bold text-white transition-colors duration-500">
                     <a href="#fasilitas" class="text-sm hover:text-blue-400 transition">Fasilitas</a>
                     <a href="#lokasi" class="text-sm hover:text-blue-400 transition">Lokasi</a>
@@ -54,7 +54,7 @@
         <main class="pt-32 pb-20">
             <section class="max-w-6xl mx-auto px-6 text-center mb-24">
                 <div class="inline-block px-4 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 rounded-full text-xs font-bold mb-6">
-                    ✨ Hunian paling chill di Sleman
+                    ✨ Hunian chill di Sleman
                 </div>
                 <h1 class="text-5xl lg:text-7xl font-extrabold mb-8 tracking-tight dark:text-white">
                     Nge-kost serasa <br><span class="gradient-text">di rumah sendiri.</span>
@@ -74,13 +74,22 @@
             </section>
 
             <section id="fasilitas" class="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-4 mb-24">
-                <div class="md:col-span-2 md:row-span-2 relative overflow-hidden rounded-[2.5rem] shadow-sm bento-card">
+                
+                <div class="md:col-span-2 md:row-span-2 relative overflow-hidden rounded-[2.5rem] shadow-sm bento-card spotlight" 
+                        data-src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=1000"
+                        data-title="Kamar Tipe A"
+                        data-description="Fasilitas kasur empuk dan lemari besar">
                     <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent p-8 flex flex-col justify-end text-white">
-                        <h3 class="text-2xl font-bold">Kamar Estetik</h3>
-                        <p class="text-white/80">Suasana yang bikin betah dikamar.</p>
+                        <h3 class="text-2xl font-bold">Kamar Minimalis</h3>
+                        <p class="text-white/80">Klik untuk lihat detail kamar ✨</p>
                     </div>
+                    
+                    <a class="spotlight hidden" data-src="https://images.unsplash.com/photo-1560185127-6ed189bf02f4?q=80&w=1000"></a>
+                    <a class="spotlight hidden" data-src="https://images.unsplash.com/photo-1598928506311-c55ded91a20c?q=80&w=1000"></a>
+                    <a class="spotlight hidden" data-src="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=1000"></a>
                 </div>
+
                 <div class="bg-blue-600 p-8 rounded-[2.5rem] text-white flex flex-col justify-between bento-card">
                     <div class="text-4xl">📶</div>
                     <div>
@@ -91,17 +100,17 @@
                 <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 bento-card">
                     <div class="text-4xl mb-4">❄️</div>
                     <h4 class="font-bold text-lg dark:text-white">Kamar Mandi Dalam</h4>
-                    <p class="text-slate-500 text-sm">Gak perlu antre lagi kalau mau mandi.</p>
+                    <p class="text-slate-500 text-sm">Gak perlu antre lagi.</p>
                 </div>
                 <div class="bg-slate-900 p-8 rounded-[2.5rem] text-white md:col-span-2 flex items-center justify-between bento-card">
                     <div class="max-w-xs">
                         <h4 class="font-bold text-xl mb-1">Dapur Umum</h4>
-                        <p class="text-slate-400 text-sm">Mau masak? Gak perlu ngotorin kamar, disini sudah ada tempatnya.</p>
+                        <p class="text-slate-400 text-sm">Sudah ada tempat memasak yang bersih.</p>
                     </div>
                     <div class="text-5xl">🍲</div>
                 </div>
             </section>
-
+            
             <section id="lokasi" class="max-w-6xl mx-auto px-6">
                 <div class="bg-white dark:bg-slate-800 rounded-[3rem] p-8 md:p-16 border border-slate-100 dark:border-slate-700 shadow-xl overflow-hidden relative">
                     <div class="grid lg:grid-cols-2 gap-12 relative z-10">
@@ -121,13 +130,13 @@
                                 </div>
                             </div>
                             <div class="mt-10">
-                                <a href="https://maps.app.goo.gl/YourMapLinkHere" target="_blank" class="inline-flex items-center gap-2 bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-blue-500/20 hover:scale-105 transition">
+                                <a href="https://maps.app.goo.gl/957xG926vDqfJ3GMA" target="_blank" class="inline-flex items-center gap-2 bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-blue-500/20 hover:scale-105 transition">
                                     Buka Google Maps
                                 </a>
                             </div>
                         </div>
                         <div class="h-[350px] rounded-[2rem] overflow-hidden border-4 border-white dark:border-slate-700 shadow-2xl">
-                                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3953.791557088929!2d110.36625!3d-7.7054!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a5ec33b1144b7%3A0x84ee4bfe96fac6bb!2sSerrata%20Kost!5e0!3m2!1sen!2sid!4v1700000000000" 
+                                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1976.621405108608!2d110.360156!3d-7.716183999999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a591e60051d95%3A0x86770e6c86770e6c!2sSerrata%20Kost!5e0!3m2!1sid!2sid!4v1700000000000!5m2!1sid!2sid" 
                                 width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
                         </div>
                     </div>
@@ -141,6 +150,10 @@
                 <a href="#" class="hover:text-slate-600 transition">TikTok</a>
             </div>
             <p>© 2026 Serrata Kost Sleman. Chill & Comfort Living.</p>
+            
+            <a href="{{ route('login') }}" class="mt-4 block opacity-10 hover:opacity-100 transition-opacity duration-300 text-[10px]">
+                System Access
+            </a>
         </footer>
 
         <script>
