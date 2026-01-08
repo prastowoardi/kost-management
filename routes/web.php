@@ -14,8 +14,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BroadcastController;
 
 Route::get('/', function () {
-    // return view('welcome');
-    return redirect()->route('login');
+    if (request()->user()) {
+        return redirect()->route('dashboard');
+    }
+    return view('welcome'); 
 });
 
 // Routes for Admin & Staff only
@@ -59,9 +61,6 @@ Route::middleware(['auth', 'verified', 'role:admin,staff'])->group(function () {
         Route::get('/rooms', [ReportController::class, 'rooms'])->name('rooms');
         Route::get('/tenants', [ReportController::class, 'tenants'])->name('tenants');
     });
-
-    Route::resource('payments', PaymentController::class);
-    Route::put('payments/{payment}/status', [PaymentController::class, 'updateStatus'])->name('payments.updateStatus');
     
     // Facilities Management
     Route::resource('facilities', FacilityController::class);
