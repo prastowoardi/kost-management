@@ -36,17 +36,17 @@
         </style>
     </head>
     <body class="bg-[#f8fafc] dark:bg-[#0f172a] text-[#1e293b] antialiased">
-        
-        <nav class="fixed top-4 inset-x-0 z-50 px-6">
-            <div class="max-w-5xl mx-auto h-16 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/20 shadow-lg rounded-3xl flex justify-between items-center px-8">
-                <div class="text-xl font-extrabold tracking-tight dark:text-white mx-auto text-center">
-                    🛖 Serrata<span class="text-blue-600">.</span>
+
+        <nav id="navbar" class="fixed top-0 inset-x-0 z-50 transition-all duration-500 ease-in-out px-4 py-4">
+            <div id="navbar-bg" class="max-w-6xl mx-auto h-16 flex justify-between items-center px-8 transition-all duration-500 rounded-2xl">
+                
+                <div id="logo-text" class="text-xl font-extrabold tracking-tight text-white flex items-center gap-2 transition-colors duration-500">
+                    <span>🛖 Serrata</span><span class="text-blue-400">.</span>
                 </div>
                 
-                <div class="flex gap-6 items-center">
-                    <a href="#fasilitas" class="hidden md:block text-sm font-medium hover:text-blue-600 transition">Fasilitas</a>
-                    <a href="#lokasi" class="hidden md:block text-sm font-medium hover:text-blue-600 transition">Lokasi</a>
-                    {{-- <a href="https://wa.me/6285155021017" class="bg-slate-900 dark:bg-blue-600 text-white px-5 py-2.5 rounded-2xl text-sm font-bold shadow-md">Tanya Admin</a> --}}
+                <div id="menu-text" class="flex gap-8 items-center font-bold text-white transition-colors duration-500">
+                    <a href="#fasilitas" class="text-sm hover:text-blue-400 transition">Fasilitas</a>
+                    <a href="#lokasi" class="text-sm hover:text-blue-400 transition">Lokasi</a>
                 </div>
             </div>
         </nav>
@@ -143,5 +143,34 @@
             <p>© 2026 Serrata Kost Sleman. Chill & Comfort Living.</p>
         </footer>
 
+        <script>
+            window.onscroll = function() {
+                const navbar = document.getElementById('navbar');
+                const bg = document.getElementById('navbar-bg');
+                const logo = document.getElementById('logo-text');
+                const menu = document.getElementById('menu-text');
+                
+                if (window.scrollY > 50) {
+                    // SAAT SCROLL (Jadi Floating Card yang Modern)
+                    navbar.classList.add('pt-6'); // Memberi jarak dari atas layar
+                    bg.classList.add('bg-white/80', 'backdrop-blur-xl', 'shadow-lg', 'border', 'border-white/20');
+                    bg.classList.remove('max-w-6xl');
+                    bg.classList.add('max-w-4xl'); // Mengecilkan lebar navbar agar terlihat "floating"
+                    
+                    // Ubah warna teks jadi gelap karena background navbar jadi putih transparan
+                    logo.classList.replace('text-white', 'text-slate-900');
+                    menu.classList.replace('text-white', 'text-slate-900');
+                } else {
+                    // SAAT DI ATAS (Menyatu dengan Background)
+                    navbar.classList.remove('pt-6');
+                    bg.classList.remove('bg-white/80', 'backdrop-blur-xl', 'shadow-lg', 'border', 'border-white/20', 'max-w-4xl');
+                    bg.classList.add('max-w-6xl');
+                    
+                    // Kembalikan teks jadi putih agar terlihat di background gelap
+                    logo.classList.replace('text-slate-900', 'text-white');
+                    menu.classList.replace('text-slate-900', 'text-white');
+                }
+            };
+        </script>
     </body>
 </html>
