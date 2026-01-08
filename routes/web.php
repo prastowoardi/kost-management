@@ -14,8 +14,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BroadcastController;
 
 Route::get('/', function () {
-    // return view('welcome');
-    return redirect()->route('login');
+    return view('welcome');
+    // return redirect()->route('login');
 });
 
 // Routes for Admin & Staff only
