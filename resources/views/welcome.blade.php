@@ -53,7 +53,7 @@
 
         <main class="pt-32 pb-20">
             <section class="max-w-6xl mx-auto px-6 text-center mb-24">
-                <div class="inline-block px-4 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 rounded-full text-xs font-bold mb-6">
+                <div class="inline-block px-4 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 font-block dark:text-blue-300 rounded-full text-xs font-bold mb-6">
                     ✨ Hunian chill di Sleman
                 </div>
                 <h1 class="text-5xl lg:text-7xl font-extrabold mb-8 tracking-tight dark:text-white">
@@ -64,11 +64,11 @@
                 </p>
                 
                 <div class="flex flex-col sm:flex-row justify-center gap-4">
-                    <a href="https://wa.me/6285156726005" class="flex items-center justify-center gap-2 bg-[#25D366] text-white px-8 py-4 rounded-2xl font-bold shadow-lg hover:opacity-90 transition">
-                        <span>WhatsApp Admin 1</span>
+                    <a href="https://wa.me/6285156726005" class="flex items-center justify-center gap-2 bg-[#25D366] text-white px-8 py-4 rounded-2xl font-bold shadow-lg hover:bg-[#433E3A] transition">
+                        <span>💬 Admin 1</span>
                     </a>
-                    <a href="https://wa.me/6285641338624" class="flex items-center justify-center gap-2 bg-[#25D366] text-white px-8 py-4 rounded-2xl font-bold shadow-lg hover:opacity-90 transition">
-                        <span>WhatsApp Admin 2</span>
+                    <a href="https://wa.me/6285641338624" class="flex items-center justify-center gap-2 bg-[#25D366] text-white px-8 py-4 rounded-2xl font-bold shadow-lg hover:bg-[#433E3A] transition">
+                        <span>💬 Admin 2</span>
                     </a>
                 </div>
             </section>
