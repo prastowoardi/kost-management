@@ -128,7 +128,7 @@
                                 </div>
                             </div>
                             <div class="mt-10">
-                                <a href="https://maps.app.goo.gl/y3mLWgpfimqW92E79" target="_blank" class="inline-flex items-center gap-2 bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-blue-500/20 hover:scale-105 transition">
+                                <a href="https://maps.app.goo.gl/y3mLWgpfimqW92E79" target="_blank" class="flex items-center justify-center gap-2 bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-blue-500/20 hover:scale-105 transition">
                                     Buka Google Maps
                                 </a>
                             </div>
