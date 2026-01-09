@@ -45,9 +45,9 @@ jobs:
             # Menjalankan SEMUA migration yang tertunda
             php artisan migrate --force
 
-            echo "⚠️ Run Seeders"
-            # Menjalankan SEMUA seeder yang terdaftar di DatabaseSeeder.php
-            php artisan db:seed --force || true
+            # echo "⚠️ Run Seeders"
+            # # Menjalankan SEMUA seeder yang terdaftar di DatabaseSeeder.php
+            # php artisan db:seed --force || true
 
             echo "🧹 Rebuild cache & Optimization"
             php artisan optimize:clear
@@ -55,20 +55,17 @@ jobs:
             php artisan view:cache
             php artisan event:cache
 
-            # echo "🗄️ Run migrations"
-            # php artisan migrate --force
+            echo "🔗 Ensure storage link exists"
+            php artisan storage:link || true
 
-            # echo "🔗 Ensure storage link exists"
-            # php artisan storage:link || true
+            echo "🔐 Fix permissions"
+            sudo chown -R www-data:www-data .
+            sudo chmod -R 775 storage bootstrap/cache public/storage
 
-            # echo "🔐 Fix permissions"
-            # sudo chown -R www-data:www-data .
-            # sudo chmod -R 775 storage bootstrap/cache public/storage
-
-            # echo "🔁 Restart services"
-            # # Pastikan versi php-fpm sesuai dengan yang terinstal di server (8.2)
-            # sudo systemctl restart php8.2-fpm
-            # sudo systemctl reload nginx
+            echo "🔁 Restart services"
+            # Pastikan versi php-fpm sesuai dengan yang terinstal di server (8.2)
+            sudo systemctl restart php8.2-fpm
+            sudo systemctl reload nginx
 
             # echo "📦 Update WhatsApp Gateway"
             # cd whatsapp-gateway
