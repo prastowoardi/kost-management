@@ -90,19 +90,17 @@
                     <a class="spotlight hidden" data-src="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=1000"></a>
                 </div>
 
-                <div class="bg-blue-600 p-8 rounded-[2.5rem] text-white flex flex-col justify-between bento-card">
-                    <div class="text-4xl">📶</div>
-                    <div>
-                        <h4 class="font-bold text-lg">WiFi Kencang</h4>
-                        <p class="text-blue-100 text-sm">Nugas & streaming lancar jaya.</p>
-                    </div>
+                <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 bento-card">
+                    <div class="text-4xl mb-4">📶</div>
+                    <h4 class="font-bold text-lg dark:text-white">WiFi Kencang</h4>
+                    <p class="text-slate-400 text-sm">Nugas & streaming lancar jaya.</p>
                 </div>
                 <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 bento-card">
                     <div class="text-4xl mb-4">❄️</div>
                     <h4 class="font-bold text-lg dark:text-white">Kamar Mandi Dalam</h4>
-                    <p class="text-slate-500 text-sm">Gak perlu antre lagi.</p>
+                    <p class="text-slate-400 text-sm">Gak perlu antre lagi.</p>
                 </div>
-                <div class="bg-slate-900 p-8 rounded-[2.5rem] text-white md:col-span-2 flex items-center justify-between bento-card">
+                <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] text-white md:col-span-2 flex items-center justify-between bento-card">
                     <div class="max-w-xs">
                         <h4 class="font-bold text-xl mb-1">Dapur Umum</h4>
                         <p class="text-slate-400 text-sm">Sudah ada tempat memasak yang bersih.</p>
@@ -130,14 +128,13 @@
                                 </div>
                             </div>
                             <div class="mt-10">
-                                <a href="https://maps.app.goo.gl/957xG926vDqfJ3GMA" target="_blank" class="inline-flex items-center gap-2 bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-blue-500/20 hover:scale-105 transition">
+                                <a href="https://maps.app.goo.gl/y3mLWgpfimqW92E79" target="_blank" class="inline-flex items-center gap-2 bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-blue-500/20 hover:scale-105 transition">
                                     Buka Google Maps
                                 </a>
                             </div>
                         </div>
                         <div class="h-[350px] rounded-[2rem] overflow-hidden border-4 border-white dark:border-slate-700 shadow-2xl">
-                                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1976.621405108608!2d110.360156!3d-7.716183999999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a591e60051d95%3A0x86770e6c86770e6c!2sSerrata%20Kost!5e0!3m2!1sid!2sid!4v1700000000000!5m2!1sid!2sid" 
-                                width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4803.349429711118!2d110.36454617583837!3d-7.6957584762130065!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a5f360b5344b7%3A0xc4e4bfed6fa3cbb!2sSerrata%20Kost!5e1!3m2!1sid!2ssg!4v1767959529859!5m2!1sid!2ssg" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                         </div>
                     </div>
                 </div>
