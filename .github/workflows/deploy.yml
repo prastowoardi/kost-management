@@ -55,34 +55,34 @@ jobs:
             php artisan view:cache
             php artisan event:cache
 
-            echo "🗄️ Run migrations"
-            php artisan migrate --force
+            # echo "🗄️ Run migrations"
+            # php artisan migrate --force
 
-            echo "🔗 Ensure storage link exists"
-            php artisan storage:link || true
+            # echo "🔗 Ensure storage link exists"
+            # php artisan storage:link || true
 
-            echo "🔐 Fix permissions"
-            sudo chown -R www-data:www-data .
-            sudo chmod -R 775 storage bootstrap/cache public/storage
+            # echo "🔐 Fix permissions"
+            # sudo chown -R www-data:www-data .
+            # sudo chmod -R 775 storage bootstrap/cache public/storage
 
-            echo "🔁 Restart services"
-            # Pastikan versi php-fpm sesuai dengan yang terinstal di server (8.2)
-            sudo systemctl restart php8.2-fpm
-            sudo systemctl reload nginx
+            # echo "🔁 Restart services"
+            # # Pastikan versi php-fpm sesuai dengan yang terinstal di server (8.2)
+            # sudo systemctl restart php8.2-fpm
+            # sudo systemctl reload nginx
 
-            echo "📦 Update WhatsApp Gateway"
-            cd whatsapp-gateway
-            npm install --production
-            pm2 restart wa-gateway || pm2 start server.cjs --name "wa-gateway"
-            cd ..
+            # echo "📦 Update WhatsApp Gateway"
+            # cd whatsapp-gateway
+            # npm install --production
+            # pm2 restart wa-gateway || pm2 start server.cjs --name "wa-gateway"
+            # cd ..
 
-            echo "🔄 Restart Queue Worker"
-            cd ${{ secrets.VPS_PATH }}
-            pm2 delete laravel-worker || true
-            pm2 start "php artisan queue:work" --name "laravel-worker"
+            # echo "🔄 Restart Queue Worker"
+            # cd ${{ secrets.VPS_PATH }}
+            # pm2 delete laravel-worker || true
+            # pm2 start "php artisan queue:work" --name "laravel-worker"
 
-            echo "💾 Save PM2 process list"
-            pm2 save
+            # echo "💾 Save PM2 process list"
+            # pm2 save
 
             echo "🔺 Disable maintenance mode"
             php artisan up
