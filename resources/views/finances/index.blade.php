@@ -89,12 +89,14 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Dari Tanggal</label>
                             <input type="date" name="start_date" value="{{ $startDate }}" 
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                onclick="this.showPicker()"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 cursor-pointer">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Sampai Tanggal</label>
                             <input type="date" name="end_date" value="{{ $endDate }}" 
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                onclick="this.showPicker()"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 cursor-pointer">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Kategori</label>

@@ -44,7 +44,8 @@
                                     <label class="block text-sm font-medium text-gray-700">Periode Bulan</label>
                                     <input type="month" name="period_month"
                                         value="{{ old('period_month', \Carbon\Carbon::parse($payment->period_month)->format('Y-m')) }}" required
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                        onclick="this.showPicker()"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 cursor-pointer">
                                     @error('period_month')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror

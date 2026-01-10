@@ -90,7 +90,8 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Tanggal Transaksi</label>
                                 <input type="date" name="transaction_date" value="{{ old('transaction_date', date('Y-m-d')) }}" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    onclick="this.showPicker()"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 cursor-pointer">
                                 @error('transaction_date')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror

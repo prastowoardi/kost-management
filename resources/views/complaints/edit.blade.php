@@ -105,7 +105,8 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Selesai</label>
                                 <input type="date" name="resolved_date" value="{{ old('resolved_date', $complaint->resolved_date?->format('Y-m-d')) }}"
-                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    onclick="this.showPicker()"
+                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 cursor-pointer">
                                 <p class="mt-1 text-sm text-gray-500">Isi jika keluhan sudah resolved/closed</p>
                                 @error('resolved_date')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>

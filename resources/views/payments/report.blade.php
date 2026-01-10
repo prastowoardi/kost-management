@@ -15,12 +15,14 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Mulai</label>
                             <input type="date" name="start_date" value="{{ request('start_date') }}" 
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                onclick="this.showPicker()"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 cursor-pointer">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Akhir</label>
                             <input type="date" name="end_date" value="{{ request('end_date') }}" 
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                onclick="this.showPicker()"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 cursor-pointer">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
