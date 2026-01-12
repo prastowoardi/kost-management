@@ -1,15 +1,15 @@
     <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <div class="flex items-center justify-between gap-4">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight whitespace-nowrap">
                 {{ __('Dashboard Keuangan') }}
             </h2>
-            <div class="flex gap-2">
-                <a href="{{ route('finances.report') }}" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+            <div class="flex flex-wrap justify-end gap-2">
+                    <a href="{{ route('finances.report') }}" class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition">
                     📄 Laporan
                 </a>
-                <a href="{{ route('finances.index') }}" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
-                    ← Semua Transaksi
+                <a href="{{ route('finances.index') }}" class="inline-flex items-center px-3 py-1.5 bg-gray-200 text-gray-700 text-sm rounded-md hover:bg-gray-300 transition">
+                    ← Pencatatan
                 </a>
             </div>
         </div>

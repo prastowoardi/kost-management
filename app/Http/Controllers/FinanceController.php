@@ -18,7 +18,7 @@ class FinanceController extends Controller
         $defaultEndDate = now()->format('Y-m-d');
         $defaultStartDate = now()->subDays(30)->format('Y-m-d');
 
-        $startDate = $request->input('start_date', $defaultStartDate);
+        $startDate = $request->input('start_date', date('Y-01-01'));
         $endDate = $request->input('end_date', $defaultEndDate);
 
         $query = Finance::query();

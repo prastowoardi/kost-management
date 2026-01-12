@@ -4,15 +4,15 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Pencatatan Keuangan') }}
             </h2>
-            <div class="flex gap-2">
-                <a href="{{ route('finances.dashboard') }}" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700">
-                    📊 Dashboard
+            <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                <a href="{{ route('finances.dashboard') }}" class="flex-1 md:flex-none justify-center inline-flex items-center px-3 py-2 bg-purple-600 text-white text-sm rounded-md hover:bg-purple-700">
+                    📊 <span class="ml-1 hidden sm:inline">Dashboard</span>
                 </a>
-                <a href="{{ route('finances.report') }}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
-                    📄 Laporan
+                <a href="{{ route('finances.report') }}" class="flex-1 md:flex-none justify-center inline-flex items-center px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700">
+                    📄 <span class="ml-1 hidden sm:inline">Laporan</span>
                 </a>
-                <a href="{{ route('finances.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                    + Tambah Transaksi
+                <a href="{{ route('finances.create') }}" class="flex-1 md:flex-none justify-center inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 font-bold">
+                    + <span class="ml-1">Tambah</span>
                 </a>
             </div>
         </div>
