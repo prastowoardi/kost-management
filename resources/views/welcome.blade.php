@@ -25,7 +25,7 @@
                 scroll-behavior: smooth;
             }
             .gradient-text {
-                background: linear-gradient(90deg, #2563eb, #7c3aed);
+                background: linear-gradient(90deg, #db2777, #7c3aed);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
             }
@@ -42,32 +42,35 @@
         <nav id="navbar" class="fixed top-0 inset-x-0 z-50 transition-all duration-500 ease-in-out px-4 py-4">
             <div id="navbar-bg" class="max-w-6xl mx-auto h-16 flex justify-between items-center px-8 transition-all duration-500 rounded-2xl">
                 <div id="logo-text" class="text-xl font-extrabold tracking-tight text-white flex items-center gap-2 transition-colors duration-500">
-                    <span>🛖 Serrata</span><span class="text-blue-400">.</span>
+                    <span>🛖 Serrata</span><span class="text-pink-500">.</span>
                 </div>
                 <div id="menu-text" class="flex gap-8 items-center font-bold text-white transition-colors duration-500">
-                    <a href="#fasilitas" class="text-sm hover:text-blue-400 transition">Fasilitas</a>
-                    <a href="#lokasi" class="text-sm hover:text-blue-400 transition">Lokasi</a>
+                    <a href="#fasilitas" class="text-sm hover:text-pink-400 transition">Fasilitas</a>
+                    <a href="#lokasi" class="text-sm hover:text-pink-400 transition">Lokasi</a>
                 </div>
             </div>
         </nav>
 
         <main class="pt-32 pb-20">
             <section class="max-w-6xl mx-auto px-6 text-center mb-24">
-                <div class="inline-block px-4 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 font-block dark:text-blue-300 rounded-full text-xs font-bold mb-6">
-                    ✨ Hunian chill di Sleman
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-300 rounded-full text-xs font-bold mb-6">
+                    <span>👩‍🦰 Khusus Putri</span>
+                    <span class="w-1 h-1 bg-pink-300 rounded-full"></span>
+                    <span>Sleman, Yogyakarta</span>
                 </div>
+
                 <h1 class="text-5xl lg:text-7xl font-extrabold mb-8 tracking-tight dark:text-white">
                     Nge-kost serasa <br><span class="gradient-text">di rumah sendiri.</span>
                 </h1>
                 <p class="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed mb-10">
-                    Serrata Kost hadir dengan konsep modern minimalis. Gak perlu ribet, bawa koper aja. Fasilitas lengkap, suasana tenang, dan lokasi strategis.
+                    Serrata Kost menyediakan hunian khusus putri dengan lingkungan yang nyaman. Gak perlu ribet, tinggal bawa koper. Cocok untuk mahasiswi dan karyawati yang mencari ketenangan di Sleman.
                 </p>
                 
                 <div class="flex flex-col sm:flex-row justify-center gap-4">
-                    <a href="https://wa.me/6285156726005" class="flex items-center justify-center gap-2 bg-[#25D366] text-white px-8 py-4 rounded-2xl font-bold shadow-lg hover:bg-[#433E3A] transition">
+                    <a href="https://wa.me/6285156726005" class="flex items-center justify-center gap-2 bg-[#25D366] text-white px-8 py-4 rounded-2xl font-bold shadow-lg hover:bg-[#128C7E] transition">
                         <span>💬 Admin 1</span>
                     </a>
-                    <a href="https://wa.me/6285641338624" class="flex items-center justify-center gap-2 bg-[#25D366] text-white px-8 py-4 rounded-2xl font-bold shadow-lg hover:bg-[#433E3A] transition">
+                    <a href="https://wa.me/6285641338624" class="flex items-center justify-center gap-2 bg-[#25D366] text-white px-8 py-4 rounded-2xl font-bold shadow-lg hover:bg-[#128C7E] transition">
                         <span>💬 Admin 2</span>
                     </a>
                 </div>
@@ -79,6 +82,11 @@
                         data-src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=1000"
                         data-title="Kamar Tipe A"
                         data-description="Fasilitas kasur empuk dan lemari besar">
+                    
+                    <div class="absolute top-6 right-6 z-10 bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-sm">
+                        <span class="text-xs font-bold text-pink-600">✨ Female Only</span>
+                    </div>
+
                     <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent p-8 flex flex-col justify-end text-white">
                         <h3 class="text-2xl font-bold">Kamar Minimalis</h3>
@@ -90,23 +98,30 @@
                     <a class="spotlight hidden" data-src="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=1000"></a>
                 </div>
 
+                <div class="bg-rose-50 dark:bg-rose-900/20 p-8 rounded-[2.5rem] border border-rose-100 dark:border-rose-800 bento-card">
+                    <div class="text-4xl mb-4">👸</div>
+                    <h4 class="font-bold text-lg text-rose-700 dark:text-rose-300">Khusus Putri</h4>
+                    <p class="text-rose-600/70 dark:text-rose-400/80 text-sm">Lingkungan nyaman khusus mahasiswi/karyawati.</p>
+                </div>
+
                 <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 bento-card">
-                    <div class="text-4xl mb-4">📶</div>
+                    <div class="text-3xl mb-4">📶</div>
                     <h4 class="font-bold text-lg dark:text-white">WiFi Kencang</h4>
-                    <p class="text-slate-400 text-sm">Mau nugas apa nonton drakor gak perlu takut buffering.</p>
+                    <p class="text-slate-400 text-sm">Nugas atau drakoran lancar jaya.</p>
                 </div>
+
                 <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 bento-card">
-                    <div class="text-4xl mb-4">🛁</div>
-                    <h4 class="font-bold text-lg dark:text-white">Kamar Mandi Dalam</h4>
-                    <p class="text-slate-400 text-sm">Buru buru mau pergi jadi gak perlu antre lagi.</p>
+                    <div class="text-3xl mb-4">🛁</div>
+                    <h4 class="font-bold text-lg dark:text-white">KM Dalam</h4>
+                    <p class="text-slate-400 text-sm">Gak perlu antre, lebih privat.</p>
                 </div>
-                <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] text-white md:col-span-2 flex items-center justify-between bento-card">
-                    <div class="max-w-xs">
-                        <h4 class="font-bold text-xl mb-1">Dapur Umum</h4>
-                        <p class="text-slate-400 text-sm">Laper? Tinggal cuss masak.</p>
-                    </div>
-                    <div class="text-5xl">🍲</div>
+
+                <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 bento-card">
+                    <div class="text-3xl mb-4">🍲</div>
+                    <h4 class="font-bold text-lg dark:text-white">Dapur Umum</h4>
+                    <p class="text-slate-400 text-sm">Masak simple jadi lebih mudah.</p>
                 </div>
+
             </section>
             
             <section id="lokasi" class="max-w-6xl mx-auto px-6">
@@ -128,13 +143,13 @@
                                 </div>
                             </div>
                             <div class="mt-10">
-                                <a href="https://maps.app.goo.gl/y3mLWgpfimqW92E79" target="_blank" class="flex items-center justify-center gap-2 bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-blue-500/20 hover:scale-105 transition">
+                                <a href="https://maps.app.goo.gl/ZJRMvGcMhDHTWjKD9" target="_blank" class="flex items-center justify-center gap-2 bg-[#7c3aed] text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-purple-500/20 hover:scale-105 transition">
                                     Buka Google Maps
                                 </a>
                             </div>
                         </div>
                         <div class="h-[350px] rounded-[2rem] overflow-hidden border-4 border-white dark:border-slate-700 shadow-2xl">
-                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4803.349429711118!2d110.36454617583837!3d-7.6957584762130065!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a5f360b5344b7%3A0xc4e4bfed6fa3cbb!2sSerrata%20Kost!5e1!3m2!1sid!2ssg!4v1767959529859!5m2!1sid!2ssg" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4798.201965471629!2d110.36458057580212!3d-7.695685992321693!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a5f360b5344b7%3A0xc4e4bfed6fa3cbb!2sSerrata%20Kost!5e1!3m2!1sid!2ssg!4v1768378344472!5m2!1sid!2ssg" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                         </div>
                     </div>
                 </div>
@@ -143,8 +158,8 @@
 
         <footer class="py-12 text-center text-slate-400 text-sm">
             <div class="mb-4 flex justify-center gap-6">
-                <a href="#" class="hover:text-slate-600 transition">Instagram</a>
-                <a href="#" class="hover:text-slate-600 transition">TikTok</a>
+                <a href="#" class="hover:text-pink-500 transition">Instagram</a>
+                <a href="#" class="hover:text-pink-500 transition">TikTok</a>
             </div>
             <p>© 2026 Serrata Kost Sleman. Chill & Comfort Living.</p>
             
