@@ -84,7 +84,7 @@
                                 <a href="{{ asset('storage/' . $finance->receipt_file) }}" 
                                     target="_blank"
                                     class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
-                                    Lihat Full Bukti ({{ strtoupper(pathinfo($finance->receipt_file, PATHINFO_EXTENSION)) }})
+                                    Buka Gambar ({{ strtoupper(pathinfo($finance->receipt_file, PATHINFO_EXTENSION)) }})
                                 </a>
                             @else
                                 <p class="mt-2 text-base text-gray-500 italic">Tidak ada bukti transaksi terlampir.</p>
