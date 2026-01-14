@@ -54,7 +54,7 @@
         <main class="pt-32 pb-20">
             <section class="max-w-6xl mx-auto px-6 text-center mb-24">
                 <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-300 rounded-full text-xs font-bold mb-6">
-                    <span>👩‍🦰 Khusus Putri</span>
+                    <span>✨ Hunian chill</span>
                     <span class="w-1 h-1 bg-pink-300 rounded-full"></span>
                     <span>Sleman, Yogyakarta</span>
                 </div>
