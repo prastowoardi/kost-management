@@ -72,14 +72,19 @@
                         <div class="md:col-span-2 mt-4">
                             <p class="text-sm font-medium text-gray-500">Bukti Transaksi</p>
                             @if($finance->receipt_file)
+                                {{-- CEK JIKA FILE ADALAH GAMBAR --}}
+                                @if(in_array(pathinfo($finance->receipt_file, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png', 'gif']))
+                                    <div class="mt-2 mb-3">
+                                        <img src="{{ asset('storage/' . $finance->receipt_file) }}" 
+                                            alt="Bukti Transaksi" 
+                                            class="max-w-xs rounded-lg shadow-md border p-1">
+                                    </div>
+                                @endif
+
                                 <a href="{{ asset('storage/' . $finance->receipt_file) }}" 
                                     target="_blank"
-                                    class="inline-flex items-center mt-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L10 11.586l1.293-1.293a1 1 0 111.414 1.414l-2 2a1 1 0 01-1.414 0l-2-2a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                        <path d="M10 2a1 1 0 011 1v7a1 1 0 01-2 0V3a1 1 0 011-1z" />
-                                    </svg>
-                                    Lihat Bukti ({{ pathinfo($finance->receipt_file, PATHINFO_EXTENSION) }})
+                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
+                                    Lihat Full Bukti ({{ strtoupper(pathinfo($finance->receipt_file, PATHINFO_EXTENSION)) }})
                                 </a>
                             @else
                                 <p class="mt-2 text-base text-gray-500 italic">Tidak ada bukti transaksi terlampir.</p>
