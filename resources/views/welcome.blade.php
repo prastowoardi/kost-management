@@ -93,17 +93,17 @@
                 <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 bento-card">
                     <div class="text-4xl mb-4">📶</div>
                     <h4 class="font-bold text-lg dark:text-white">WiFi Kencang</h4>
-                    <p class="text-slate-400 text-sm">Nugas & streaming lancar jaya.</p>
+                    <p class="text-slate-400 text-sm">Mau nugas apa nonton drakor gak perlu takut buffering.</p>
                 </div>
                 <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 bento-card">
-                    <div class="text-4xl mb-4">❄️</div>
+                    <div class="text-4xl mb-4">🛁</div>
                     <h4 class="font-bold text-lg dark:text-white">Kamar Mandi Dalam</h4>
-                    <p class="text-slate-400 text-sm">Gak perlu antre lagi.</p>
+                    <p class="text-slate-400 text-sm">Buru buru mau pergi jadi gak perlu antre lagi.</p>
                 </div>
                 <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] text-white md:col-span-2 flex items-center justify-between bento-card">
                     <div class="max-w-xs">
                         <h4 class="font-bold text-xl mb-1">Dapur Umum</h4>
-                        <p class="text-slate-400 text-sm">Sudah ada tempat memasak yang bersih.</p>
+                        <p class="text-slate-400 text-sm">Laper? Tinggal cuss masak.</p>
                     </div>
                     <div class="text-5xl">🍲</div>
                 </div>
