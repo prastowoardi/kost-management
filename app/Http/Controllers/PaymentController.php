@@ -8,6 +8,7 @@ use App\Models\Finance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 
@@ -60,7 +61,7 @@ class PaymentController extends Controller
             'late_fee' => 'nullable|numeric|min:0',
             'payment_method' => 'required|in:cash,transfer,e-wallet',
             'notes' => 'nullable|string',
-            'receipt_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048'
+            'receipt_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120'
         ]);
 
         $tenant = Tenant::findOrFail($validated['tenant_id']);
@@ -111,7 +112,7 @@ class PaymentController extends Controller
                 'url'     => route('payments.receipt', $payment->id)
             ]);
         } catch (\Exception $e) {
-            \Log::error("Gagal kirim WA otomatis: " . $e->getMessage());
+            Log::error("Gagal kirim WA otomatis: " . $e->getMessage());
         }
     }
 
@@ -186,7 +187,7 @@ class PaymentController extends Controller
             'status' => 'required|in:pending,paid,overdue',
             'payment_method' => 'nullable|in:cash,transfer,e-wallet',
             'notes' => 'nullable|string',
-            'receipt_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048'
+            'receipt_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120'
         ]);
 
         $tenant = Tenant::findOrFail($validated['tenant_id']);

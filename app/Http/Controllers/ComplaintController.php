@@ -33,7 +33,7 @@ class ComplaintController extends Controller
             'category' => 'required|in:facility,cleanliness,security,other',
             'priority' => 'required|in:low,medium,high',
             'images' => 'nullable|array|max:5',
-            'images.*' => 'image|mimes:jpeg,png,jpg|max:2048'
+            'images.*' => 'image|mimes:jpeg,png,jpg|max:5120'
         ]);
 
         $tenant = Tenant::find($validated['tenant_id']);
@@ -78,7 +78,7 @@ class ComplaintController extends Controller
             'response' => 'nullable|string',
             'resolved_date' => 'nullable|date',
             'images' => 'nullable|array|max:5',
-            'images.*' => 'image|mimes:jpeg,png,jpg|max:2048',
+            'images.*' => 'image|mimes:jpeg,png,jpg|max:5120',
             'remove_images' => 'nullable|array' // IDs gambar yang akan dihapus
         ]);
 

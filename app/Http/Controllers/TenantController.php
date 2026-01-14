@@ -35,7 +35,7 @@ class TenantController extends Controller
             'address' => 'required|string',
             'entry_date' => 'required|date',
             'emergency_contact' => 'nullable|string',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:5120'
         ]);
 
         if ($request->hasFile('photo')) {
@@ -79,7 +79,7 @@ class TenantController extends Controller
             'exit_date' => 'nullable|date|after:entry_date',
             'status' => 'required|in:active,inactive',
             'emergency_contact' => 'nullable|string',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:5120'
         ]);
 
         $oldRoomId = $tenant->room_id;

@@ -239,7 +239,12 @@ class FinanceController extends Controller
             'amount' => 'required|numeric|min:0',
             'transaction_date' => 'required|date',
             'description' => 'nullable|string',
+            'receipt_file' => 'nullable|image|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
+
+        if ($request->hasFile('receipt_file')) {
+            $validated['receipt_file'] = $request->file('receipt_file')->store('receipts', 'public');
+        }
 
         Finance::create($validated);
 
@@ -275,6 +280,7 @@ class FinanceController extends Controller
             'transaction_date' => 'required|date',
             'description' => 'required|string',
             'notes' => 'nullable|string',
+            'receipt_file' => 'nullable|image|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
 
         if ($request->hasFile('receipt_file')) {

@@ -35,7 +35,7 @@ class RoomController extends Controller
             'description' => 'nullable|string',
             'facilities' => 'nullable|array',
             'images' => 'nullable|array|max:5',
-            'images.*' => 'image|mimes:jpeg,png,jpg|max:2048'
+            'images.*' => 'image|mimes:jpeg,png,jpg|max:5120'
         ]);
 
         // Handle multiple images
@@ -86,7 +86,7 @@ class RoomController extends Controller
             'facilities' => 'nullable|array',
             'keep_images' => 'nullable|array',
             'new_images' => 'nullable|array|max:5',
-            'new_images.*' => 'image|mimes:jpeg,png,jpg|max:2048'
+            'new_images.*' => 'image|mimes:jpeg,png,jpg|max:5120'
         ]);
 
         // Get old images data
