@@ -1,22 +1,27 @@
-# Serrata Kos Management System
+# Serrata Kos System
 
+Serrata Kos adalah sistem manajemen kos terintegrasi yang menggabungkan kekuatan **Laravel** untuk pengelolaan data dan **Node.js (Baileys + Puppeteer)** sebagai engine otomatisasi pengiriman pesan dan kwitansi digital via WhatsApp.
 
 ---
 
-## 🛠 Instalasi Laravel (Main App)
+## 🛠 1. Instalasi Laravel (Main App)
 
+Aplikasi utama berfungsi sebagai dashboard admin untuk manajemen penghuni, kamar, dan keuangan.
+
+### **Langkah Instalasi:**
 1. **Clone & Install Dependencies**
-    ```bash
-    composer install
-    npm install && npm run build
+   ```bash
+   git clone [https://github.com/username/serrata-kos.git](https://github.com/username/serrata-kos.git)
+   cd serrata-kos
+   composer install
+   npm install && npm run build
 
 2. **Konfigurasi Environment**
     ```bash
     cp .env.example .env
     php artisan key:generate
-    ```
-    
-    Sesuaikan DB_DATABASE, DB_USERNAME, dan DB_PASSWORD di file .env.
+
+Penting: Atur konfigurasi database (DB_DATABASE, DB_USERNAME, DB_PASSWORD) dan arahkan WA_GATEWAY_URL=http://localhost:3000 di dalam file .env.
 
 3. **Migrasi Database**
     ```bash
@@ -27,9 +32,10 @@
     php artisan serve
     npm run dev
 
-🟢 **WhatsApp Gateway (Node.js + Puppeteer)**
-    Gateway ini berfungsi merender HTML menjadi gambar transparan dan mengirimkannya via WhatsApp.
+## 💬 2. WhatsApp Gateway (Node.js + Baileys + Puppeteer)
+Gateway ini berfungsi menerima data dari Laravel, merender HTML menjadi gambar kwitansi menggunakan Puppeteer, dan mengirimkannya via WhatsApp.
 
+### **Langkah Instalasi:**
 1. **Persiapan VPS Ubuntu (Wajib)**
     Puppeteer membutuhkan library sistem Linux agar Chrome dapat berjalan tanpa tampilan (headless). Jalankan ini di terminal VPS:
     ```bash
@@ -37,25 +43,34 @@
 
 2. **Instalasi Gateway**
     ```bash
-    cd /var/www/kost-management/whatsapp-gateway
+    cd whatsapp-gateway
     npm install
     sudo npm install pm2 -g
-
-3. Menjalankan & Cara Lihat QR Code
-    Gunakan PM2 untuk menjalankan service di latar belakang:
+3. **Menjalankan & Menghubungkan WhatsApp**
+Gunakan PM2 agar service tetap berjalan 24/7 meskipun terminal ditutup.
     ```bash
     # Menjalankan aplikasi pertama kali
-    pm2 start server.cjs --name "wa-gateway"
+    pm2 start server.js --name "wa-gateway"
 
-    # CARA LIHAT QR CODE (Untuk Scan)
+    # Cara melihat QR Code untuk Scan
     pm2 logs wa-gateway --lines 100
-    ```
+**Instruksi:** Buka WhatsApp di HP > Perangkat Tertaut > Tautkan Perangkat > Scan QR yang muncul di terminal.
 
-    Gunakan fitur "Tautkan Perangkat" di WhatsApp HP untuk scan QR yang muncul di terminal
-
-4. **Cara Ganti Akun WhatsApp**
+**Cara Ganti Akun WhatsApp**
     - Jika ingin mengganti nomor WA pengirim:
     - Hentikan service: pm2 stop wa-gateway
     - Hapus sesi lama: rm -rf .wwebjs_auth (di dalam folder whatsapp-gateway)
     - Mulai ulang: pm2 restart wa-gateway
     - Scan ulang: Jalankan pm2 logs wa-gateway untuk melihat QR baru.
+
+## 💬 3. Maintenance & Reset Session
+
+| Action | How to |
+| :--- | :--- |
+| **Ganti Nomor WhatsApp** | stop service `pm2 stop wa-gateway`,
+| | hapus folder `auth_info_baileys`| 
+| | restart PM2 `pm2 restart wa-gateway`|
+| | scan QR baru |
+| **Cek Status Server** | `pm2 status` untuk memastikan gateway online |
+| **Restart Gateway** | `pm2 restart wa-gateway` |
+| **Lihat Log Error** | `pm2 logs wa-gateway` |

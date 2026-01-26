@@ -20,11 +20,18 @@ class BroadcastController extends Controller
     {
         $request->validate(['message' => 'required']);
 
+        $tenants = Tenant::whereNotNull('phone')
+                        ->where('status', 'active')
+                        ->get(); 
+                        
+        if ($tenants->isEmpty()) {
+            return back()->withErrors(['msg' => 'Tidak ada Penghuni aktif yang ditemukan.']);
+        }
+
         $broadcast = Broadcast::create([
             'message' => $request->message,
         ]);
-
-        $tenants = Tenant::whereNotNull('phone')->get();
+        
         $success = 0; $failed = 0;
 
         foreach ($tenants as $tenant) {
@@ -60,8 +67,7 @@ class BroadcastController extends Controller
             'total_success' => $success,
             'total_failed' => $failed,
         ]);
-
-        return back()->with('status', 'Broadcast di kirim dan disimpan di history!');
+        return back()->with('status', 'Broadcast terkirim ke ' . $success . ' penghuni!');
     }
 
     public function history()

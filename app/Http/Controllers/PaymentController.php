@@ -87,32 +87,48 @@ class PaymentController extends Controller
         ]);
 
         $this->sendWhatsAppReceipt($payment);
-        return redirect()->route('payments.index')->with('success', 'Pembayaran berhasil dicatat dan kwitansi dikirim via WA');
+        return redirect()->route('payments.index')->with('success', 'Pembayaran dicatat & Kwitansi dikirim!');
     }
 
-    public function sendWhatsAppReceipt(Payment $payment)
+    private function sendWhatsAppReceipt($payment)
     {
+        $tenant = $payment->tenant;
+        if (!$tenant || !$tenant->phone) return;
+
         try {
-            $tenant = $payment->tenant;
-            $period = \Carbon\Carbon::parse($payment->period_month)->translatedFormat('F Y');
-            
-            $message = "Halo {$tenant->name},\n\n";
-            $message .= "Pembayaran kos periode {$period} telah kami terima.\n\n";
-            $message .= "Detail:\n";
-            $message .= "* No. Invoice: {$payment->invoice_number}\n";
-            $message .= "* Total: Rp " . number_format($payment->total, 0, ',', '.') . "\n\n";
-            $message .= "Terima kasih.";
+            $htmlContent = view('payments.receipt', compact('payment'))->render();
+            $caption = "Halo *{$tenant->name}*, berikut adalah kwitansi pembayaran Anda.";
 
-            $html = view('payments.receipt', compact('payment'))->render();
-
-            Http::timeout(30)->post('http://127.0.0.1:3000/send-image', [
+            // 1. Kirim ke Node.js
+            $response = Http::timeout(40)->post('http://127.0.0.1:3000/send-image', [
                 'number'  => $tenant->phone,
-                'message' => $message,
-                'html'    => $html,
-                'url'     => route('payments.receipt', $payment->id)
+                'html'    => $htmlContent,
+                'message' => $caption
             ]);
+
+            // 2. Log ke Database
+            if ($response->successful()) {
+                \App\Models\BroadcastLog::create([
+                    'broadcast_id'  => null,
+                    'tenant_name'   => $tenant->name,
+                    'phone'         => $tenant->phone,
+                    'status'        => 'success',
+                    'error_message' => null,
+                ]);
+            } else {
+                throw new \Exception("Gateway merespon dengan error: " . $response->body());
+            }
+
         } catch (\Exception $e) {
-            Log::error("Gagal kirim WA otomatis: " . $e->getMessage());
+            // 3. Log ke Database jika gagal
+            \App\Models\BroadcastLog::create([
+                'tenant_name'   => $tenant->name,
+                'phone'         => $tenant->phone,
+                'status'        => 'failed',
+                'error_message' => $e->getMessage(),
+            ]);
+            
+            Log::error("Gagal Kirim Pesan ke WA: " . $e->getMessage());
         }
     }
 
