@@ -50,7 +50,7 @@ Gateway ini berfungsi menerima data dari Laravel, merender HTML menjadi gambar k
 Gunakan PM2 agar service tetap berjalan 24/7 meskipun terminal ditutup.
     ```bash
     # Menjalankan aplikasi pertama kali
-    pm2 start server.js --name "wa-gateway"
+    pm2 start server.cjs --name "wa-gateway"
 
     # Cara melihat QR Code untuk Scan
     pm2 logs wa-gateway --lines 100
