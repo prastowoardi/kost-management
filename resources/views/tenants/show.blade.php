@@ -30,8 +30,8 @@
                                 <div class="flex items-center space-x-4">
                                     @if($tenant->photo)
                                     <img src="{{ asset('storage/' . $tenant->photo) }}" 
-                                         alt="{{ $tenant->name }}" 
-                                         class="h-24 w-24 rounded-full object-cover border-4 border-blue-100">
+                                        alt="{{ $tenant->name }}" 
+                                        class="h-24 w-24 rounded-full object-cover border-4 border-blue-100">
                                     @else
                                     <div class="h-24 w-24 rounded-full bg-gray-300 flex items-center justify-center border-4 border-blue-100">
                                         <span class="text-gray-600 font-bold text-3xl">{{ substr($tenant->name, 0, 1) }}</span>
@@ -198,8 +198,20 @@
                                 </div>
                                 <div class="flex justify-between items-center">
                                     <span class="text-sm text-gray-600">Lama Tinggal</span>
-                                    <span class="font-semibold text-gray-900">
-                                        {{ $tenant->entry_date->diffInDays($tenant->exit_date ?? now()) }} hari
+                                    <span class="font-semibold text-gray-900 text-right">
+                                        @php
+                                            $start = $tenant->entry_date;
+                                            $end = $tenant->exit_date ?? now();
+                                            $diff = $start->diff($end);
+                                        @endphp
+
+                                        @if($diff->y > 0 || $diff->m > 0)
+                                            {{ $diff->y > 0 ? $diff->y . ' Tahun ' : '' }}
+                                            {{ $diff->m > 0 ? $diff->m . ' Bulan ' : '' }}
+                                            {{ $diff->d > 0 ? $diff->d . ' Hari' : '' }}
+                                        @else
+                                            {{ $diff->d }} hari
+                                        @endif
                                     </span>
                                 </div>
                             </div>
