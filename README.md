@@ -1,6 +1,6 @@
-# Serrata Kos System
+# Serrata Kost System
 
-Serrata Kos adalah sistem manajemen kos terintegrasi yang menggabungkan kekuatan **Laravel** untuk pengelolaan data dan **Node.js (Baileys + Puppeteer)** sebagai engine otomatisasi pengiriman pesan dan kwitansi digital via WhatsApp.
+Serrata Kost adalah sistem manajemen kos terintegrasi yang menggabungkan kekuatan **Laravel** untuk pengelolaan data dan **Node.js (Baileys + Puppeteer)** sebagai engine otomatisasi pengiriman pesan dan kwitansi digital via WhatsApp.
 
 ---
 

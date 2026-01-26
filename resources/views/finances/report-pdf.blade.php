@@ -198,7 +198,7 @@
 <body>
     <!-- Header -->
     <div class="header">
-        <h1>Serrata Kos</h1>
+        <h1>Serrata Kost</h1>
         <h2>Laporan Keuangan</h2>
     </div>
     

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Serrata Kos</title>
+    <title>Login - Serrata Kost</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         @keyframes gradient {
@@ -59,7 +59,7 @@
                             🏠
                         </div>
                         <div>
-                            <h1 class="text-4xl font-bold">Serrata Kos</h1>
+                            <h1 class="text-4xl font-bold">Serrata Kost</h1>
                             <p class="text-white/80">Sistem Manajemen Kos Modern</p>
                         </div>
                     </div>
@@ -117,7 +117,7 @@
                         🏠
                     </div>
                     <div class="text-left">
-                        <h1 class="text-2xl font-bold">Serrata Kos</h1>
+                        <h1 class="text-2xl font-bold">Serrata Kostt</h1>
                         <p class="text-sm text-gray-600">Sistem Manajemen Kos</p>
                     </div>
                 </div>
@@ -252,7 +252,7 @@
             <!-- Footer -->
             <div class="mt-6 text-center">
                 <p class="text-sm text-gray-500">
-                    © 2025 Serrata Kos. All rights reserved.
+                    © 2025 Serrata Kostt. All rights reserved.
                 </p>
             </div>
         </div>

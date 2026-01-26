@@ -8,7 +8,7 @@
         <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('serrata.png') }}">
         <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('serrata.png') }}">
 
-        <title>Serrata Kost - Chill & Comfort Living</title>
+        <title>Serrata Kostt - Chill & Comfort Living</title>
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700" rel="stylesheet" />
@@ -63,7 +63,7 @@
                     Nge-kost serasa <br><span class="gradient-text">di rumah sendiri.</span>
                 </h1>
                 <p class="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed mb-10">
-                    Serrata Kost menyediakan hunian khusus putri dengan lingkungan yang nyaman. Gak perlu ribet, tinggal bawa koper. Cocok untuk mahasiswi dan karyawati yang mencari ketenangan di Sleman.
+                    Serrata Kostt menyediakan hunian khusus putri dengan lingkungan yang nyaman. Gak perlu ribet, tinggal bawa koper. Cocok untuk mahasiswi dan karyawati yang mencari ketenangan di Sleman.
                 </p>
                 
                 <div class="flex flex-col sm:flex-row justify-center gap-4">
@@ -128,7 +128,7 @@
                 <div class="bg-white dark:bg-slate-800 rounded-[3rem] p-8 md:p-16 border border-slate-100 dark:border-slate-700 shadow-xl overflow-hidden relative">
                     <div class="grid lg:grid-cols-2 gap-12 relative z-10">
                         <div>
-                            <h2 class="text-4xl font-extrabold mb-6 dark:text-white leading-tight">Mampir ke <br>Serrata Kost.</h2>
+                            <h2 class="text-4xl font-extrabold mb-6 dark:text-white leading-tight">Mampir ke <br>Serrata Kostt.</h2>
                             <p class="text-slate-500 dark:text-slate-400 mb-8">
                                 <strong>Alamat:</strong> Jl. Pandowoharjo, Kleben Moncosan, Mancasan, Kec. Sleman, Yogyakarta 55512.
                             </p>
@@ -161,7 +161,7 @@
                 <a href="#" class="hover:text-pink-500 transition">Instagram</a>
                 <a href="#" class="hover:text-pink-500 transition">TikTok</a>
             </div>
-            <p>© 2026 Serrata Kost Sleman. Chill & Comfort Living.</p>
+            <p>© 2026 Serrata Kostt Sleman. Chill & Comfort Living.</p>
             
             <a href="{{ route('login') }}" class="mt-4 block opacity-10 hover:opacity-100 transition-opacity duration-300 text-[10px]">
                 System Access
