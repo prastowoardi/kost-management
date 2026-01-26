@@ -221,7 +221,7 @@
         function sendWhatsApp(paymentId, tenantName) {
             Swal.fire({
                 title: 'Kirim Kwitansi?',
-                text: `Kirim kwitansi otomatis ke WhatsApp ${tenantName}?`,
+                text: `Kirim kwitansi ke WhatsApp ${tenantName}?`,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#22c55e',
