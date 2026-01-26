@@ -201,7 +201,13 @@
                                     <span class="font-semibold text-gray-900 text-right">
                                         @php
                                             $start = $tenant->entry_date;
-                                            $end = $tenant->exit_date ?? now();
+                                            
+                                            if ($tenant->status === 'inactive') {
+                                                $end = $tenant->exit_date ?? now(); 
+                                            } else {
+                                                $end = now();
+                                            }
+
                                             $diff = $start->diff($end);
                                         @endphp
 
@@ -210,7 +216,7 @@
                                             {{ $diff->m > 0 ? $diff->m . ' Bulan ' : '' }}
                                             {{ $diff->d > 0 ? $diff->d . ' Hari' : '' }}
                                         @else
-                                            {{ $diff->d }} hari
+                                            {{ $diff->d }} Hari
                                         @endif
                                     </span>
                                 </div>
