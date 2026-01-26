@@ -73,7 +73,7 @@
                         {{ __('Keluhan') }}
                     </x-nav-link>
                     
-                    <!-- <div class="hidden sm:flex sm:items-center sm:ms-6">
+                    <div class="hidden sm:flex sm:items-center sm:ms-6">
                         <x-dropdown align="right" width="48">
                             <x-slot name="trigger">
                                 <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('broadcast.*') ? 'text-indigo-700 font-bold' : '' }}">
@@ -95,7 +95,7 @@
                                 </x-dropdown-link>
                             </x-slot>
                         </x-dropdown>
-                    </div> -->
+                    </div>
 
                     @if(auth()->user()->isAdmin())
                     <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
@@ -195,7 +195,7 @@
                 {{ __('Keluhan') }}
             </x-responsive-nav-link>
             
-            <!-- <div x-data="{ openBroadcast: {{ request()->routeIs('broadcast.*') ? 'true' : 'false' }} }">
+            <div x-data="{ openBroadcast: {{ request()->routeIs('broadcast.*') ? 'true' : 'false' }} }">
                 <button @click="openBroadcast = !openBroadcast" class="w-full flex justify-between items-center pl-3 pr-4 py-2 border-l-4 border-transparent text-left text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300 transition duration-150 ease-in-out">
                     <span class="flex items-center">
                         {{ __('Broadcast WhatsApp') }}
@@ -213,7 +213,7 @@
                         {{ __('Riwayat Broadcast') }}
                     </x-responsive-nav-link>
                 </div>
-            </div> -->
+            </div>
             
             @if(auth()->user()->isAdmin())
             <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
