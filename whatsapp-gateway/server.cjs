@@ -1,3 +1,9 @@
+const originalWrite = process.stdout.write;
+process.stdout.write = function (chunk, encoding, callback) {
+    if (typeof chunk === 'string' && chunk.includes('Closing session')) return true;
+    return originalWrite.apply(process.stdout, arguments);
+};
+
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require("@whiskeysockets/baileys");
 const { Boom } = require("@hapi/boom");
 const puppeteer = require('puppeteer');
@@ -26,6 +32,7 @@ async function connectToWhatsApp() {
         auth: state,
         printQRInTerminal: true,
         logger: pino({ level: 'silent' }),
+        shouldIgnoreJid: jid => isJidBroadcast(jid),
     });
 
     sock.ev.on('creds.update', saveCreds);

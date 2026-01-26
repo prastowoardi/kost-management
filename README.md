@@ -39,6 +39,10 @@ Gateway ini berfungsi menerima data dari Laravel, merender HTML menjadi gambar k
 1. **Persiapan VPS Ubuntu (Wajib)**
     Puppeteer membutuhkan library sistem Linux agar Chrome dapat berjalan tanpa tampilan (headless). Jalankan ini di terminal VPS:
     ```bash
+    install baileys
+    npm install @whiskeysockets/baileys @hapi/boom qrcode-terminal express pino
+    
+    lalu install package:
     sudo apt-get update && sudo apt-get install -y libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libasound2 libpango-1.0-0 libpangocairo-1.0-0 libxshmfence1 libx11-xcb1 fonts-liberation libxfixes3 libxrender1
 
 2. **Instalasi Gateway**
