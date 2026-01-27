@@ -31,6 +31,8 @@ Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt'])
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
+    Route::post('/send-reminder', [App\Http\Controllers\DashboardController::class, 'sendReminder'])->name('send.reminder');
+    
     // Profile (Semua User)
     Route::controller(ProfileController::class)->group(function () {
         Route::get('/profile', 'edit')->name('profile.edit');

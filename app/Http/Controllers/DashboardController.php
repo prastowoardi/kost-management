@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\{Room, Tenant, Payment, Complaint};
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -69,5 +70,37 @@ class DashboardController extends Controller
             'recentComplaints',
             'duePayments'
         ));
+    }
+
+    public function sendReminder(Request $request)
+    {
+        try {
+            $tenant = Tenant::with('room')->findOrFail($request->tenant_id);
+            $message = "Halo *" . $tenant->name . "*,\n\n" .
+                    "Mengingatkan tagihan sewa Kamar *" . $tenant->room->room_number . "* " .
+                    "jatuh tempo pada *" . $request->due_date . "*.\n\n" .
+                    "Terima kasih." . "\n\n" .
+                    "Pesan ini dikirim otomatis oleh sistem."
+                    ;
+
+            $response = Http::timeout(10)->post('http://127.0.0.1:3000/send-message', [
+                'number'   => $tenant->phone,
+                'message' => $message,
+            ]);
+
+            if ($response->successful()) {
+                \App\Models\BroadcastLog::create([
+                    'tenant_name' => $tenant->name,
+                    'phone'       => $tenant->phone,
+                    'status'      => 'success'
+                ]);
+                return response()->json(['status' => 'success', 'message' => 'Tagihan berhasil dikirim ke WhatsApp!']);
+            }
+            
+            throw new \Exception("Gateway gagal merespon.");
+
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => 'Gagal: ' . $e->getMessage()], 500);
+        }
     }
 }
