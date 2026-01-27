@@ -24,7 +24,7 @@
                         <span class="bg-orange-500 p-1.5 rounded-lg mr-3 shadow-md shadow-orange-200">
                             <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </span>
-                        Pengingat Jatuh Tempo (Otomatis H-7)
+                        Pengingat Jatuh Tempo
                     </h3>
                 </div>
 
