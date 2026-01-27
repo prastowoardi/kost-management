@@ -45,7 +45,7 @@
 
                     <div>
                         <label for="filter_month" class="block text-sm font-medium text-gray-700">Bulan</label>
-                        <select name="filter_month" id="filter_month"
+                        <select name="filter_month" onchange="this.form.submit()" id="filter_month"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             <option value="">Semua</option>
                             @foreach($months as $num => $name)
@@ -58,11 +58,10 @@
 
                     <div>
                         <label for="filter_year" class="block text-sm font-medium text-gray-700">Tahun</label>
-                        <select name="filter_year" id="filter_year"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <select name="filter_year" onchange="this.form.submit()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             <option value="">Semua</option>
                             @for($year = $endYear; $year >= $startYear; $year--)
-                                <option value="{{ $year }}" {{ (string)request('filter_year', $currentYear) == (string)$year ? 'selected' : '' }}>
+                                <option value="{{ $year }}" {{ request('filter_year', $currentYear) == $year ? 'selected' : '' }}>
                                     {{ $year }}
                                 </option>
                             @endfor
@@ -71,7 +70,7 @@
 
                     <div>
                         <label for="tenant_id" class="block text-sm font-medium text-gray-700">Penghuni</label>
-                        <select name="tenant_id" id="tenant_id"
+                        <select name="tenant_id" onchange="this.form.submit()" id="tenant_id"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             <option value="">Semua Penghuni</option>
                             @foreach($tenants as $tenant)

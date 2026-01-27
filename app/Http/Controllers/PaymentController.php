@@ -31,6 +31,18 @@ class PaymentController extends Controller
             $query->where('tenant_id', $request->tenant_id);
         }
 
+        $currentYear = date('Y');
+        $startYear = 2023; // Kunci di tahun pertama kosan buka sesuai gambar kamu
+        $endYear = $currentYear + 1; // +1 supaya tahun depan (2027) muncul seperti di gambar
+
+        $query = Payment::with(['tenant', 'room'])
+            ->orderBy('created_at', 'desc');
+
+        // Filter Tahun
+        if ($request->filled('filter_year')) {
+            $query->whereYear('period_month', $request->filter_year);
+        }
+
         if ($request->filled('invoice_number')) {
             $query->where('invoice_number', 'like', "%{$request->invoice_number}%");
         }

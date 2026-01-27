@@ -23,9 +23,12 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Tahun</label>
-                            <select name="year" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                @for($y = now()->year; $y >= now()->year - 5; $y--)
-                                <option value="{{ $y }}" {{ (int)$year == $y ? 'selected' : '' }}>{{ $y }}</option>
+                            <select name="year" onchange="this.form.submit()" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="">Semua</option>
+                                @for($y = now()->year + 1; $y >= 2023; $y--)
+                                    <option value="{{ $y }}" {{ request('year', now()->year) == $y ? 'selected' : '' }}>
+                                        {{ $y }}
+                                    </option>
                                 @endfor
                             </select>
                         </div>
