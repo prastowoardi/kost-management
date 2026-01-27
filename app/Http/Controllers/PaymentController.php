@@ -336,4 +336,30 @@ class PaymentController extends Controller
         $payment->load(['tenant', 'room']);
         return view('payments.receipt', compact('payment'));
     }
+
+    public function upload(Request $request, $hash)
+    {
+        $id = decrypt($hash); // Mengambil ID asli dari link aman
+        $payment = Payment::findOrFail($id);
+
+        $request->validate([
+            'proof' => 'required|image|max:2048',
+        ]);
+
+        if ($request->hasFile('proof')) {
+            $file = $request->file('proof');
+            $filename = 'proof_' . $id . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('public/proofs', $filename);
+
+            $payment->update([
+                'proof_of_payment' => $filename,
+                'status' => 'pending' // Menunggu verifikasi admin
+            ]);
+
+            // Kirim Notif WA ke Admin pakai gateway yang sudah ada
+            // ... (Logic Http::post ke localhost:3000)
+
+            return redirect()->route('public.pay.success', $hash);
+        }
+    }
 }

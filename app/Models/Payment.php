@@ -36,7 +36,7 @@ class Payment extends Model
 
     public function tenant()
     {
-        return $this->belongsTo(Tenant::class);
+        return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 
     public function room()
@@ -51,5 +51,12 @@ class Payment extends Model
         static::creating(function ($payment) {
             $payment->invoice_number = 'INV-' . date('Ymd') . '-' . str_pad(Payment::count() + 1, 4, '0', STR_PAD_LEFT);
         });
+    }
+
+    public function isDue()
+    {
+        $dueDate = $this->created_at->addMonth(); 
+        
+        return now()->greaterThanOrEqualTo($dueDate);
     }
 }
