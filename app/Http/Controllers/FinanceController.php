@@ -56,7 +56,7 @@ class FinanceController extends Controller
         $incomeCategories = Finance::income()->distinct()->pluck('category');
         $expenseCategories = Finance::expense()->distinct()->pluck('category');
 
-        return view('finances.index', compact(
+        return view('payments.index', compact(
             'finances',
             'totalIncome',
             'totalExpense',
@@ -248,7 +248,7 @@ class FinanceController extends Controller
 
         Finance::create($validated);
 
-        return redirect()->route('finances.index')
+        return redirect()->route('payments.index')
             ->with('success', 'Data keuangan berhasil ditambahkan!');
     }
 
@@ -293,7 +293,7 @@ class FinanceController extends Controller
         $finance->update($validated);
         $finance->touch(); 
 
-        return redirect()->route('finances.index')
+        return redirect()->route('payments.index')
             ->with('success', 'Data keuangan berhasil diupdate!');
     }
 
@@ -301,7 +301,7 @@ class FinanceController extends Controller
     {
         $finance->delete();
 
-        return redirect()->route('finances.index')
+        return redirect()->route('payments.index')
             ->with('success', 'Data keuangan berhasil dihapus!');
     }
 

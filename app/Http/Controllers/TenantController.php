@@ -76,7 +76,7 @@ class TenantController extends Controller
             'id_card' => 'required|string|unique:tenants,id_card,' . $tenant->id,
             'address' => 'required|string',
             'entry_date' => 'required|date',
-            'exit_date' => 'nullable|date|after:entry_date',
+            'exit_date' => 'nullable|date',
             'status' => 'required|in:active,inactive',
             'emergency_contact' => 'nullable|string',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:5120'
@@ -93,18 +93,29 @@ class TenantController extends Controller
 
         $tenant->update($validated);
 
-        // Update room status
-        if ($oldRoomId != $validated['room_id']) {
-            Room::find($oldRoomId)->update(['status' => 'available']);
-            Room::find($validated['room_id'])->update(['status' => 'occupied']);
+        if ($tenant->status == 'inactive') {
+            Room::where('id', $tenant->room_id)->update(['status' => 'available']);
+        }
+        else {
+            if ($oldRoomId != $validated['room_id']) {
+                Room::where('id', $oldRoomId)->update(['status' => 'available']);
+            }
+            Room::where('id', $validated['room_id'])->update(['status' => 'occupied']);
         }
 
-        if ($validated['status'] == 'inactive') {
-            Room::find($tenant->room_id)->update(['status' => 'available']);
+        $tenant->update($validated);
+
+        if ($tenant->status == 'inactive') {
+            Room::where('id', $tenant->room_id)->update(['status' => 'available']);
+        } else {
+            if ($oldRoomId != $validated['room_id']) {
+                Room::where('id', $oldRoomId)->update(['status' => 'available']);
+            }
+            Room::where('id', $validated['room_id'])->update(['status' => 'occupied']);
         }
 
         return redirect()->route('tenants.index')
-                        ->with('success', 'Data penghuni berhasil diupdate');
+                ->with('success', 'Data penghuni berhasil diupdate');
     }
 
     public function destroy(Tenant $tenant)

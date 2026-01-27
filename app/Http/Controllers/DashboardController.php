@@ -2,69 +2,72 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Room;
-use App\Models\Tenant;
-use App\Models\Payment;
-use App\Models\Complaint;
+use App\Models\{Room, Tenant, Payment, Complaint};
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // Total statistik
+        // 1. Statistik Dasar
         $totalRooms = Room::count();
         $occupiedRooms = Room::where('status', 'occupied')->count();
-        $availableRooms = Room::where('status', 'available')->count();
         $activeTenants = Tenant::where('status', 'active')->count();
         
-        // Pembayaran bulan ini
-        $currentMonth = now()->format('Y-m');
-        $paymentsThisMonth = Payment::whereYear('period_month', now()->year)
-                                    ->whereMonth('period_month', now()->month)
+        // 2. Statistik Pembayaran
+        $paymentsThisMonth = Payment::whereYear('period_month', Carbon::now()->year)
+                                    ->whereMonth('period_month', Carbon::now()->month)
+                                    ->where('status', 'paid')
                                     ->sum('total');
         
         $pendingPayments = Payment::where('status', 'pending')->count();
         $overduePayments = Payment::where('status', 'overdue')->count();
         
-        // Keluhan terbuka
+        // 3. Keluhan
         $openComplaints = Complaint::where('status', 'open')->count();
-        
-        // Pembayaran terbaru
-        $recentPayments = Payment::with(['tenant', 'room'])
-                                    ->orderBy('created_at', 'desc')
-                                    ->take(5)
-                                    ->get();
-        
-        // Keluhan terbaru
-        $recentComplaints = Complaint::with(['tenant', 'room'])
-                                        ->orderBy('created_at', 'desc')
-                                        ->take(5)
-                                        ->get();
-        
-        // Chart data - Pembayaran 6 bulan terakhir
-        $paymentChart = Payment::select(
-                            DB::raw('DATE_FORMAT(period_month, "%Y-%m") as month'),
-                            DB::raw('SUM(total) as total')
-                        )
-                        ->where('period_month', '>=', now()->subMonths(6))
-                        ->groupBy('month')
-                        ->orderBy('month')
-                        ->get();
-        
+
+        // 4. LOGIC JATUH TEMPO (H-7)
+        // Ambil semua pembayaran yang belum lunas untuk dicek tanggalnya
+        $duePayments = Tenant::with('room')
+            ->where('status', 'active')
+            ->get()
+            ->filter(function ($tenant) {
+                if (!$tenant->entry_date) return false;
+
+                $entryDate = \Carbon\Carbon::parse($tenant->entry_date);
+                $targetDate = \Carbon\Carbon::now()->setDay($entryDate->day);
+
+                if (\Carbon\Carbon::now()->gt($targetDate->endOfDay())) {
+                    $targetDate->addMonth();
+                }
+
+                // Hitung selisih hari dari SEKARANG ke TANGGAL JATUH TEMPO
+                $tenant->days_left = (int) \Carbon\Carbon::now()->startOfDay()
+                    ->diffInDays($targetDate->startOfDay(), false);
+                
+                $tenant->calculated_due_date = $targetDate;
+
+                return $tenant->days_left <= 7 && $tenant->days_left >= 0;
+            })->sortBy('days_left');;
+
+        // 5. Aktivitas Terbaru
+        $recentPayments = Payment::with(['tenant', 'room'])->latest()->take(5)->get();
+        $recentComplaints = Complaint::with(['tenant', 'room'])->latest()->take(5)->get();
+
+        // 6. Kirim ke View
         return view('dashboard', compact(
             'totalRooms',
             'occupiedRooms',
-            'availableRooms',
             'activeTenants',
             'paymentsThisMonth',
             'pendingPayments',
             'overduePayments',
             'openComplaints',
+            'duePayments',
             'recentPayments',
             'recentComplaints',
-            'paymentChart'
+            'duePayments'
         ));
     }
 }
