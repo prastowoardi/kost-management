@@ -32,8 +32,8 @@ class PaymentController extends Controller
         }
 
         $currentYear = date('Y');
-        $startYear = 2023; // Kunci di tahun pertama kosan buka sesuai gambar kamu
-        $endYear = $currentYear + 1; // +1 supaya tahun depan (2027) muncul seperti di gambar
+        $startYear = 2023;
+        $endYear = $currentYear + 1;
 
         $query = Payment::with(['tenant', 'room'])
             ->orderBy('created_at', 'desc');
