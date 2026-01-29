@@ -8,15 +8,16 @@
     <style>
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            50% { transform: translateX(5px); }
-            75% { transform: translateX(-5px); }
+            20% { transform: translateX(-3px); }
+            40% { transform: translateX(3px); }
+            60% { transform: translateX(-3px); }
+            80% { transform: translateX(3px); }
         }
         .animate-shake {
-            animation: shake 0.5s infinite;
+            animation: shake 0.8s ease-in-out infinite;
         }
     </style>
-    
+
     {{-- Alert Notifikasi --}}
     @if(session('success') || session('error'))
         <div class="max-w-7xl mx-auto px-4 mt-4">
@@ -125,15 +126,17 @@
                         <p class="text-2xl font-bold text-gray-800">{{ $occupiedRooms }}/{{ $totalRooms }}</p>
                     </div>
                 </div>
+
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center">
                     <div class="p-3 bg-purple-500 rounded-lg mr-4">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-500 font-medium">Tenant Aktif</p>
+                        <p class="text-sm text-gray-500 font-medium">Penghuni Aktif</p>
                         <p class="text-2xl font-bold text-gray-800">{{ $activeTenants }}</p>
                     </div>
                 </div>
+
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center">
                     <div class="p-3 bg-yellow-500 rounded-lg mr-4">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -143,13 +146,14 @@
                         <p class="text-2xl font-bold text-gray-800">Rp {{ number_format($paymentsThisMonth, 0, ',', '.') }}</p>
                     </div>
                 </div>
+
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center">
-                    <div class="p-3 bg-red-500 rounded-lg mr-4">
+                    <div class="p-3 bg-red-500 rounded-lg mr-4 shadow-md shadow-red-200">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-500 font-medium">Tagihan Pending</p>
-                        <p class="text-2xl font-bold text-gray-800">{{ $pendingPayments }}</p>
+                        <p class="text-sm text-gray-500 font-medium">Jatuh Tempo</p>
+                        <p class="text-2xl font-bold text-gray-800">{{ $pendingPayments }} <span class="text-xs font-normal text-gray-400">Orang</span></p>
                     </div>
                 </div>
             </div>

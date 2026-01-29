@@ -16,50 +16,47 @@ class DashboardController extends Controller
         $occupiedRooms = Room::where('status', 'occupied')->count();
         $activeTenants = Tenant::where('status', 'active')->count();
         
-        // 2. Statistik Pembayaran
+        // 2. Statistik Pembayaran (Lunas Bulan Ini)
         $paymentsThisMonth = Payment::whereYear('period_month', Carbon::now()->year)
                                     ->whereMonth('period_month', Carbon::now()->month)
                                     ->where('status', 'paid')
                                     ->sum('total');
         
-        $pendingPayments = Payment::where('status', 'pending')->count();
-        $overduePayments = Payment::where('status', 'overdue')->count();
-        
-        // 3. Keluhan
-        $openComplaints = Complaint::where('status', 'open')->count();
-
-        // 4. LOGIC JATUH TEMPO (H-7)
-        // Ambil semua pembayaran yang belum lunas untuk dicek tanggalnya
-        $duePayments = Tenant::with('room')
+        // 3. LOGIKA UTAMA: JATUH TEMPO & PENDING (Satu Kali Proses)
+        $allDueTenants = Tenant::with(['room', 'payments'])
             ->where('status', 'active')
             ->get()
             ->filter(function ($tenant) {
                 if (!$tenant->entry_date) return false;
-
-                $now = \Carbon\Carbon::now()->startOfDay();
-                $entryDate = \Carbon\Carbon::parse($tenant->entry_date);
                 
-                $targetDate = \Carbon\Carbon::now()->setDay($entryDate->day)->startOfDay();
+                $now = Carbon::now()->startOfDay();
+                $entryDate = Carbon::parse($tenant->entry_date);
+                $targetDate = Carbon::now()->setDay($entryDate->day)->startOfDay();
 
                 $diff = $now->diffInDays($targetDate, false);
+                if ($diff < -20) { $targetDate->addMonth(); } 
+                elseif ($diff > 20) { $targetDate->subMonth(); }
 
-                if ($diff < -20) {
-                    $targetDate->addMonth();
-                } elseif ($diff > 20) {
-                    $targetDate->subMonth();
-                }
+                $isPaid = $tenant->payments->where('status', 'paid')
+                    ->filter(function ($payment) use ($targetDate) {
+                        return Carbon::parse($payment->period_month)->format('Y-m') === $targetDate->format('Y-m');
+                    })->first();
 
                 $tenant->days_left = (int) $now->diffInDays($targetDate, false);
                 $tenant->calculated_due_date = $targetDate;
 
-                return $tenant->days_left <= 7 && $tenant->days_left >= -14;
-            })->sortBy('days_left');
+                return !$isPaid && ($tenant->days_left <= 7 && $tenant->days_left >= -14);
+            });
 
-        // 5. Aktivitas Terbaru
+        $duePayments = $allDueTenants->sortBy('days_left');
+        $pendingPayments = $allDueTenants->count();
+
+        $overduePayments = Payment::where('status', 'overdue')->count();
+        $openComplaints = Complaint::where('status', 'open')->count();
+
         $recentPayments = Payment::with(['tenant', 'room'])->latest()->take(5)->get();
         $recentComplaints = Complaint::with(['tenant', 'room'])->latest()->take(5)->get();
 
-        // 6. Kirim ke View
         return view('dashboard', compact(
             'totalRooms',
             'occupiedRooms',
@@ -70,8 +67,7 @@ class DashboardController extends Controller
             'openComplaints',
             'duePayments',
             'recentPayments',
-            'recentComplaints',
-            'duePayments'
+            'recentComplaints'
         ));
     }
 
