@@ -5,6 +5,18 @@
         </h2>
     </x-slot>
 
+    <style>
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+        }
+        .animate-shake {
+            animation: shake 0.5s infinite;
+        }
+    </style>
+    
     {{-- Alert Notifikasi --}}
     @if(session('success') || session('error'))
         <div class="max-w-7xl mx-auto px-4 mt-4">
@@ -32,18 +44,20 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         @foreach($duePayments as $tenant)
                             <div class="flex h-full">
-                                <div class="bg-white border-t-4 border-orange-500 rounded-xl shadow-md overflow-hidden flex flex-col w-full">
+                                <div class="bg-white border-t-4 {{ $tenant->days_left < 0 ? 'border-red-600 shadow-red-100 animate-shake' : 'border-orange-500 shadow-md' }} rounded-xl shadow-md overflow-hidden flex flex-col w-full transition-all">
                                     <div class="p-5 flex flex-col h-full">
                                         <div class="flex justify-between items-start mb-4">
                                             <div class="pr-2">
-                                                <h4 class="text-base font-bold text-gray-900 uppercase line-clamp-2">{{ $tenant->name }}</h4>
+                                                <h4 class="text-base font-bold {{ $tenant->days_left < 0 ? 'text-red-700' : 'text-gray-900' }} uppercase line-clamp-2">{{ $tenant->name }}</h4>
                                                 <p class="text-sm text-gray-500 mt-1">Kamar {{ $tenant->room->room_number }}</p>
                                             </div>
 
-                                            {{-- BADGE SUDAH DIPERBAIKI --}}
+                                            {{-- BADGE DINAMIS --}}
                                             <span class="shrink-0 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider 
-                                                {{ $tenant->days_left <= 0 ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700' }}">
-                                                @if($tenant->days_left <= 0)
+                                                {{ $tenant->days_left < 0 ? 'bg-red-600 text-white' : ($tenant->days_left == 0 ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700') }}">
+                                                @if($tenant->days_left < 0)
+                                                    Telat {{ abs($tenant->days_left) }} Hari
+                                                @elseif($tenant->days_left == 0)
                                                     Hari Ini
                                                 @elseif($tenant->days_left == 1)
                                                     Besok
@@ -53,14 +67,17 @@
                                             </span>
                                         </div>
                                         
-                                        <div class="mt-auto p-3 bg-gray-50 rounded-lg">
+                                        {{-- Box Informasi --}}
+                                        <div class="mt-auto p-3 {{ $tenant->days_left < 0 ? 'bg-red-50' : 'bg-gray-50' }} rounded-lg">
                                             <div class="flex justify-between text-sm mb-1">
                                                 <span class="text-gray-500">Sewa Bulanan:</span>
-                                                <span class="font-bold text-gray-800">Rp {{ number_format($tenant->room->price, 0, ',', '.') }}</span>
+                                                <span class="font-bold {{ $tenant->days_left < 0 ? 'text-red-700' : 'text-gray-800' }}">Rp {{ number_format($tenant->room->price, 0, ',', '.') }}</span>
                                             </div>
                                             <div class="flex justify-between text-xs">
                                                 <span class="text-gray-500">Jatuh Tempo:</span>
-                                                <span class="text-gray-700 font-medium">{{ $tenant->calculated_due_date->format('d M Y') }}</span>
+                                                <span class="{{ $tenant->days_left < 0 ? 'text-red-600 font-bold' : 'text-gray-700 font-medium' }}">
+                                                    {{ $tenant->calculated_due_date->format('d M Y') }}
+                                                </span>
                                             </div>
                                         </div>
 
@@ -74,9 +91,10 @@
                                                     data-id="{{ $tenant->id }}" 
                                                     data-name="{{ $tenant->name }}"
                                                     data-due="{{ $tenant->calculated_due_date->format('d M Y') }}"
-                                                    class="send-wa-btn w-full flex items-center justify-center px-4 py-2.5 bg-green-500 hover:bg-green-600 text-white text-xs font-bold rounded-lg transition-all shadow-sm">
+                                                    data-days="{{ $tenant->days_left }}"
+                                                    class="send-wa-btn w-full flex items-center justify-center px-4 py-2.5 {{ $tenant->days_left < 0 ? 'bg-red-600 hover:bg-red-700' : 'bg-green-500 hover:bg-green-600' }} text-white text-xs font-bold rounded-lg transition-all shadow-sm">
                                                     <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.438 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
-                                                        Kirim Reminder
+                                                        {{ $tenant->days_left < 0 ? 'Tagih Sekarang!' : 'Kirim Reminder' }}
                                                 </button>
                                             </form>
                                         </div>
@@ -91,7 +109,7 @@
                             <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                         </div>
                         <h4 class="text-lg font-medium text-gray-900">Belum Ada Tagihan</h4>
-                        <p class="text-gray-500">Tidak ada penghuni aktif yang masuk masa jatuh tempo dalam 7 hari ke depan.</p>
+                        <p class="text-gray-500">Tidak ada tagihan yang masuk masa jatuh tempo dalam 7 hari ke depan.</p>
                     </div>
                 @endif
             </div>
@@ -142,7 +160,11 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-5 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                         <h3 class="font-bold text-gray-800">Riwayat Pembayaran Terbaru</h3>
-                        <a href="{{ route('payments.index') }}" class="text-xs text-blue-600 font-bold hover:underline">Lihat Semua</a>
+                        <a href="{{ route('payments.index') }}" 
+                            class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold uppercase tracking-wider rounded-lg transition-colors shadow-sm">
+                            Lihat Semua
+                            <svg class="w-3 h-3 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </a>
                     </div>
                     <div class="divide-y divide-gray-100">
                         @forelse($recentPayments as $payment)
@@ -173,7 +195,11 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-5 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                         <h3 class="font-bold text-gray-800">Keluhan Terbaru</h3>
-                        <a href="{{ route('complaints.index') }}" class="text-xs text-blue-600 font-bold hover:underline">Lihat Semua</a>
+                        <a href="{{ route('complaints.index') }}" 
+                            class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold uppercase tracking-wider rounded-lg transition-colors shadow-sm">
+                            Lihat Semua
+                            <svg class="w-3 h-3 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </a>
                     </div>
                     <div class="divide-y divide-gray-100">
                         @forelse($recentComplaints as $complaint)
@@ -232,7 +258,8 @@ document.querySelectorAll('.send-wa-btn').forEach(button => {
                     },
                     body: JSON.stringify({
                         tenant_id: tenantId,
-                        due_date: dueDate
+                        due_date: dueDate,
+                        days_left: this.getAttribute('data-days')
                     })
                 })
                 .then(response => response.json())

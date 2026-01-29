@@ -36,21 +36,24 @@ class DashboardController extends Controller
             ->filter(function ($tenant) {
                 if (!$tenant->entry_date) return false;
 
+                $now = \Carbon\Carbon::now()->startOfDay();
                 $entryDate = \Carbon\Carbon::parse($tenant->entry_date);
-                $targetDate = \Carbon\Carbon::now()->setDay($entryDate->day);
+                
+                $targetDate = \Carbon\Carbon::now()->setDay($entryDate->day)->startOfDay();
 
-                if (\Carbon\Carbon::now()->gt($targetDate->endOfDay())) {
+                $diff = $now->diffInDays($targetDate, false);
+
+                if ($diff < -20) {
                     $targetDate->addMonth();
+                } elseif ($diff > 20) {
+                    $targetDate->subMonth();
                 }
 
-                // Hitung selisih hari dari SEKARANG ke TANGGAL JATUH TEMPO
-                $tenant->days_left = (int) \Carbon\Carbon::now()->startOfDay()
-                    ->diffInDays($targetDate->startOfDay(), false);
-                
+                $tenant->days_left = (int) $now->diffInDays($targetDate, false);
                 $tenant->calculated_due_date = $targetDate;
 
-                return $tenant->days_left <= 7 && $tenant->days_left >= 0;
-            })->sortBy('days_left');;
+                return $tenant->days_left <= 7 && $tenant->days_left >= -14;
+            })->sortBy('days_left');
 
         // 5. Aktivitas Terbaru
         $recentPayments = Payment::with(['tenant', 'room'])->latest()->take(5)->get();
@@ -76,31 +79,38 @@ class DashboardController extends Controller
     {
         try {
             $tenant = Tenant::with('room')->findOrFail($request->tenant_id);
-            $message = "Halo *" . $tenant->name . "*,\n\n" .
-                    "Mengingatkan tagihan sewa Kamar *" . $tenant->room->room_number . "* " .
-                    "jatuh tempo pada *" . $request->due_date . "*.\n\n" .
-                    "Terima kasih." . "\n\n" .
-                    "Pesan ini dikirim otomatis oleh sistem."
-                    ;
+            $daysLeft = (int) $request->days_left;
 
-            $response = Http::timeout(10)->post('http://127.0.0.1:3000/send-message', [
-                'number'   => $tenant->phone,
+            if ($daysLeft < 0) {
+                // Pesan untuk yang telat
+                $daysLate = abs($daysLeft);
+                $message = "Yth. *" . $tenant->name . "*,\n\n" .
+                        "Mohon maaf mengganggu. Kami menginformasikan bahwa tagihan sewa Kamar *" . $tenant->room->room_number . "* telah *MELEWATI JATUH TEMPO* selama *" . $daysLate . " hari* (Tgl: " . $request->due_date . ").\n\n" .
+                        "Total Tagihan: *Rp " . number_format($tenant->room->price, 0, ',', '.') . "*\n\n" .
+                        "Mohon segera melakukan pembayaran agar tidak terkena denda atau pemutusan fasilitas. Jika sudah membayar, abaikan pesan ini.\n\n" .
+                        "Terima kasih.";
+            } else {
+                // Pesan untuk pengingat
+                $statusTeks = ($daysLeft == 0) ? "HARI INI" : "dalam " . $daysLeft . " hari lagi";
+                $message = "Halo *" . $tenant->name . "*,\n\n" .
+                        "Sekadar mengingatkan bahwa sewa Kamar *" . $tenant->room->room_number . "* akan jatuh tempo *" . $statusTeks . "* (" . $request->due_date . ").\n\n" .
+                        "Nilai Tagihan: *Rp " . number_format($tenant->room->price, 0, ',', '.') . "*\n\n" .
+                        "Terima kasih atas kerjasamanya.";
+            }
+
+            $response = Http::timeout(20)->post('http://127.0.0.1:3000/send-message', [
+                'number'  => $tenant->phone,
                 'message' => $message,
             ]);
 
             if ($response->successful()) {
-                \App\Models\BroadcastLog::create([
-                    'tenant_name' => $tenant->name,
-                    'phone'       => $tenant->phone,
-                    'status'      => 'success'
-                ]);
-                return response()->json(['status' => 'success', 'message' => 'Tagihan berhasil dikirim ke WhatsApp!']);
+                return response()->json(['status' => 'success', 'message' => 'Pesan penagihan berhasil terkirim!']);
             }
             
-            throw new \Exception("Gateway gagal merespon.");
+            return response()->json(['status' => 'error', 'message' => 'Gagal terhubung ke WhatsApp Gateway.'], 500);
 
         } catch (\Exception $e) {
-            return response()->json(['status' => 'error', 'message' => 'Gagal: ' . $e->getMessage()], 500);
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
     }
 }
