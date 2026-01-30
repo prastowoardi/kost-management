@@ -248,7 +248,7 @@ class FinanceController extends Controller
 
         Finance::create($validated);
 
-        return redirect()->route('payments.index')
+        return redirect()->route('finances.index')
             ->with('success', 'Data keuangan berhasil ditambahkan!');
     }
 
