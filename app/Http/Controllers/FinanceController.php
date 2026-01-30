@@ -293,7 +293,7 @@ class FinanceController extends Controller
         $finance->update($validated);
         $finance->touch(); 
 
-        return redirect()->route('payments.index')
+        return redirect()->route('finances.index')
             ->with('success', 'Data keuangan berhasil diupdate!');
     }
 
@@ -301,7 +301,7 @@ class FinanceController extends Controller
     {
         $finance->delete();
 
-        return redirect()->route('payments.index')
+        return redirect()->route('finances.index')
             ->with('success', 'Data keuangan berhasil dihapus!');
     }
 
