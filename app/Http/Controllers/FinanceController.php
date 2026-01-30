@@ -56,7 +56,7 @@ class FinanceController extends Controller
         $incomeCategories = Finance::income()->distinct()->pluck('category');
         $expenseCategories = Finance::expense()->distinct()->pluck('category');
 
-        return view('payments.index', compact(
+        return view('finances.index', compact(
             'finances',
             'totalIncome',
             'totalExpense',

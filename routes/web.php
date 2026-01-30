@@ -26,9 +26,6 @@ Route::controller(PaymentPageController::class)->group(function () {
     Route::get('/pay/{hash}/success', 'success')->name('public.pay.success');
 });
 
-// Akses Struk/Kwitansi (Bisa dibuat public atau protected tergantung kebutuhan)
-Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt');
-
 Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('/send-reminder', [App\Http\Controllers\DashboardController::class, 'sendReminder'])->name('send.reminder');
@@ -51,6 +48,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('tenants', TenantController::class);
         
         Route::resource('payments', PaymentController::class);
+        Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt');
         Route::put('payments/{payment}/status', [PaymentController::class, 'updateStatus'])->name('payments.updateStatus');
         Route::post('payments/{payment}/send-wa', [PaymentController::class, 'sendGatewayWA'])->name('payments.sendWa');
 
@@ -60,11 +58,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Finances (Clean Version)
         Route::prefix('finances')->name('finances.')->group(function () {
+            Route::get('/', [FinanceController::class, 'index'])->name('index');
             Route::get('/finances', [FinanceController::class, 'index'])->name('finances.index');
             Route::get('/finances/{finance}/edit', [FinanceController::class, 'edit'])->name('finances.edit');
             Route::put('/finances/{finance}', [FinanceController::class, 'update'])->name('finances.update');
             Route::get('/finances/report', [FinanceController::class, 'report'])->name('finances.report');
-            Route::get('/', [FinanceController::class, 'index'])->name('index');
             Route::get('/dashboard', [FinanceController::class, 'dashboard'])->name('dashboard');
             Route::get('/report', [FinanceController::class, 'report'])->name('report');
             Route::get('/create', [FinanceController::class, 'create'])->name('create');
