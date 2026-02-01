@@ -4,14 +4,12 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Pembayaran') }}
             </h2>
-            <div class="flex space-x-3"> 
-                <a href="{{ route('payments.index') }}"
-                    class="inline-flex justify-center items-center px-3 py-2 sm:px-4 sm:py-2 bg-green-600 text-white text-xs sm:text-sm font-semibold tracking-widest rounded-md hover:bg-green-700">
-                    📊 Laporan
+            <div class="flex items-center gap-2 flex-shrink-0">
+            <a href="{{ route('payments.index') }}" class="flex-1 md:flex-none justify-center inline-flex items-center px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700">
+                    📄 <span class="ml-1 hidden sm:inline">Laporan</span>
                 </a>
-                <a href="{{ route('payments.create') }}"
-                    class="inline-flex justify-center items-center px-3 py-2 sm:px-4 sm:py-2 bg-blue-600 text-white text-xs sm:text-sm font-semibold tracking-widest rounded-md hover:bg-blue-700">
-                    + Tambah Pembayaran
+            <a href="{{ route('payments.create') }}" class="flex-1 md:flex-none justify-center inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 font-bold">
+                    + <span class="ml-1">Tambah</span>
                 </a>
             </div>
         </div>
