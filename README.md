@@ -63,7 +63,7 @@ Gunakan PM2 agar service tetap berjalan 24/7 meskipun terminal ditutup.
 **Cara Ganti Akun WhatsApp**
     - Jika ingin mengganti nomor WA pengirim:
     - Hentikan service: pm2 stop wa-gateway
-    - Hapus sesi lama: rm -rf .wwebjs_auth (di dalam folder whatsapp-gateway)
+    - Hapus sesi lama: rm -rf auth_info_baileys (di dalam folder whatsapp-gateway)
     - Mulai ulang: pm2 restart wa-gateway
     - Scan ulang: Jalankan pm2 logs wa-gateway untuk melihat QR baru.
 
