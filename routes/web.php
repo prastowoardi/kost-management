@@ -11,9 +11,12 @@ use App\Http\Controllers\FacilityController;
 use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReportController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BroadcastController;
 use App\Http\Controllers\PaymentPageController;
+use App\Http\Controllers\PublicRegistrationController;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Http;
+use App\Models\Tenant;
 
 Route::get('/', function () {
     return Auth::check() ? redirect()->route('dashboard') : view('welcome');
@@ -25,6 +28,11 @@ Route::controller(PaymentPageController::class)->group(function () {
     Route::post('/pay/{hash}/upload', 'upload')->name('public.pay.upload');
     Route::get('/pay/{hash}/success', 'success')->name('public.pay.success');
 });
+
+// Form register
+Route::get('/join', [PublicRegistrationController::class, 'index'])->name('public.register');
+Route::post('/join', [PublicRegistrationController::class, 'store'])->name('public.register.store');
+Route::get('/join/success', [PublicRegistrationController::class, 'success'])->name('public.register.success');
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
@@ -104,6 +112,40 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/complaints', [ComplaintController::class, 'tenantComplaints'])->name('complaints');
         Route::post('/complaints', [ComplaintController::class, 'storeByTenant'])->name('complaints.store');
     });
+});
+
+Route::get('/test-wa/{id}', function ($id) {
+    $tenant = Tenant::with('room')->findOrFail($id);
+    
+    // Panggil fungsi yang sama dengan yang ada di controller
+    // Karena kita tidak bisa memanggil fungsi private di sini, kita tulis manual logic-nya
+    $message = "Halo {$tenant->name}! Selamat datang di Serrata Kost! 👋✨\n\n" .
+                    "Terimakasih sudah memilih Serrata Kost. Semoga betah dan nyaman ya tinggal di sini! 😊\n\n" .
+                    "*Biar lebih asyik, yuk intip 'Rules of the House' kita:* 📝\n\n" .
+                    "1. 🕒 *Jam Malam & Tamu:* Tamu berkunjung maksimal sampai jam 23.00 WIB ya. Demi privasi penghuni lain, mohon tidak membawa tamu lawan jenis ke dalam kamar.\n" .
+                    "2. 🛏️ *Info Menginap:* Kalau ada keluarga atau teman yang mau menginap, wajib lapor dan konfirmasi ke admin terlebih dahulu ya.\n" .
+                    "3. 🚪 *Keamanan Gerbang:* Mohon selalu tutup kembali dan kunci gerbang setiap kali kamu keluar atau masuk area kost. Keamanan kita tanggung jawab bersama! 🔐\n" .
+                    "4. 🚿 *Hemat Air & Listrik:* Matikan lampu, AC, alat elektronik, dan keran air kalau lagi nggak dipakai atau saat keluar kamar ya.\n" .
+                    "5. 🤫 *Keep it Quiet:* Di atas jam 21.30, tolong kecilkan volume musik atau suara ngobrol biar teman sebelah bisa istirahat tenang.\n" .
+                    "6. 🧼 *Kebersihan:* Kamar adalah istanamu, jadi mohon dijaga kebersihannya. Sampah tolong dibuang ke tempat yang sudah disediakan ya.\n" .
+                    "7. 🅿️ *Parkir Rapih:* Parkir kendaraan di slot yang sudah ditentukan agar tidak menghalangi jalan keluar-masuk teman lainnya.\n" .
+                    "8. 🚭 *Area Merokok:* Mohon tidak merokok di dalam kamar. Gunakan area terbuka yang sudah tersedia ya.\n" .
+                    "9. 🍳 *Dapur Bersama:* Habis masak, jangan lupa langsung dicuci alat masaknya dan bersihkan kembali meja dapurnya.\n" .
+                    "10. 🧺 *Jemuran:* Kalau sudah kering segera diambil ya, biar bisa gantian sama penghuni lain dan menghindari barang tertukar/hilang.\n" .
+                    "11. 🚫 *Barang Terlarang:* *Dilarang keras membawa narkoba, miras, senjata tajam, atau hewan peliharaan.*\n" .
+                    "12. 🆘 *Lapor Kendala:* Ada keran bocor, lampu mati, atau kendala lain? Langsung kabari admin lewat chat nomor ini ya!\n\n" .
+                    "Sekali lagi, selamat bergabung! Selamat istirahat dan semoga betah di Serrata Kost! 🏠🙌";
+
+    try {
+        $response = Http::timeout(10)->post('http://localhost:3000/send-message', [
+            'number'  => $tenant->phone,
+            'message' => $message
+        ]);
+
+        return $response->json();
+    } catch (\Exception $e) {
+        return "Gagal: " . $e->getMessage();
+    }
 });
 
 require __DIR__.'/auth.php';
