@@ -6,6 +6,8 @@ use App\Models\Tenant;
 use App\Models\Room;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 
 class TenantController extends Controller
 {
@@ -43,12 +45,13 @@ class TenantController extends Controller
         }
 
         $tenant = Tenant::create($validated);
-        
-        // Update room status
-        Room::find($validated['room_id'])->update(['status' => 'occupied']);
+        $tenant->room->update(['status' => 'occupied']);
+
+        $waUrl = $this->sendWelcomeMessage($tenant);
 
         return redirect()->route('tenants.index')
-                        ->with('success', 'Penghuni berhasil ditambahkan');
+                    ->with('success', 'Penghuni berhasil ditambahkan.')
+                    ->with('wa_url', $waUrl);
     }
 
     public function show(Tenant $tenant)
@@ -95,18 +98,6 @@ class TenantController extends Controller
 
         if ($tenant->status == 'inactive') {
             Room::where('id', $tenant->room_id)->update(['status' => 'available']);
-        }
-        else {
-            if ($oldRoomId != $validated['room_id']) {
-                Room::where('id', $oldRoomId)->update(['status' => 'available']);
-            }
-            Room::where('id', $validated['room_id'])->update(['status' => 'occupied']);
-        }
-
-        $tenant->update($validated);
-
-        if ($tenant->status == 'inactive') {
-            Room::where('id', $tenant->room_id)->update(['status' => 'available']);
         } else {
             if ($oldRoomId != $validated['room_id']) {
                 Room::where('id', $oldRoomId)->update(['status' => 'available']);
@@ -147,5 +138,42 @@ class TenantController extends Controller
 
         return redirect()->back()
                         ->with('success', 'Status penghuni berhasil diupdate');
+    }
+
+    private function sendWelcomeMessage($tenant)
+    {
+        $message = "Halo {$tenant->name}! Selamat datang di Serrata Kost! 👋✨\n\n" .
+                    "Terimakasih sudah memilih Serrata Kost. Semoga betah dan nyaman ya tinggal di sini! 😊\n\n" .
+                    "*Biar lebih asyik, yuk intip 'Rules of the House' kita:* 📝\n\n" .
+                    "1. 🕒 *Jam Malam & Tamu:* Tamu berkunjung maksimal sampai jam 23.00 WIB ya. Demi privasi penghuni lain, mohon tidak membawa tamu lawan jenis ke dalam kamar.\n" .
+                    "2. 🛏️ *Info Menginap:* Kalau ada keluarga atau teman yang mau menginap, wajib lapor dan konfirmasi ke admin terlebih dahulu ya.\n" .
+                    "3. 🚪 *Keamanan Gerbang:* Mohon selalu tutup kembali dan kunci gerbang setiap kali kamu keluar atau masuk area kost. Keamanan kita tanggung jawab bersama! 🔐\n" .
+                    "4. 🚿 *Hemat Air & Listrik:* Matikan lampu, AC, alat elektronik, dan keran air kalau lagi nggak dipakai atau saat keluar kamar ya.\n" .
+                    "5. 🤫 *Keep it Quiet:* Di atas jam 21.30, tolong kecilkan volume musik atau suara ngobrol biar teman sebelah bisa istirahat tenang.\n" .
+                    "6. 🧼 *Kebersihan:* Kamar adalah istanamu, jadi mohon dijaga kebersihannya. Sampah tolong dibuang ke tempat yang sudah disediakan ya.\n" .
+                    "7. 🅿️ *Parkir Rapih:* Parkir kendaraan di slot yang sudah ditentukan agar tidak menghalangi jalan keluar-masuk teman lainnya.\n" .
+                    "8. 🚭 *Area Merokok:* Mohon tidak merokok di dalam kamar. Gunakan area terbuka yang sudah tersedia ya.\n" .
+                    "9. 🍳 *Dapur Bersama:* Habis masak, jangan lupa langsung dicuci alat masaknya dan bersihkan kembali meja dapurnya.\n" .
+                    "10. 🧺 *Jemuran:* Kalau sudah kering segera diambil ya, biar bisa gantian sama penghuni lain dan menghindari barang tertukar/hilang.\n" .
+                    "11. 🚫 *Barang Terlarang:* *Dilarang keras membawa narkoba, miras, senjata tajam,* atau hewan peliharaan.\n" .
+                    "12. 🆘 *Lapor Kendala:* Ada keran bocor, lampu mati, atau kendala lain? Langsung kabari admin lewat chat nomor ini ya!\n\n" .
+                    "Sekali lagi, selamat bergabung! Selamat istirahat dan semoga betah di Serrata Kost! 🏠🙌";
+
+        try {
+            $response = Http::timeout(10)->post('http://localhost:3000/send-message', [
+                'number'  => $tenant->phone,
+                'message' => $message
+            ]);
+
+            if ($response->successful()) {
+                Log::info("Pesan WA Terkirim ke {$tenant->phone}");
+            } else {
+                Log::error("API Gateway Error: " . $response->body());
+            }
+        } catch (\Exception $e) {
+            Log::error("Gagal koneksi ke WhatsApp Gateway: " . $e->getMessage());
+        }
+
+        return "https://wa.me/" . $tenant->phone . "?text=" . urlencode($message);
     }
 }
