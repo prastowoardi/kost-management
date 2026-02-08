@@ -28,11 +28,17 @@ class PublicRegistrationController extends Controller
             'address' => 'required|string',
             'entry_date' => 'required|date',
             'payment_method' => 'required|in:transfer,cash',
-            'photo' => 'required|image|max:5120'
+            'photo' => 'required|image|max:5120',
+            'receipt_file' => 'nullable|image|max:5120',
         ]);
 
         if ($request->hasFile('photo')) {
             $validated['photo'] = $request->file('photo')->store('tenants', 'public');
+        }
+
+        $receiptPath = null;
+        if ($request->hasFile('receipt_file')) {
+            $receiptPath = $request->file('receipt_file')->store('receipts', 'public');
         }
 
         $validated['status'] = 'active';
@@ -51,6 +57,7 @@ class PublicRegistrationController extends Controller
             'payment_method' => $request->payment_method,
             'notes'          => 'Pembayaran pendaftaran awal dari form publik',
             'period_month'   => date('Y-m-01'),
+            'receipt_file'   => $receiptPath,
         ]);
 
         $this->sendWelcomeMessage($tenant, $request->payment_method);
