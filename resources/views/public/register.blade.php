@@ -95,6 +95,7 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Kontak Darurat</label>
                                 <textarea name="emergency_contact" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Nama & No. HP Orang Tua / Kerabat">{{ old('emergency_contact') }}</textarea>
+                                
                                 @error('emergency_contact')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror

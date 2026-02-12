@@ -30,6 +30,7 @@ class PublicRegistrationController extends Controller
             'payment_method' => 'required|in:transfer,cash',
             'photo' => 'required|image|max:5120',
             'receipt_file' => 'nullable|image|max:5120',
+            'emergency_contact' => 'nullable|string',
         ]);
 
         if ($request->hasFile('photo')) {
@@ -67,16 +68,15 @@ class PublicRegistrationController extends Controller
 
     private function sendWelcomeMessage($tenant, $paymentMethod)
     {
-        if ($paymentMethod == 'transfer') {
-            $paymentInfo = "\n*INFO PEMBAYARAN:* 💳\n" .
-                        "Silahkan transfer pembayaran sewa ke:\n" .
-                        "Bank Mandiri: 1360014406059\n" .
-                        "A/N: Prastowo Ardi Widigdo\n" .
-                        "Nominal: *Rp " . number_format($tenant->room->price, 0, ',', '.') . "*\n\n" .
-                        "Harap kirimkan bukti transfer ke nomor ini ya.";
+        if ($paymentMethod != 'transfer') {
+            // $paymentInfo = "\n*INFO PEMBAYARAN:* 💳\n" .
+            //             "Silahkan transfer pembayaran sewa ke:\n" .
+            //             "Bank Mandiri: 1360014406059\n" .
+            //             "A/N: Prastowo Ardi Widigdo\n" .
+            //             "Nominal: *Rp " . number_format($tenant->room->price, 0, ',', '.') . "*\n\n" .
+            //             "Harap kirimkan bukti transfer ke nomor ini ya.";
         } else {
-            $paymentInfo = "\n*INFO PEMBAYARAN:* 💵\n" .
-                        "Kamu memilih pembayaran tunai. Silahkan siapkan dana sebesar *Rp " . number_format($tenant->room->price, 0, ',', '.') . "* untuk dibayarkan langsung kepada Admin.";
+            $paymentInfo = "";
         }
 
         $message1 = "Halo {$tenant->name}! Pendaftaran kamu di Serrata Kost BERHASIL. 👋✨\n\n" .
