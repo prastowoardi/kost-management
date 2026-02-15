@@ -27,7 +27,7 @@
                                     <option value="">-- Pilih Kamar Tersedia --</option>
                                     @foreach($availableRooms as $room)
                                     <option value="{{ $room->id }}" {{ old('room_id') == $room->id ? 'selected' : '' }}>
-                                        Kamar {{ $room->room_number }} - {{ ucfirst($room->type) }} (Rp {{ number_format($room->price, 0, ',', '.') }})
+                                        Kamar {{ $room->room_number }}
                                     </option>
                                     @endforeach
                                 </select>
