@@ -11,10 +11,10 @@ class RoomSeeder extends Seeder
     public function run(): void
     {
         $rooms = [
-            ['room_number' => '101', 'type' => 'single', 'price' => 850000, 'capacity' => 1, 'size' => 12, 'status' => 'available', 'description' => 'Kamar ukuran 3x4m'],
-            ['room_number' => '102', 'type' => 'single', 'price' => 850000, 'capacity' => 1, 'size' => 12, 'status' => 'available', 'description' => 'Kamar ukuran 3x4m'],
-            ['room_number' => '103', 'type' => 'single', 'price' => 850000, 'capacity' => 1, 'size' => 12, 'status' => 'available', 'description' => 'Kamar ukuran 3x4m'],
-            ['room_number' => '104', 'type' => 'single', 'price' => 850000, 'capacity' => 1, 'size' => 12, 'status' => 'available', 'description' => 'Kamar ukuran 3x4m'],
+            ['room_number' => '1', 'type' => 'singlenoac', 'price' => 850000, 'capacity' => 1, 'size' => 12, 'status' => 'available', 'description' => 'Kamar ukuran 3x4m'],
+            ['room_number' => '2', 'type' => 'singlenoac', 'price' => 850000, 'capacity' => 1, 'size' => 12, 'status' => 'available', 'description' => 'Kamar ukuran 3x4m'],
+            ['room_number' => '3', 'type' => 'singlenoac', 'price' => 850000, 'capacity' => 1, 'size' => 12, 'status' => 'available', 'description' => 'Kamar ukuran 3x4m'],
+            ['room_number' => '4', 'type' => 'singlenoac', 'price' => 850000, 'capacity' => 1, 'size' => 12, 'status' => 'available', 'description' => 'Kamar ukuran 3x4m'],
         ];
 
         $roomFacilities = Facility::where('type', 'room')->pluck('id')->toArray();

@@ -26,8 +26,8 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Tipe Kamar</label>
                                 <select name="type" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                    <option value="single" {{ old('type', $room->type) == 'single' ? 'selected' : '' }}>Single</option>
-                                    <option value="double" {{ old('type', $room->type) == 'double' ? 'selected' : '' }}>Double</option>
+                                    <option value="singlenoac" {{ old('type', $room->type) == 'singlenoac' ? 'selected' : '' }}>Single Non AC</option>
+                                    <option value="singleac" {{ old('type', $room->type) == 'singleac' ? 'selected' : '' }}>Single AC</option>
                                     <option value="shared" {{ old('type', $room->type) == 'shared' ? 'selected' : '' }}>Shared</option>
                                 </select>
                             </div>

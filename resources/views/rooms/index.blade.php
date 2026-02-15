@@ -46,8 +46,24 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                         {{ $room->room_number }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ ucfirst($room->type) }}
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        @php
+                                            $typeStyles = [
+                                                'singlenoac' => 'bg-green-100 text-green-700',
+                                                'singleac'   => 'bg-blue-50 text-blue-700',
+                                                'shared'     => 'bg-purple-50 text-purple-700',
+                                            ];
+                                            $typeNames = [
+                                                'singlenoac' => 'Single No AC',
+                                                'singleac'   => 'Single AC',
+                                                'shared'     => 'Shared Room',
+                                            ];
+                                            $style = $typeStyles[$room->type] ?? 'bg-gray-100 text-gray-700';
+                                            $name = $typeNames[$room->type] ?? ucfirst($room->type);
+                                        @endphp
+                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $style }}">
+                                            {{ $name }}
+                                        </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         Rp {{ number_format($room->price, 0, ',', '.') }}

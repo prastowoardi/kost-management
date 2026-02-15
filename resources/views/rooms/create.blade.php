@@ -27,8 +27,8 @@
                                 <label class="block text-sm font-medium text-gray-700">Tipe Kamar</label>
                                 <select name="type" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                     <option value="">Pilih Tipe</option>
-                                    <option value="single" {{ old('type') == 'single' ? 'selected' : '' }}>Single</option>
-                                    <option value="double" {{ old('type') == 'double' ? 'selected' : '' }}>Double</option>
+                                    <option value="singlenoac" {{ old('type') == 'singlenoac' ? 'selected' : '' }}>Single Non AC</option>
+                                    <option value="singleac" {{ old('type') == 'singleac' ? 'selected' : '' }}>Single AC</option>
                                     <option value="shared" {{ old('type') == 'shared' ? 'selected' : '' }}>Shared</option>
                                 </select>
                                 @error('type')

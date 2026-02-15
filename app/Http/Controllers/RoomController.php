@@ -28,7 +28,7 @@ class RoomController extends Controller
     {
         $validated = $request->validate([
             'room_number' => 'required|unique:rooms',
-            'type' => 'required|in:single,double,shared',
+            'type' => 'required|in:singlenoac,singleac,shared',
             'price' => 'required|numeric|min:0',
             'capacity' => 'required|integer|min:1',
             'size' => 'nullable|numeric|min:0',
@@ -77,7 +77,7 @@ class RoomController extends Controller
     {
         $validated = $request->validate([
             'room_number' => 'required|unique:rooms,room_number,'.$room->id,
-            'type' => 'required|in:single,double,shared',
+            'type' => 'required|in:singlenoac,singleac,shared',
             'price' => 'required|numeric|min:0',
             'capacity' => 'required|integer|min:1',
             'status' => 'required|in:available,occupied,maintenance',
