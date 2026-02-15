@@ -30,7 +30,8 @@ class PublicRegistrationController extends Controller
             'payment_method' => 'required|in:transfer,cash',
             'photo' => 'required|image|max:5120',
             'receipt_file' => 'nullable|image|max:5120',
-            'emergency_contact' => 'nullable|string',
+            'emergency_contact_name' => 'nullable|string|max:255',
+            'emergency_contact_phone' => 'nullable|string|max:20',
         ]);
 
         if ($request->hasFile('photo')) {
@@ -68,6 +69,8 @@ class PublicRegistrationController extends Controller
 
     private function sendWelcomeMessage($tenant, $paymentMethod)
     {
+        $paymentInfo = "";
+        
         if ($paymentMethod != 'transfer') {
             // $paymentInfo = "\n*INFO PEMBAYARAN:* 💳\n" .
             //             "Silahkan transfer pembayaran sewa ke:\n" .
