@@ -49,7 +49,10 @@ class Payment extends Model
         parent::boot();
 
         static::creating(function ($payment) {
-            $payment->invoice_number = 'INV-' . date('Ymd') . '-' . str_pad(Payment::count() + 1, 4, '0', STR_PAD_LEFT);
+            if (!$payment->invoice_number) {
+                $count = Payment::whereDate('created_at', today())->count() + 1;
+                $payment->invoice_number = 'INV-' . date('Ymd') . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
+            }
         });
     }
 

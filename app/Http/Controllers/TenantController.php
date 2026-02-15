@@ -36,7 +36,8 @@ class TenantController extends Controller
             'id_card' => 'required|string|unique:tenants',
             'address' => 'required|string',
             'entry_date' => 'required|date',
-            'emergency_contact' => 'nullable|string',
+            'emergency_contact_name' => 'nullable|string|max:255',
+            'emergency_contact_phone' => 'nullable|string|max:20',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:5120'
         ]);
 
@@ -81,7 +82,8 @@ class TenantController extends Controller
             'entry_date' => 'required|date',
             'exit_date' => 'nullable|date',
             'status' => 'required|in:active,inactive',
-            'emergency_contact' => 'nullable|string',
+            'emergency_contact_name' => 'nullable|string|max:255',
+            'emergency_contact_phone' => 'nullable|string|max:20',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:5120'
         ]);
 

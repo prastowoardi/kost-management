@@ -19,7 +19,8 @@ class Tenant extends Model
         'entry_date',
         'exit_date',
         'status',
-        'emergency_contact',
+        'emergency_contact_name', 
+        'emergency_contact_phone',
         'photo'
     ];
 

@@ -69,12 +69,27 @@
                                     <p class="text-sm text-gray-600">Tanggal Keluar</p>
                                     <p class="font-semibold text-gray-900">{{ $tenant->exit_date ? $tenant->exit_date->format('d F Y') : '-' }}</p>
                                 </div>
-                                @if($tenant->emergency_contact)
-                                <div class="col-span-2">
-                                    <p class="text-sm text-gray-600">Kontak Darurat</p>
-                                    <p class="font-semibold text-gray-900">{{ $tenant->emergency_contact }}</p>
+                                <div class="col-span-2 mt-2">
+                                    <p class="text-sm text-gray-600 mb-1">Kontak Darurat</p>
+                                    
+                                    @if($tenant->emergency_contact_name || $tenant->emergency_contact_phone)
+                                        <div class="p-3 bg-red-50 border border-red-100 rounded-md flex justify-between items-center">
+                                            <div>
+                                                <p class="font-bold text-gray-900">{{ $tenant->emergency_contact_name ?? '-' }}</p>
+                                                <p class="text-sm text-gray-700">{{ $tenant->emergency_contact_phone ?? '-' }}</p>
+                                            </div>
+                                            @if($tenant->emergency_contact_phone)
+                                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $tenant->emergency_contact_phone) }}" 
+                                                target="_blank" 
+                                                class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs flex items-center shadow-sm transition">
+                                                    💬 Hubungi
+                                                </a>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <p class="font-semibold text-gray-400 italic text-sm">Data kontak darurat tidak tersedia</p>
+                                    @endif
                                 </div>
-                                @endif
                             </div>
                         </div>
                     </div>
