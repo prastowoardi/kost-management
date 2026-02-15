@@ -132,22 +132,52 @@
                             
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                                 <label class="flex items-center p-3 bg-white border rounded-md cursor-pointer hover:border-blue-400">
-                                    <input type="radio" name="payment_method" value="transfer" onclick="toggleTransferDetails(true)" class="text-blue-600 focus:ring-blue-500" required>
+                                    <input type="radio" name="payment_method" value="transfer" onclick="toggleTransferDetails(true)" class="text-blue-600 focus:ring-blue-500" required {{ old('payment_method') == 'transfer' ? 'checked' : '' }}>
                                     <span class="ml-3 font-medium text-gray-900 text-sm">Transfer Bank</span>
                                 </label>
 
                                 <label class="flex items-center p-3 bg-white border rounded-md cursor-pointer hover:border-blue-400">
-                                    <input type="radio" name="payment_method" value="cash" onclick="toggleTransferDetails(false)" class="text-blue-600 focus:ring-blue-500" required>
+                                    <input type="radio" name="payment_method" value="cash" onclick="toggleTransferDetails(false)" class="text-blue-600 focus:ring-blue-500" required {{ old('payment_method') == 'cash' ? 'checked' : '' }}>
                                     <span class="ml-3 font-medium text-gray-900 text-sm">Bayar Tunai</span>
                                 </label>
                             </div>
 
-                            <div id="payment-details-wrapper" class="hidden space-y-4">
+                            <div id="transfer-details-container" class="hidden space-y-4">
                                 <div class="bg-white p-5 rounded-2xl border border-blue-200 shadow-inner">
-                                    <p class="text-center text-[10px] font-bold text-slate-400 mb-4">TRANSFER KE:</p>
-                                    </div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-4 tracking-widest text-center">Tujuan Transfer</p>
+                                    
+                                    <div class="space-y-6">
+                                        <div class="flex items-start justify-between border-b border-blue-50 pb-4">
+                                            <div class="w-full">
+                                                <p class="text-xs font-bold text-slate-800 mb-1">Bank Mandiri</p>
+                                                <div class="flex items-center space-x-2">
+                                                    <p id="acc_mandiri" class="text-lg font-black text-blue-600 leading-none">1360014406059</p>
+                                                    <button type="button" onclick="copyText('acc_mandiri')" class="p-1.5 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition active:scale-95">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                                                    </button>
+                                                </div>
+                                                <p class="text-[10px] text-slate-500 mt-2">A/N Prastowo Ardi Widigdo</p>
+                                            </div>
+                                            <img src="https://upload.wikimedia.org/wikipedia/id/thumb/f/fa/Bank_Mandiri_logo.svg/1200px-Bank_Mandiri_logo.svg.png" class="h-5">
+                                        </div>
 
-                                <div id="receipt-upload">
+                                        <div class="flex items-start justify-between">
+                                            <div class="w-full">
+                                                <p class="text-xs font-bold text-slate-800 mb-1">Bank Jago</p>
+                                                <div class="flex items-center space-x-2">
+                                                    <p id="acc_jago" class="text-lg font-black text-orange-500 leading-none">109781903718</p>
+                                                    <button type="button" onclick="copyText('acc_jago')" class="p-1.5 bg-orange-50 text-orange-600 rounded-md hover:bg-orange-100 transition active:scale-95">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                                                    </button>
+                                                </div>
+                                                <p class="text-[10px] text-slate-500 mt-2">A/N Prastowo Ardi Widigdo</p>
+                                            </div>
+                                            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c0/Logo-jago.svg" class="h-5">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 p-1">
                                     <label class="block text-xs font-bold text-blue-600 uppercase mb-2 ml-1">Unggah Bukti Transfer</label>
                                     <input type="file" name="receipt_file" id="receipt_input" accept="image/*"
                                         class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-50">
@@ -206,7 +236,7 @@
                         </div>
 
                         <div class="mt-8">
-                            <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150">
+                            <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 transition duration-150">
                                 DAFTAR SEKARANG
                             </button>
                             <p class="mt-4 text-xs text-center text-gray-500">
@@ -222,17 +252,14 @@
 
 <script>
     function toggleTransferDetails(isTransfer) {
-        const infoSection = document.getElementById('transfer-info');
-        const uploadSection = document.getElementById('receipt-upload');
+        const container = document.getElementById('transfer-details-container');
         const inputField = document.getElementById('receipt_input');
 
         if(isTransfer) {
-            infoSection.classList.remove('hidden');
-            uploadSection.classList.remove('hidden');
+            container.classList.remove('hidden');
             inputField.setAttribute('required', 'required');
         } else {
-            infoSection.classList.add('hidden');
-            uploadSection.classList.add('hidden');
+            container.classList.add('hidden');
             inputField.removeAttribute('required');
             inputField.value = ""; 
         }

@@ -70,7 +70,7 @@ class PublicRegistrationController extends Controller
     private function sendWelcomeMessage($tenant, $paymentMethod)
     {
         $paymentInfo = "";
-        
+
         if ($paymentMethod != 'transfer') {
             // $paymentInfo = "\n*INFO PEMBAYARAN:* 💳\n" .
             //             "Silahkan transfer pembayaran sewa ke:\n" .
@@ -86,9 +86,9 @@ class PublicRegistrationController extends Controller
                     "Kamar: *{$tenant->room->room_number}*\n" .
                     "Tgl Masuk: " . date('d M Y', strtotime($tenant->entry_date)) . "\n" .
                     $paymentInfo . "\n\n" .
-                    "Mohon tunggu sebentar, kami akan mengirimkan tata tertib kost di bawah ini. 👇";
+                    "Tunggu sebentar ya, mimin kirimkan tata tertib kost di bawah ini. 👇";
 
-        $message2 = "Berikut adalah *'Rules of the House'* di Serrata Kost: 📝\n\n" .
+        $message2 = "Ini dia *'Rules of the House'* di Serrata Kost: 📝\n\n" .
                     "1. 🕒 *Jam Malam & Tamu:* Tamu berkunjung maksimal sampai jam 23.00 WIB ya. Demi privasi penghuni lain, mohon tidak membawa tamu lawan jenis ke dalam kamar.\n" .
                     "2. 🛏️ *Info Menginap:* Kalau ada keluarga atau teman yang mau menginap, wajib lapor dan konfirmasi ke admin terlebih dahulu ya.\n" .
                     "3. 🚪 *Keamanan Gerbang:* Mohon selalu tutup kembali dan kunci gerbang setiap kali kamu keluar atau masuk area kost. Keamanan kita tanggung jawab bersama! 🔐\n" .
