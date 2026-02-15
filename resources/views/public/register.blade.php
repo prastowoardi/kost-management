@@ -141,7 +141,13 @@
                                     <div class="flex items-center justify-between">
                                         <div>
                                             <p class="text-sm font-bold text-slate-800">Bank Mandiri</p>
-                                            <p class="text-lg font-black text-blue-600">1360014406059</p>
+                                            <div class="flex items-center space-x-2">
+                                                <p id="account_number" class="text-lg font-black text-blue-600">1360014406059</p>
+                                                <button type="button" onclick="copyAccountNumber()" class="p-1 px-2 text-[10px] font-bold bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition active:scale-95 flex items-center">
+                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                                                    SALIN
+                                                </button>
+                                            </div>
                                             <p class="text-xs text-slate-600">A/N Prastowo Ardi Widigdo</p>
                                         </div>
                                         <img src="https://upload.wikimedia.org/wikipedia/id/thumb/f/fa/Bank_Mandiri_logo.svg/1200px-Bank_Mandiri_logo.svg.png" class="h-6 opacity-50">
@@ -185,5 +191,23 @@
             info.classList.add('hidden');
             input.removeAttribute('required');
         }
+    }
+
+    function copyAccountNumber() {
+        const accountNumber = document.getElementById('account_number').innerText;
+        
+        navigator.clipboard.writeText(accountNumber).then(() => {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil disalin!',
+                text: 'Nomor rekening telah disalin ke clipboard.',
+                showConfirmButton: false,
+                timer: 1500,
+                toast: true,
+                position: 'top-end'
+            });
+        }).catch(err => {
+            console.error('Gagal menyalin: ', err);
+        });
     }
 </script>
