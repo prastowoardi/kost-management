@@ -84,12 +84,30 @@
                                 @enderror
                             </div>
 
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Kontak Darurat</label>
-                                <textarea name="emergency_contact" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Nama & No. Telepon Keluarga">{{ old('emergency_contact') }}</textarea>
-                                @error('emergency_contact')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
+                                <div class="col-span-2 text-sm font-semibold text-gray-500 tracking-wider">
+                                    Kontak Darurat (Optional)
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Nama Kontak Darurat</label>
+                                    <input type="text" name="emergency_contact_name" value="{{ old('emergency_contact_name') }}"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                                        placeholder="Ayah/Ibu">
+                                    @error('emergency_contact_name')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">No. HP Darurat</label>
+                                    <input type="text" name="emergency_contact_phone" value="{{ old('emergency_contact_phone') }}"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                                        placeholder="0812345xxxx">
+                                    @error('emergency_contact_phone')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
                             </div>
 
                             <div>
