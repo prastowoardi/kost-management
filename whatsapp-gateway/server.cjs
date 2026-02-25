@@ -4,7 +4,7 @@ process.stdout.write = function (chunk, encoding, callback) {
     return originalWrite.apply(process.stdout, arguments);
 };
 
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require("@whiskeysockets/baileys");
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } = require("@whiskeysockets/baileys");
 const { Boom } = require("@hapi/boom");
 const puppeteer = require('puppeteer');
 const qrcode = require("qrcode-terminal");
@@ -27,27 +27,49 @@ const chromePath = (() => {
 
 async function connectToWhatsApp() {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
+    
+    const { version, isLatest } = await fetchLatestBaileysVersion();
+    console.log(` Menggunakan WA Web v${version.join('.')}, isLatest: ${isLatest}`);
 
     sock = makeWASocket({
+        version,
         auth: state,
-        printQRInTerminal: true,
         logger: pino({ level: 'silent' }),
-        shouldIgnoreJid: jid => isJidBroadcast(jid),
+        browser: ["Ubuntu", "Chrome", "20.0.04"], 
+        printQRInTerminal: false,
+        connectTimeoutMs: 60000,
+        defaultQueryTimeoutMs: undefined,
+        keepAliveIntervalMs: 30000,
     });
 
     sock.ev.on('creds.update', saveCreds);
 
     sock.ev.on('connection.update', (update) => {
         const { connection, lastDisconnect, qr } = update;
+
         if (qr) {
-            console.log("Scan QR untuk menyambungkan ke WhatsApp:");
+            console.log("\n[!] Scan QR untuk menyambungkan ke WhatsApp:");
             qrcode.generate(qr, { small: true });
         }
+
         if (connection === 'close') {
-            const shouldReconnect = (lastDisconnect.error instanceof Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
-            if (shouldReconnect) connectToWhatsApp();
+            const error = lastDisconnect?.error;
+            const statusCode = error?.output?.statusCode || error?.code;
+            
+            console.log(`[!] Terputus. Reason: ${statusCode}`);
+
+            if (statusCode === 401 || statusCode === 405) {
+                console.log("Sesi tidak valid, mencoba reset koneksi...");
+            }
+
+            if (statusCode !== DisconnectReason.loggedOut) {
+                console.log("Menyambung ulang dalam 5 detik...");
+                setTimeout(() => connectToWhatsApp(), 5000);
+            } else {
+                console.log("Sesi expired. Silakan hapus folder auth_info_baileys dan jalankan ulang.");
+            }
         } else if (connection === 'open') {
-            console.log('✅ WhatsApp Gateway Ready (Baileys)!');
+            console.log('\n✅ WhatsApp Gateway Connected Successfully!');
         }
     });
 }
