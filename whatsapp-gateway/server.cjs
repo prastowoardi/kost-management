@@ -72,10 +72,10 @@ async function connectToWhatsApp() {
             const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
 
             if (shouldReconnect) {
-                console.log("    Tindakan    : Menyambung ulang dalam 5 detik...\n");
+                console.log("    Action    : Menyambung ulang dalam 5 detik...\n");
                 setTimeout(() => connectToWhatsApp(), 5000);
             } else {
-                console.log("    Tindakan    : Sesi berakhir (Logged Out). Hapus folder auth dan scan ulang.\n");
+                console.log("    Action    : Sesi berakhir (Logged Out). Hapus folder auth dan scan ulang.\n");
             }
         } else if (connection === 'open') {
             console.log('\n✅ WHATSAPP GATEWAY BERHASIL TERHUBUNG!');
