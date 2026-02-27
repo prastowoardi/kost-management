@@ -48,7 +48,7 @@ async function connectToWhatsApp() {
         const { connection, lastDisconnect, qr } = update;
 
         if (qr) {
-            console.log("\n[!] Scan QR untuk menyambungkan ke WhatsApp:");
+            console.log("\n[!] SCAN QR CODE SEKARANG:");
             qrcode.generate(qr, { small: true });
         }
 
@@ -56,20 +56,29 @@ async function connectToWhatsApp() {
             const error = lastDisconnect?.error;
             const statusCode = error?.output?.statusCode || error?.code;
             
-            console.log(`[!] Terputus. Reason: ${statusCode}`);
-
-            if (statusCode === 401 || statusCode === 405) {
-                console.log("Sesi tidak valid, mencoba reset koneksi...");
+            let reasonText = "Unknown Reason";
+            for (const [key, value] of Object.entries(DisconnectReason)) {
+                if (value === statusCode) {
+                    reasonText = key; // Mengambil nama variabel (misal: 'loggedOut')
+                    break;
+                }
             }
 
-            if (statusCode !== DisconnectReason.loggedOut) {
-                console.log("Menyambung ulang dalam 5 detik...");
+            console.log(`\n[!] KONEKSI TERPUTUS!`);
+            console.log(`    Status Code : ${statusCode}`);
+            console.log(`    Reason      : ${reasonText}`);
+            console.log(`    Detail      : ${error?.message || 'No extra info'}`);
+
+            const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+
+            if (shouldReconnect) {
+                console.log("    Tindakan    : Menyambung ulang dalam 5 detik...\n");
                 setTimeout(() => connectToWhatsApp(), 5000);
             } else {
-                console.log("Sesi expired. Silakan hapus folder auth_info_baileys dan jalankan ulang.");
+                console.log("    Tindakan    : Sesi berakhir (Logged Out). Hapus folder auth dan scan ulang.\n");
             }
         } else if (connection === 'open') {
-            console.log('\n✅ WhatsApp Gateway Connected Successfully!');
+            console.log('\n✅ WHATSAPP GATEWAY BERHASIL TERHUBUNG!');
         }
     });
 }
