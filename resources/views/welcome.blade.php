@@ -74,7 +74,7 @@
             </section>
 
             <section id="fasilitas" class="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-4 mb-24">
-                <div class="md:col-span-2 md:row-span-2 relative overflow-hidden rounded-[2.5rem] shadow-sm bento-card">
+                <div class="md:col-span-2 md:row-span-2 relative overflow-hidden rounded-[2.5rem] shadow-sm bento-card h-[400px] md:h-full">
                     <img src="https://i.ibb.co.com/4ZkhL9Zr/Whats-App-Image-2026-03-10-at-21-57-52.jpg" 
                         class="absolute inset-0 w-full h-full object-cover z-0" alt="Kamar Utama">
 
@@ -82,30 +82,22 @@
                         data-media="video"
                         data-src="https://res.cloudinary.com/ddasccdw0/video/upload/v1773239074/WhatsApp_Video_2026-03-10_at_21.57.49_smlxnj.mp4"
                         data-autoplay="true"
+                        data-mute="true"
                         data-title="Room Tour Serrata Kost">
                         
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-8 flex flex-col justify-end text-white">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-6 md:p-8 flex flex-col justify-end text-white">
                             <div class="absolute inset-0 flex items-center justify-center">
-                                <div class="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30">
+                                <div class="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 hover:scale-110 transition-transform">
                                     <span class="text-3xl ml-1 text-white">▶</span>
                                 </div>
                             </div>
-                            <h3 class="text-2xl font-bold">Room Tour</h3>
-                            <p class="text-white/80">Klik untuk putar video ✨</p>
+                            <h3 class="text-xl md:text-2xl font-bold">Room Tour</h3>
+                            <p class="text-white/80 text-sm">Klik untuk putar video ✨</p>
                         </div>
                     </div>
 
-                    <div class="absolute top-6 right-6 z-10 bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-sm">
+                    <div class="absolute top-6 right-6 z-30 bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-sm">
                         <span class="text-xs font-bold text-pink-600">✨ Female Only</span>
-                    </div>
-
-                    <div id="video-serrata" style="display:none;">
-                        <div style="width:100%; max-width:900px; aspect-ratio:16/9; background:#000;">
-                            <iframe 
-                                src="https://www.youtube.com/embed/NZvFAzV-XEQ?autoplay=1&mute=1&rel=0" 
-                                width="100%" height="100%" frameborder="0" allow="autoplay; fullscreen" allowfullscreen>
-                            </iframe>
-                        </div>
                     </div>
 
                     <a class="spotlight hidden" data-src="https://i.ibb.co.com/4ZkhL9Zr/Whats-App-Image-2026-03-10-at-21-57-52.jpg" data-title="Tampak Depan"></a>
