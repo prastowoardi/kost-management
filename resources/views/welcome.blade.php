@@ -8,7 +8,7 @@
         <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('serrata.png') }}">
         <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('serrata.png') }}">
 
-        <title>Serrata Kostt - Chill & Comfort Living</title>
+        <title>Serrata Kost - Chill & Comfort Living</title>
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700" rel="stylesheet" />
@@ -63,39 +63,55 @@
                     Nge-kost serasa <br><span class="gradient-text">di rumah sendiri.</span>
                 </h1>
                 <p class="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed mb-10">
-                    Serrata Kostt menyediakan hunian khusus putri dengan lingkungan yang nyaman. Gak perlu ribet, tinggal bawa koper. Cocok untuk mahasiswi dan karyawati yang mencari ketenangan di Sleman.
+                    Serrata Kost menyediakan hunian khusus putri dengan lingkungan yang nyaman. Gak perlu ribet, tinggal bawa koper. Cocok untuk mahasiswi dan karyawati yang mencari ketenangan di Sleman.
                 </p>
                 
                 <div class="flex flex-col sm:flex-row justify-center gap-4">
                     <a href="https://wa.me/6285111203521" class="flex items-center justify-center gap-2 bg-[#25D366] text-white px-8 py-4 rounded-2xl font-bold shadow-lg hover:bg-[#128C7E] transition">
-                        <span>💬 Admin 1</span>
-                    </a>
-                    <a href="https://wa.me/6285641338624" class="flex items-center justify-center gap-2 bg-[#25D366] text-white px-8 py-4 rounded-2xl font-bold shadow-lg hover:bg-[#128C7E] transition">
-                        <span>💬 Admin 2</span>
+                        <span>💬 Chat Admin</span>
                     </a>
                 </div>
             </section>
 
             <section id="fasilitas" class="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-4 mb-24">
-                
-                <div class="md:col-span-2 md:row-span-2 relative overflow-hidden rounded-[2.5rem] shadow-sm bento-card spotlight" 
-                        data-src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=1000"
-                        data-title="Kamar Tipe A"
-                        data-description="Fasilitas kasur empuk dan lemari besar">
-                    
+                <div class="md:col-span-2 md:row-span-2 relative overflow-hidden rounded-[2.5rem] shadow-sm bento-card">
+                    <img src="https://i.ibb.co.com/4ZkhL9Zr/Whats-App-Image-2026-03-10-at-21-57-52.jpg" 
+                        class="absolute inset-0 w-full h-full object-cover z-0" alt="Kamar Utama">
+
+                    <div class="absolute inset-0 z-20 cursor-pointer spotlight" 
+                        data-media="video"
+                        data-src="https://res.cloudinary.com/ddasccdw0/video/upload/v1773239074/WhatsApp_Video_2026-03-10_at_21.57.49_smlxnj.mp4"
+                        data-autoplay="true"
+                        data-title="Room Tour Serrata Kost">
+                        
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-8 flex flex-col justify-end text-white">
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30">
+                                    <span class="text-3xl ml-1 text-white">▶</span>
+                                </div>
+                            </div>
+                            <h3 class="text-2xl font-bold">Room Tour</h3>
+                            <p class="text-white/80">Klik untuk putar video ✨</p>
+                        </div>
+                    </div>
+
                     <div class="absolute top-6 right-6 z-10 bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-sm">
                         <span class="text-xs font-bold text-pink-600">✨ Female Only</span>
                     </div>
 
-                    <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent p-8 flex flex-col justify-end text-white">
-                        <h3 class="text-2xl font-bold">Kamar Minimalis</h3>
-                        <p class="text-white/80">Klik untuk lihat detail kamar ✨</p>
+                    <div id="video-serrata" style="display:none;">
+                        <div style="width:100%; max-width:900px; aspect-ratio:16/9; background:#000;">
+                            <iframe 
+                                src="https://www.youtube.com/embed/NZvFAzV-XEQ?autoplay=1&mute=1&rel=0" 
+                                width="100%" height="100%" frameborder="0" allow="autoplay; fullscreen" allowfullscreen>
+                            </iframe>
+                        </div>
                     </div>
-                    
-                    <a class="spotlight hidden" data-src="https://images.unsplash.com/photo-1560185127-6ed189bf02f4?q=80&w=1000"></a>
-                    <a class="spotlight hidden" data-src="https://images.unsplash.com/photo-1598928506311-c55ded91a20c?q=80&w=1000"></a>
-                    <a class="spotlight hidden" data-src="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=1000"></a>
+
+                    <a class="spotlight hidden" data-src="https://i.ibb.co.com/4ZkhL9Zr/Whats-App-Image-2026-03-10-at-21-57-52.jpg" data-title="Tampak Depan"></a>
+                    <a class="spotlight hidden" data-src="https://i.ibb.co.com/QFGbzM3M/Whats-App-Image-2026-03-10-at-21-57-51.jpg" data-title="Teras"></a>
+                    <a class="spotlight hidden" data-src="https://i.ibb.co.com/JwyyvbGV/Whats-App-Image-2026-03-10-at-21-57-49.jpg" data-title="Kamar"></a>
+                    <a class="spotlight hidden" data-src="https://i.ibb.co.com/84Kc6X01/Whats-App-Image-2026-03-10-at-21-57-50.jpg" data-title="Kamar Mandi"></a>
                 </div>
 
                 <div class="bg-rose-50 dark:bg-rose-900/20 p-8 rounded-[2.5rem] border border-rose-100 dark:border-rose-800 bento-card">
@@ -128,7 +144,7 @@
                 <div class="bg-white dark:bg-slate-800 rounded-[3rem] p-8 md:p-16 border border-slate-100 dark:border-slate-700 shadow-xl overflow-hidden relative">
                     <div class="grid lg:grid-cols-2 gap-12 relative z-10">
                         <div>
-                            <h2 class="text-4xl font-extrabold mb-6 dark:text-white leading-tight">Mampir ke <br>Serrata Kostt.</h2>
+                            <h2 class="text-4xl font-extrabold mb-6 dark:text-white leading-tight">Mampir ke <br>Serrata Kost.</h2>
                             <p class="text-slate-500 dark:text-slate-400 mb-8">
                                 <strong>Alamat:</strong> Jl. Pandowoharjo, Kleben Moncosan, Mancasan, Kec. Sleman, Yogyakarta 55512.
                             </p>
@@ -158,10 +174,10 @@
 
         <footer class="py-12 text-center text-slate-400 text-sm">
             <div class="mb-4 flex justify-center gap-6">
-                <a href="#" class="hover:text-pink-500 transition">Instagram</a>
-                <a href="#" class="hover:text-pink-500 transition">TikTok</a>
+                {{-- <a href="#" class="hover:text-pink-500 transition">Instagram</a>
+                <a href="#" class="hover:text-pink-500 transition">TikTok</a> --}}
             </div>
-            <p>© 2026 Serrata Kostt Sleman. Chill & Comfort Living.</p>
+            <p>© 2026 Serrata Kost Sleman. Chill & Comfort Living.</p>
             
             <a href="{{ route('login') }}" class="mt-4 block opacity-10 hover:opacity-100 transition-opacity duration-300 text-[10px]">
                 System Access
