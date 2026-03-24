@@ -54,10 +54,11 @@ class ComplaintController extends Controller
                         ->with('success', 'Keluhan berhasil ditambahkan');
     }
 
-    public function show(Complaint $complaint)
+    public function show($id)
     {
-        $complaint->load(['tenant', 'room']);
-        return view('complaints.show', compact('complaint'));
+        $complaint = Complaint::with(['images', 'tenant', 'room'])->findOrFail($id);
+        
+        return view('admin.complaints.show', compact('complaint'));
     }
 
     public function edit(Complaint $complaint)

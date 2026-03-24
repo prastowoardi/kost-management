@@ -20,20 +20,10 @@ class MobileComplaintController extends Controller
         ]);
     }
 
-    public function store(Request $request) 
+    public function store(Request $request)
     {
-        $request->validate([
-            'title' => 'required',
-            'description' => 'required',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
-        ]);
-
-        $user = $request->user();
-        $tenant = \App\Models\Tenant::where('user_id', $user->id)->first();
-
-        if (!$tenant) {
-            return response()->json(['message' => 'Data tenant tidak ditemukan'], 404);
-        }
+        // Debug: Cek apakah file masuk atau tidak (Lihat log di terminal Laravel/Mobile)
+        // return response()->json(['files' => $request->allFiles()]); 
 
         $complaint = new Complaint();
         $complaint->tenant_id = $request->user()->tenant->id;
@@ -43,17 +33,40 @@ class MobileComplaintController extends Controller
         $complaint->category = $request->category;
         $complaint->priority = $request->priority;
         $complaint->status = 'open';
-
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('complaints', 'public');
-            $complaint->images = [$path]; 
-        }
-
         $complaint->save();
 
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                $path = $file->store('complaints', 'public');
+                
+                $img = new \App\Models\ComplaintImage();
+                $img->complaint_id = $complaint->id;
+                $img->image_path = $path;
+                $img->save();
+            }
+        }
+
         return response()->json([
-            'status' => 'success',
-            'message' => 'Keluhan berhasil dikirim!'
+            'success' => true, 
+            'message' => 'Laporan berhasil dibuat',
+            'id' => $complaint->id
+        ]);
+    }
+
+    public function show($id)
+    {
+        $complaint = Complaint::with('images')->find($id);
+
+        if (!$complaint) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Laporan tidak ditemukan'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $complaint
         ]);
     }
 }

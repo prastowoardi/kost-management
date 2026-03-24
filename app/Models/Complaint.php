@@ -20,7 +20,8 @@ class Complaint extends Model
         'status',
         'response',
         'resolved_date',
-        'images'
+        'images',
+        'image_path'
     ];
 
     protected $casts = [
@@ -38,7 +39,7 @@ class Complaint extends Model
         return $this->belongsTo(Room::class);
     }
 
-    public function images(): HasMany
+    public function images()
     {
         return $this->hasMany(ComplaintImage::class);
     }

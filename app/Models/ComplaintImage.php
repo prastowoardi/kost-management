@@ -15,4 +15,11 @@ class ComplaintImage extends Model
     {
         return $this->belongsTo(Complaint::class);
     }
+
+    protected $appends = ['full_url'];
+
+    public function getFullUrlAttribute()
+    {
+        return asset('storage/' . $this->image_path);
+    }
 }

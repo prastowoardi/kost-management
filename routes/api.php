@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\MobileAuthController;
 use App\Http\Controllers\Api\MobileTenantController;
 use App\Http\Controllers\Api\MobileComplaintController;
 use App\Http\Controllers\Api\MobilePaymentController;
+use App\Http\Controllers\Api\Admin\AdminComplaintController;
 
 // --- PUBLIC ROUTES ---
 Route::post('/login', [MobileAuthController::class, 'login']);
@@ -26,7 +27,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Komplain
     Route::get('/complaints', [MobileComplaintController::class, 'index']);
     Route::post('/complaints', [MobileComplaintController::class, 'store']);
-    
+    Route::get('/complaints/{id}', [MobileComplaintController::class, 'show']);
+
     Route::post('/logout', [MobileAuthController::class, 'logout']);
 });
 
@@ -56,19 +58,9 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     });
 
     // Complaints Management
-    Route::get('/complaints', function () {
-        return \App\Models\Complaint::with(['tenant.user', 'tenant.room'])
-                ->orderByRaw("FIELD(status, 'pending', 'process', 'resolved')")
-                ->orderBy('created_at', 'desc')->get();
-    });
-    Route::post('/complaints/{id}/respond', function (Request $request, $id) {
-        $complaint = \App\Models\Complaint::findOrFail($id);
-        $complaint->update([
-            'status' => $request->status,
-            'response' => $request->response
-        ]);
-        return response()->json(['message' => 'Laporan diperbarui']);
-    });
+    Route::get('/complaints', [AdminComplaintController::class, 'index']);
+    Route::get('/complaints/{id}', [AdminComplaintController::class, 'show']);
+    Route::patch('/complaints/{id}/status', [AdminComplaintController::class, 'updateStatus']);
 
     // Tenants Management
     Route::get('/tenants', function () {
