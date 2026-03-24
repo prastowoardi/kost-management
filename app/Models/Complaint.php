@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 
 class Complaint extends Model
@@ -35,5 +36,10 @@ class Complaint extends Model
     public function room()
     {
         return $this->belongsTo(Room::class);
+    }
+
+    public function images(): HasMany
+    {
+        return $this->hasMany(ComplaintImage::class);
     }
 }

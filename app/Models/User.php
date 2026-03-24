@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
+use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
         'name',
@@ -62,6 +62,6 @@ class User extends Authenticatable
     // Relationship with tenant data
     public function tenant()
     {
-        return $this->hasOne(Tenant::class);
+        return $this->hasOne(\App\Models\Tenant::class, 'user_id');
     }
 }

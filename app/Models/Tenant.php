@@ -11,6 +11,7 @@ class Tenant extends Model
 
     protected $fillable = [
         'room_id',
+        'user_id',
         'name',
         'email',
         'phone',
@@ -42,5 +43,10 @@ class Tenant extends Model
     public function complaints()
     {
         return $this->hasMany(Complaint::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

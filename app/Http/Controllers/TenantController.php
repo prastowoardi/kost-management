@@ -4,11 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Tenant;
 use App\Models\Room;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
-
+use Illuminate\Support\Facades\Hash;
 class TenantController extends Controller
 {
     public function index()
@@ -41,17 +42,32 @@ class TenantController extends Controller
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:5120'
         ]);
 
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make('password123'), // Password default
+            'role' => 'tenant',
+        ]);
+
         if ($request->hasFile('photo')) {
             $validated['photo'] = $request->file('photo')->store('tenants', 'public');
         }
 
+        $validated['user_id'] = $user->id;
         $tenant = Tenant::create($validated);
         $tenant->room->update(['status' => 'occupied']);
 
         $waUrl = $this->sendWelcomeMessage($tenant);
 
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Penghuni dan Akun Login berhasil dibuat.',
+                'data' => $tenant->load('user')
+            ], 201);
+        }
         return redirect()->route('tenants.index')
-                    ->with('success', 'Penghuni berhasil ditambahkan.')
+                    ->with('success', 'Penghuni berhasil ditambahkan. Password default: password123')
                     ->with('wa_url', $waUrl);
     }
 
