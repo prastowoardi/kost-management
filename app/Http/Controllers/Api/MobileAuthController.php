@@ -9,30 +9,46 @@ use App\Models\Room;
 use App\Models\Complaint;
 use App\Models\Payment;
 use Illuminate\Support\Facades\Hash;
+use App\Helpers\LogHelper;
 use Illuminate\Validation\ValidationException;
 
 class MobileAuthController extends Controller
 {
     public function login(Request $request) 
     {
-        info($request->all());
         $request->validate([
             'email' => 'required|email',
             'password' => 'required',
+            'push_token' => 'nullable|string' 
         ]);
 
         $user = User::where('email', $request->email)->first();
         
         if (!$user || !Hash::check($request->password, $user->password)) {
+            LogHelper::log(
+                'LOGIN_FAILED', 
+                "Percobaan login gagal pada email: {$request->email}",
+                null,
+                ['ip' => $request->ip(), 'user_agent' => $request->userAgent()]
+            );
+
             return response()->json([
                 'status' => 'error',
-                'message' => 'Email atau password salah.'
+                'message' => 'Gagal Login.'
             ], 401);
+        }
+
+        if ($request->push_token) {
+            User::where('expo_push_token', $request->push_token)->update(['expo_push_token' => null]);
+            
+            $user->expo_push_token = $request->push_token;
+            $user->save();
         }
         
         $user->tokens()->delete();
-        
         $token = $user->createToken('mobile_token')->plainTextToken;
+
+        \App\Helpers\LogHelper::log('LOGIN_MOBILE', "User {$user->name} login...");
 
         return response()->json([
             'status' => 'success',
@@ -49,7 +65,10 @@ class MobileAuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $user = $request->user();
+        $user->update(['expo_push_token' => null]);
+        
+        $user->currentAccessToken()->delete();
         
         return response()->json([
             'status' => 'success',

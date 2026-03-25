@@ -8,7 +8,9 @@ use App\Http\Controllers\Api\MobileAuthController;
 use App\Http\Controllers\Api\MobileTenantController;
 use App\Http\Controllers\Api\MobileComplaintController;
 use App\Http\Controllers\Api\MobilePaymentController;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\Admin\AdminComplaintController;
+use App\Helpers\LogHelper;
 
 // --- PUBLIC ROUTES ---
 Route::post('/login', [MobileAuthController::class, 'login']);
@@ -45,22 +47,31 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
             'latest_complaints' => \App\Models\Complaint::with(['tenant.user'])->where('status', 'pending')->take(5)->get()
         ];
     });
+    Route::get('/stats', function (Request $request) {
+        \App\Helpers\LogHelper::log('VIEW_DASHBOARD', "Admin {$request->user()->name} melihat statistik dashboard");
+
+        return [
+            'total_rooms' => \App\Models\Room::count(),
+            'occupied_rooms' => \App\Models\Tenant::where('status', 'active')->count(),
+            'vacant_rooms' => \App\Models\Room::where('status', 'available')->count(),
+            'monthly_income' => \App\Models\Payment::where('status', 'verified')->whereMonth('created_at', now()->month)->sum('total'),
+            'latest_complaints' => \App\Models\Complaint::with(['tenant.user'])->where('status', 'pending')->take(5)->get()
+        ];
+    });
 
     // Payments Verification
     Route::get('/payments/pending', function () {
         return \App\Models\Payment::with(['tenant.user', 'room'])
                 ->where('status', 'pending')->get();
     });
-    Route::post('/payments/{id}/verify', function (Request $request, $id) {
-        $payment = \App\Models\Payment::findOrFail($id);
-        $payment->update(['status' => $request->status]);
-        return response()->json(['message' => 'Status updated']);
-    });
+    Route::post('/payments/{id}/verify', [MobilePaymentController::class, 'verifyPayment'])
+            ->middleware('auth:sanctum');
 
     // Complaints Management
     Route::get('/complaints', [AdminComplaintController::class, 'index']);
     Route::get('/complaints/{id}', [AdminComplaintController::class, 'show']);
     Route::patch('/complaints/{id}/status', [AdminComplaintController::class, 'updateStatus']);
+    Route::post('/complaints/{id}/respond', [AdminComplaintController::class, 'respond']);
 
     // Tenants Management
     Route::get('/tenants', function () {
@@ -81,8 +92,10 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
             return response()->json(['message' => $validator->errors()->first()], 422);
         }
 
-        return \DB::transaction(function () use ($request) {
+        return DB::transaction(function () use ($request) {
             try {
+                $room = \App\Models\Room::findOrFail($request->room_id);
+
                 $user = \App\Models\User::create([
                     'name' => $request->name,
                     'email' => $request->email,
@@ -90,20 +103,22 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
                     'role' => 'tenant'
                 ]);
 
-                $tenant = new \App\Models\Tenant();
-                $tenant->user_id = $user->id;
-                $tenant->room_id = $request->room_id;
-                $tenant->name = $request->name;
-                $tenant->email = $request->email;
-                $tenant->phone = $request->phone;
-                $tenant->id_card = $request->id_card;
-                $tenant->address = $request->address;
-                $tenant->entry_date = $request->entry_date;
-                $tenant->status = 'active';
-                $tenant->save();
+                \App\Models\Tenant::create([
+                    'user_id' => $user->id,
+                    'room_id' => $room->id,
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'phone' => $request->phone,
+                    'status' => 'active',
+                ]);
 
-                $room = \App\Models\Room::find($request->room_id);
                 $room->update(['status' => 'occupied']);
+
+                LogHelper::log(
+                    'CREATE_TENANT', 
+                    "Admin " . auth()->user()->name . " mendaftarkan tenant: {$request->name} di Kamar " . $room->room_number,
+                    $user
+                );
 
                 return response()->json(['message' => 'Tenant berhasil didaftarkan!']);
                 
@@ -112,4 +127,11 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
             }
         });
     });
+});
+
+Route::middleware('auth:sanctum')->post('/update-push-token', function (Request $request) {
+    $request->validate(['token' => 'required']);
+    $request->user()->update(['expo_push_token' => $request->token]);
+    \App\Helpers\LogHelper::log('UPDATE_PUSH_TOKEN', "User " . $request->user()->name . " memperbarui Push Token device");
+    return response()->json(['message' => 'Token updated']);
 });

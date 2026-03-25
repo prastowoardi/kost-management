@@ -6,6 +6,7 @@ use App\Models\Room;
 use App\Models\Facility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Helpers\LogHelper;
 
 class RoomController extends Controller
 {
@@ -134,6 +135,17 @@ class RoomController extends Controller
             $room->facilities()->detach();
         }
         
+        $oldPrice = $room->price;
+        $room->update($validated);
+
+        if($oldPrice != $request->price) {
+            LogHelper::log(
+                'CHANGE_ROOM_PRICE', 
+                "Admin mengubah harga kamar {$room->room_number} dari {$oldPrice} ke {$request->price}",
+                $room
+            );
+        }
+
         return redirect()->route('rooms.show', $room)
             ->with('success', 'Kamar berhasil diupdate!');
     }

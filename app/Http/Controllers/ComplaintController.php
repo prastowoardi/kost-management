@@ -6,6 +6,8 @@ use App\Models\Complaint;
 use App\Models\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
+use App\Helpers\LogHelper;
 
 class ComplaintController extends Controller
 {
@@ -80,14 +82,13 @@ class ComplaintController extends Controller
             'resolved_date' => 'nullable|date',
             'images' => 'nullable|array|max:5',
             'images.*' => 'image|mimes:jpeg,png,jpg|max:5120',
-            'remove_images' => 'nullable|array' // IDs gambar yang akan dihapus
+            'remove_images' => 'nullable|array'
         ]);
 
         $tenant = Tenant::find($validated['tenant_id']);
         $validated['room_id'] = $tenant->room_id;
         $newStatus = $validated['status'];
 
-        // Handle remove images
         if ($request->has('remove_images')) {
             $currentImages = $complaint->images ?? [];
             foreach ($request->remove_images as $imageToRemove) {
@@ -99,11 +100,9 @@ class ComplaintController extends Controller
             $validated['images'] = array_values($currentImages);
         }
 
-        // Handle new images
         if ($request->hasFile('images')) {
             $currentImages = $validated['images'] ?? $complaint->images ?? [];
             
-            // Check total images limit
             if (count($currentImages) + count($request->file('images')) > 5) {
                 return back()->with('error', 'Maksimal 5 foto!');
             }
@@ -115,10 +114,8 @@ class ComplaintController extends Controller
         }
     
         if ($newStatus == 'resolved' || $newStatus == 'closed') {
-            // Gunakan now() untuk mencatat tanggal dan waktu lengkap saat update status
             $validated['resolved_date'] = now(); 
         } else {
-            // Jika statusnya kembali ke Open/In Progress, hapus resolved_date
             $validated['resolved_date'] = null;
         }
 
@@ -130,7 +127,6 @@ class ComplaintController extends Controller
 
     public function destroy(Complaint $complaint)
     {
-        // Delete all images
         if ($complaint->images) {
             foreach ($complaint->images as $image) {
                 Storage::disk('public')->delete($image);
@@ -156,7 +152,30 @@ class ComplaintController extends Controller
 
         $complaint->update($validated);
 
+        $tenant = $complaint->tenant; 
+
+        if ($tenant && $tenant->expo_push_token) {
+            
+            Http::post('https://exp.host/--/api/v2/push/send', [
+                'to' => $tenant->expo_push_token,
+                'title' => 'Update Laporan: ' . $complaint->title,
+                'body' => 'Status laporan Anda: ' . strtoupper($validated['status']) . '. ' . ($validated['response'] ?? ''),
+                'data' => [
+                    'type' => 'complaint_update',
+                    'id' => $complaint->id
+                ],
+                'sound' => 'default',
+            ]);
+        }
+
+        LogHelper::log(
+            'RESPOND_COMPLAINT', 
+            "Admin merespon keluhan #{$complaint->id}: {$complaint->title}",
+            $complaint,
+            ['status_baru' => $request->status, 'respon' => $request->response]
+        );
+
         return redirect()->back()
-                        ->with('success', 'Status keluhan berhasil diupdate');
+                        ->with('success', 'Status keluhan berhasil diupdate & Notifikasi dikirim');
     }
 }
