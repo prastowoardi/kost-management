@@ -23,8 +23,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [MobileTenantController::class, 'getProfile']);
     
     // Tagihan & Riwayat Bayar
-    Route::get('/payments/history', [MobilePaymentController::class, 'getHistory']); // Gunakan Controller agar rapi
+    Route::get('/payments/history', [MobilePaymentController::class, 'getHistory']);
     Route::post('/payments/upload', [MobilePaymentController::class, 'uploadProof']);
+    Route::get('/tenant/payments/{id}', [MobilePaymentController::class, 'show']);
     
     // Komplain
     Route::get('/complaints', [MobileComplaintController::class, 'index']);

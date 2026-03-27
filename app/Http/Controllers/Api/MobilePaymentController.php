@@ -10,7 +10,6 @@ use App\Helpers\LogHelper;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-
 class MobilePaymentController extends Controller
 {
     public function getHistory(Request $request)
@@ -81,7 +80,7 @@ class MobilePaymentController extends Controller
     public function verifyPayment(Request $request, $id)
     {
         if ($request->user()->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized. Hanya Admin yang bisa verifikasi.'], 403);
+            return response()->json(['message' => 'Unauthorized.'], 403);
         }
 
         $payment = Payment::with(['tenant.user', 'room'])->findOrFail($id);
@@ -90,7 +89,7 @@ class MobilePaymentController extends Controller
         $logAction = ($newStatus === 'paid') ? 'MENERIMA' : 'MENOLAK';
 
         if ($payment->status === 'paid' || $payment->status === 'overdue') {
-            return response()->json(['message' => 'Pembayaran ini sudah diproses sebelumnya.'], 400);
+            return response()->json(['message' => 'Sudah diverifikasi sebelumnya.'], 400);
         }
 
         try {
@@ -107,24 +106,53 @@ class MobilePaymentController extends Controller
             );
 
             $tenantUser = $payment->tenant->user ?? null;
-            if ($newStatus === 'paid' && $tenantUser && $tenantUser->expo_push_token) {
-                Http::post('https://exp.host/--/api/v2/push/send', [
+            
+            Log::info("Mengecek Token untuk User ID: " . ($tenantUser->id ?? 'Kosong'));
+            Log::info("Token: " . ($tenantUser->expo_push_token ?? 'NULL'));
+
+            if ($tenantUser && $tenantUser->expo_push_token) {
+                $isPaid = ($newStatus === 'paid');
+
+                $response = Http::post('https://exp.host/--/api/v2/push/send', [
                     'to' => $tenantUser->expo_push_token,
-                    'title' => 'Pembayaran Diterima! ✅',
-                    'body' => "Pembayaran Rp " . number_format($payment->total, 0, ',', '.') . " telah diverifikasi. Terima kasih!",
-                    'data' => ['type' => 'payment_verified', 'id' => $payment->id],
+                    'title' => $isPaid ? 'Pembayaran Diterima! ✅' : 'Pembayaran Ditolak! ❌',
+                    'body' => $isPaid 
+                        ? "Pembayaran sebesar Rp " . number_format($payment->total, 0, ',', '.') . " telah diverifikasi."
+                        : "Maaf, pembayaran Rp " . number_format($payment->total, 0, ',', '.') . " ditolak Admin. Silakan hubungi pengelola.",
+                    'data' => [
+                        'type' => $isPaid ? 'payment_verified' : 'payment_rejected', 
+                        'id' => (int)$payment->id
+                    ],
                     'sound' => 'default',
                 ]);
+                
+                Log::info("Respon Expo: " . $response->body());
             }
 
             return response()->json([
                 'status' => 'success',
-                'message' => "Pembayaran berhasil diupdate menjadi " . strtoupper($newStatus)
+                'message' => 'Status updated to ' . $newStatus
             ]);
-
         } catch (\Exception $e) {
             Log::error("Verify Error: " . $e->getMessage());
-            return response()->json(['message' => 'Gagal: ' . $e->getMessage()], 500);
+            return response()->json(['message' => $e->getMessage()], 500);
         }
+    }
+
+    public function show(Request $request, $id)
+    {
+        $payment = Payment::with(['tenant.user', 'room'])
+            ->where('id', $id)
+            ->first();
+
+        if (!$payment) {
+            return response()->json(['message' => 'Data pembayaran tidak ditemukan.'], 404);
+        }
+
+        if ($request->user()->role !== 'admin' && $payment->tenant->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        return response()->json($payment);
     }
 }
