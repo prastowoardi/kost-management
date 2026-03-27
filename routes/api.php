@@ -116,7 +116,7 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
 
                 LogHelper::log(
                     'CREATE_TENANT', 
-                    "Admin " . auth()->user()->name . " mendaftarkan tenant: {$request->name} di Kamar " . $room->room_number,
+                    "Admin " . $request->user()->name . " mendaftarkan tenant: {$request->name} di Kamar " . $room->room_number,
                     $user
                 );
 
