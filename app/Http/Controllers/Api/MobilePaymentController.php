@@ -11,6 +11,30 @@ use Illuminate\Support\Facades\Http;
 
 class MobilePaymentController extends Controller
 {
+    public function getHistory(Request $request)
+    {
+        $user = $request->user();
+        
+        $tenant = Tenant::where('user_id', $user->id)->first();
+
+        if (!$tenant) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Data tenant tidak ditemukan'
+            ], 404);
+        }
+
+        $payments = Payment::with('room')
+            ->where('tenant_id', $tenant->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $payments
+        ]);
+    }
+
     public function uploadProof(Request $request)
     {
         $request->validate([

@@ -28,37 +28,27 @@ class MobileTenantController extends Controller
             'floor' => $tenant->room->floor ?? '-',
             'bill_amount' => $latestPayment->amount ?? 0,
         ]);
-}
+    }
 
     public function getProfile(Request $request)
     {
         $user = $request->user();
-        $tenant = \App\Models\Tenant::with('room')
-                        ->where('user_id', $user->id)
-                        ->first();
+        $tenant = \App\Models\Tenant::with('room')->where('user_id', $user->id)->first();
 
         if (!$tenant) {
-            return response()->json([
-                'id'      => $user->id,
-                'name'    => $user->name,
-                'email'   => $user->email,
-                'role'    => $user->role,
-                'phone'   => 'Belum Terdaftar',
-                'id_card' => '-',
-                'address' => 'Data Tenant Tidak Ditemukan di Database',
-                'room_number' => '-'
-            ]);
+            return response()->json(['name' => $user->name, 'payment_status' => 'Belum Terdaftar'], 404);
         }
 
+        $daysLeft = $tenant->days_left;
+        $lateStatus = $daysLeft < 0 ? 'TELAT ' . abs($daysLeft) . ' HARI' : 'AKTIF';
+
         return response()->json([
-            'id'         => $user->id,
-            'name'       => $user->name,
-            'email'      => $user->email,
-            'role'       => $user->role,
-            'phone'      => $tenant->phone,
-            'id_card'    => $tenant->id_card,
-            'address'    => $tenant->address,
-            'room_number'  => $tenant->room ? $tenant->room->room_number : 'Belum diatur',
+            'name'           => $user->name,
+            'room_number'    => $tenant->room->room_number ?? '-',
+            'due_date'       => $tenant->calculated_due_date ? $tenant->calculated_due_date->format('d M Y') : '-',
+            'days_left_msg'  => $lateStatus,
+            'payment_status' => $daysLeft < 0 ? 'Belum Bayar' : 'Lunas',
+            'bill_amount'    => $tenant->room->price ?? 0,
         ]);
     }
 

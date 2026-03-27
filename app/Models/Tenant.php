@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Tenant extends Model
 {
@@ -29,6 +30,35 @@ class Tenant extends Model
         'entry_date' => 'date',
         'exit_date' => 'date',
     ];
+
+    protected $appends = ['calculated_due_date', 'days_left'];
+
+    public function getCalculatedDueDateAttribute()
+    {
+        if (!$this->entry_date) return null;
+
+        $now = Carbon::now()->startOfDay();
+        $entryDate = Carbon::parse($this->entry_date);
+        
+        $targetDate = Carbon::now()->setDay($entryDate->day)->startOfDay();
+
+        $diff = $now->diffInDays($targetDate, false);
+        if ($diff < -20) { 
+            $targetDate->addMonth(); 
+        } elseif ($diff > 20) { 
+            $targetDate->subMonth(); 
+        }
+
+        return $targetDate;
+    }
+
+    public function getDaysLeftAttribute()
+    {
+        $dueDate = $this->calculated_due_date;
+        if (!$dueDate) return 0;
+        
+        return (int) Carbon::now()->startOfDay()->diffInDays($dueDate, false);
+    }
 
     public function room()
     {
