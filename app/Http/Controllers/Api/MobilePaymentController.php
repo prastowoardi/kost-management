@@ -12,11 +12,27 @@ use Illuminate\Support\Facades\Log;
 
 class MobilePaymentController extends Controller
 {
+    public function index(Request $request)
+    {
+        $tenant = $request->user()->tenant;
+        
+        if (!$tenant) {
+            return response()->json([], 200);
+        }
+
+        $payments = Payment::where('tenant_id', $tenant->id)
+            ->whereIn('status', ['paid', 'overdue'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json($payments);
+    }
+
     public function getHistory(Request $request)
     {
         $user = $request->user();
         
-        $tenant = Tenant::where('user_id', $user->id)->first();
+        $tenant = \App\Models\Tenant::where('user_id', $user->id)->first();
 
         if (!$tenant) {
             return response()->json([
@@ -25,8 +41,9 @@ class MobilePaymentController extends Controller
             ], 404);
         }
 
-        $payments = Payment::with('room')
-            ->where('tenant_id', $tenant->id)
+        $payments = \App\Models\Payment::where('tenant_id', $tenant->id)
+            ->with(['room'])
+            ->whereIn('status', ['paid', 'overdue'])
             ->orderBy('created_at', 'desc')
             ->get();
 
