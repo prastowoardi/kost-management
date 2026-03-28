@@ -43,6 +43,10 @@ class MobileTenantController extends Controller
         $lateStatus = $daysLeft < 0 ? 'TELAT ' . abs($daysLeft) . ' HARI' : 'AKTIF';
 
         return response()->json([
+            'email'          => $user->email,
+            'phone'          => $tenant->phone,
+            'address'        => $tenant->address,
+            'id_card'        => $tenant->id_card,
             'name'           => $user->name,
             'room_number'    => $tenant->room->room_number ?? '-',
             'due_date'       => $tenant->calculated_due_date ? $tenant->calculated_due_date->format('d M Y') : '-',
