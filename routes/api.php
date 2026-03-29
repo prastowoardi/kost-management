@@ -8,7 +8,7 @@ use App\Http\Controllers\Api\MobileAuthController;
 use App\Http\Controllers\Api\MobileTenantController;
 use App\Http\Controllers\Api\MobileComplaintController;
 use App\Http\Controllers\Api\MobilePaymentController;
-use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\Admin\AdminTenantController;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\Admin\AdminComplaintController;
 use App\Helpers\LogHelper;
@@ -82,59 +82,7 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     Route::get('/rooms/available', function () {
         return \App\Models\Room::where('status', 'available')->get();
     });
-    Route::post('/tenants/store', function (Request $request) {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'room_id' => 'required|exists:rooms,id',
-            'phone' => 'required',
-            'id_card' => 'required',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['message' => $validator->errors()->first()], 422);
-        }
-
-        return DB::transaction(function () use ($request) {
-            try {
-                $room = \App\Models\Room::findOrFail($request->room_id);
-
-                $user = \App\Models\User::create([
-                    'name' => $request->name,
-                    'email' => $request->email,
-                    'password' => Hash::make($request->password ?? 'password123'),
-                    'role' => 'tenant'
-                ]);
-
-                \App\Models\Tenant::create([
-                    'user_id' => $user->id,
-                    'room_id' => $room->id,
-                    'name' => $request->name,
-                    'email' => $request->email,
-                    'phone' => $request->phone,
-                    'id_card' => $request->id_card,
-                    'address' => $request->address,
-                    'entry_date' => $request->entry_date ?? now(),
-                    'emergency_contact_name' => $request->emergency_contact_name,
-                    'emergency_contact_phone' => $request->emergency_contact_phone,
-                    'status' => 'active',
-                ]);
-
-                $room->update(['status' => 'occupied']);
-
-                LogHelper::log(
-                    'CREATE_TENANT', 
-                    "Admin " . $request->user()->name . " mendaftarkan tenant: {$request->name} di Kamar " . $room->room_number,
-                    $user
-                );
-
-                return response()->json(['message' => 'Tenant berhasil didaftarkan!']);
-                
-            } catch (\Exception $e) {
-                return response()->json(['message' => 'Gagal: ' . $e->getMessage()], 500);
-            }
-        });
-    });
+    Route::post('/tenants/store', [AdminTenantController::class, 'store']);
 });
 
 Route::middleware('auth:sanctum')->post('/update-push-token', function (Request $request) {
