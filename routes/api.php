@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\MobileAuthController;
 use App\Http\Controllers\Api\MobileTenantController;
 use App\Http\Controllers\Api\MobileComplaintController;
 use App\Http\Controllers\Api\MobilePaymentController;
+use App\Http\Controllers\Api\AuthController;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\Admin\AdminComplaintController;
 use App\Helpers\LogHelper;
@@ -87,6 +88,7 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
             'email' => 'required|email|unique:users,email',
             'room_id' => 'required|exists:rooms,id',
             'phone' => 'required',
+            'id_card' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -110,6 +112,11 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
                     'name' => $request->name,
                     'email' => $request->email,
                     'phone' => $request->phone,
+                    'id_card' => $request->id_card,
+                    'address' => $request->address,
+                    'entry_date' => $request->entry_date ?? now(),
+                    'emergency_contact_name' => $request->emergency_contact_name,
+                    'emergency_contact_phone' => $request->emergency_contact_phone,
                     'status' => 'active',
                 ]);
 
