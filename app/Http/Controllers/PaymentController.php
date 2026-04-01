@@ -109,7 +109,7 @@ class PaymentController extends Controller
 
         try {
             $htmlContent = view('payments.receipt', compact('payment'))->render();
-            $caption = "Halo *{$tenant->name}*, berikut adalah kwitansi pembayaran Anda.";
+            $caption = "Halo Kak *{$tenant->name}*, berikut adalah kwitansi pembayaran Anda.";
 
             // 1. Kirim ke Node.js
             $response = Http::timeout(40)->post('http://127.0.0.1:3000/send-image', [
