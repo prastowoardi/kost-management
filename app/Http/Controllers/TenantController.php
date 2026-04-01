@@ -160,13 +160,13 @@ class TenantController extends Controller
 
     private function sendWelcomeMessage($tenant)
     {
-        $message = "Halo {$tenant->name}! Selamat datang di Serrata Kost! 👋✨\n\n" .
+        $message = "Halo Kak {$tenant->name}! Selamat datang di Serrata Kost! 👋✨\n\n" .
 
                 "Makasih banyak ya sudah memilih Serrata Kost jadi rumah barumu. Semoga betah, nyaman, dan produktif selama tinggal di sini! 😊\n\n" .
 
                 "*Biar makin nyaman bareng, yuk intip 'House Rules' kita sebentar:* 📝\n\n" .
 
-                "📍 **UMUM**\n" .
+                "📍 *UMUM*\n" .
                     "1. Saling jaga ketenangan dan keamanan ya, biar istirahat makin pol.\n" .
                     "2. Kost kita bersih dari Miras, Narkoba, atau barang terlarang lainnya.\n" .
                     "3. No smoking inside! Kamar tetap wangi tanpa asap rokok ya.\n" .
@@ -174,15 +174,15 @@ class TenantController extends Controller
                     "5. Saling jaga etika dan hindari asusila demi kenyamanan bersama.\n" .
                     "6. Kita jaga nama baik Serrata Kost bareng-bareng ya, Kak.\n" .
                     "7. Jangan lupa pembayaran kost tepat waktu sesuai tanggal janjian.\n" .
-                    "8. Khusus tamu laki-laki, cukup sampai ruang tamu/area luar ya, tidak masuk kamar.\n" .
+                    "8. Khusus tamu laki-laki tidak boleh masuk kamar.\n" .
                     "9. Kalau ada keluarga mau menginap, info ke Ibu Kost dulu ya (max 2 orang).\n\n" .
 
-                "✨ **KEBERSIHAN & KERAPIHAN**\n" .
+                "✨ *KEBERSIHAN & KERAPIHAN*\n" .
                     "1. Kamar dan kamar mandi sendiri dijaga tetap bersih ya, biar makin betah.\n" .
                     "2. Buang sampah di tempatnya. Tolong banget jangan buang sampah/pembalut di kloset biar nggak mampet.\n" .
                     "3. Jemur pakaian di tempat jemuran yang sudah ada ya, jangan di depan kamar agar tetap rapi.\n\n" .
 
-                "🚰 **FASILITAS**\n" .
+                "🚰 *FASILITAS*\n" .
                     "1. Gunakan fasilitas kost dengan bijak dan penuh rasa tanggung jawab.\n" .
                     "2. Jika ada kerusakan karena kelalaian, biaya perbaikannya ditanggung penghuni dulu ya.\n" .
                     "3. Hemat air ya Kak, gunakan secukupnya saja sesuai kebutuhan.\n\n" .
