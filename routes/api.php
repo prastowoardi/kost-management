@@ -19,26 +19,27 @@ Route::post('/register', [MobileAuthController::class, 'register']);
 
 // --- TENANT ROUTES (Sisi Penghuni) ---
 Route::middleware('auth:sanctum')->group(function () {
-    
+
     // Profile & Info Dashboard
     Route::get('/me', [MobileTenantController::class, 'getProfile']);
-    
+
     // Tagihan & Riwayat Bayar
     Route::get('/tenant/payments', [MobilePaymentController::class, 'getHistory']);
     Route::post('/payments/upload', [MobilePaymentController::class, 'uploadProof']);
     Route::get('/tenant/payments/{id}', [MobilePaymentController::class, 'show']);
-    
+
     // Komplain
     Route::get('/complaints', [MobileComplaintController::class, 'index']);
     Route::post('/complaints', [MobileComplaintController::class, 'store']);
     Route::get('/complaints/{id}', [MobileComplaintController::class, 'show']);
 
+    Route::post('/change-password', [MobileAuthController::class, 'changePassword']);
     Route::post('/logout', [MobileAuthController::class, 'logout']);
 });
 
 // --- ADMIN ROUTES (Sisi Pengelola) ---
 Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
-    
+
     // Stats Dashboard Admin
     Route::get('/stats', function () {
         return [
