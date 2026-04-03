@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\MobileTenantController;
 use App\Http\Controllers\Api\MobileComplaintController;
 use App\Http\Controllers\Api\MobilePaymentController;
 use App\Http\Controllers\Api\Admin\AdminTenantController;
+use App\Http\Controllers\Api\Admin\StatsController;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\Admin\AdminComplaintController;
 use App\Helpers\LogHelper;
@@ -39,29 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // --- ADMIN ROUTES (Sisi Pengelola) ---
 Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
-
-    // Stats Dashboard Admin
-    Route::get('/stats', function () {
-        return [
-            'total_rooms' => \App\Models\Room::count(),
-            'occupied_rooms' => \App\Models\Tenant::where('status', 'active')->count(),
-            'vacant_rooms' => \App\Models\Room::where('status', 'available')->count(),
-            'monthly_income' => \App\Models\Payment::where('status', 'success')->whereMonth('created_at', now()->month)->sum('total'),
-            'latest_complaints' => \App\Models\Complaint::with(['tenant.user'])->where('status', 'pending')->take(5)->get()
-        ];
-    });
-    Route::get('/stats', function (Request $request) {
-        \App\Helpers\LogHelper::log('VIEW_DASHBOARD', "Admin {$request->user()->name} melihat statistik dashboard");
-
-        return [
-            'total_rooms' => \App\Models\Room::count(),
-            'occupied_rooms' => \App\Models\Tenant::where('status', 'active')->count(),
-            'vacant_rooms' => \App\Models\Room::where('status', 'available')->count(),
-            'monthly_income' => \App\Models\Payment::where('status', 'verified')->whereMonth('created_at', now()->month)->sum('total'),
-            'latest_complaints' => \App\Models\Complaint::with(['tenant.user'])->where('status', 'pending')->take(5)->get()
-        ];
-    });
-
+    Route::get('/stats', [StatsController::class, 'index']);
     // Payments Verification
     Route::get('/payments/pending', function () {
         return \App\Models\Payment::with(['tenant.user', 'room'])
