@@ -18,6 +18,9 @@ use App\Helpers\LogHelper;
 // --- PUBLIC ROUTES ---
 Route::post('/login', [MobileAuthController::class, 'login']);
 Route::post('/register', [MobileAuthController::class, 'register']);
+Route::get('health', function () {
+    return response()->json(['status' => 'OK']);
+});
 
 // --- TENANT ROUTES (Sisi Penghuni) ---
 Route::middleware('auth:sanctum')->group(function () {
