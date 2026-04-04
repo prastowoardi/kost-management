@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\MobileAuthController;
 use App\Http\Controllers\Api\MobileTenantController;
 use App\Http\Controllers\Api\MobileComplaintController;
 use App\Http\Controllers\Api\MobilePaymentController;
+use App\Http\Controllers\Api\Admin\FinanceController;
 use App\Http\Controllers\Api\Admin\AdminTenantController;
 use App\Http\Controllers\Api\Admin\StatsController;
 use Illuminate\Support\Facades\DB;
@@ -63,6 +64,8 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
         return \App\Models\Room::where('status', 'available')->get();
     });
     Route::post('/tenants/store', [AdminTenantController::class, 'store']);
+
+    Route::apiResource('/finances', FinanceController::class);
 });
 
 Route::middleware('auth:sanctum')->post('/update-push-token', function (Request $request) {
