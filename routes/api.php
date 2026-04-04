@@ -68,6 +68,7 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     });
     Route::post('/tenants/store', [AdminTenantController::class, 'store']);
 
+    Route::get('/categories', [FinanceController::class, 'getApiCategories']);
     Route::apiResource('/finances', FinanceController::class);
 });
 
