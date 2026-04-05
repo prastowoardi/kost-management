@@ -29,9 +29,11 @@ class ReceiptController extends Controller
             
             if (count($parts) === 3) {
                 $lastDate = $parts[1];
-                $lastSequence = (int)$parts[2];
+                $lastSequence = (int) $parts[2];
 
                 if ($lastDate == $today) {
+                    $nextNumber = $lastSequence + 1;
+                } else {
                     $nextNumber = $lastSequence + 1;
                 }
             }
