@@ -13,6 +13,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\BroadcastController;
 use App\Http\Controllers\PaymentPageController;
+use App\Http\Controllers\Admin\ReceiptController;
 use App\Http\Controllers\PublicRegistrationController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
@@ -66,20 +67,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Finances (Clean Version)
         Route::prefix('finances')->name('finances.')->group(function () {
-            Route::get('/', [FinanceController::class, 'index'])->name('index');
-            Route::get('/finances', [FinanceController::class, 'index'])->name('finances.index');
-            Route::get('/finances/{finance}/edit', [FinanceController::class, 'edit'])->name('finances.edit');
-            Route::put('/finances/{finance}', [FinanceController::class, 'update'])->name('finances.update');
-            Route::get('/finances/report', [FinanceController::class, 'report'])->name('finances.report');
-            Route::get('/dashboard', [FinanceController::class, 'dashboard'])->name('dashboard');
-            Route::get('/report', [FinanceController::class, 'report'])->name('report');
-            Route::get('/create', [FinanceController::class, 'create'])->name('create');
-            Route::post('/', [FinanceController::class, 'store'])->name('store');
-            Route::get('/{finance}', [FinanceController::class, 'show'])->name('show');
-            Route::get('/{finance}/edit', [FinanceController::class, 'edit'])->name('edit');
-            Route::put('/{finance}', [FinanceController::class, 'update'])->name('update');
-            Route::delete('/{finance}', [FinanceController::class, 'destroy'])->name('destroy');
-        });
+        Route::get('/', [FinanceController::class, 'index'])->name('index');
+        Route::get('/dashboard', [FinanceController::class, 'dashboard'])->name('dashboard');
+        Route::get('/report', [FinanceController::class, 'report'])->name('report');
+        Route::get('/create', [FinanceController::class, 'create'])->name('create');
+        Route::post('/', [FinanceController::class, 'store'])->name('store');
+        Route::get('/{finance}', [FinanceController::class, 'show'])->name('show');
+        Route::get('/{finance}/edit', [FinanceController::class, 'edit'])->name('edit');
+        Route::put('/{finance}', [FinanceController::class, 'update'])->name('update');
+        Route::delete('/{finance}', [FinanceController::class, 'destroy'])->name('destroy');
+    });
 
         // Reports
         Route::prefix('reports')->name('reports.')->group(function () {
@@ -156,6 +153,13 @@ Route::get('/test-wa/{id}', function ($id) {
     } catch (\Exception $e) {
         return "Gagal: " . $e->getMessage();
     }
+});
+
+Route::prefix('bo-admin')->group(function () {
+    Route::get('/receipt/create', [ReceiptController::class, 'manualCreate'])->name('admin.receipt.create');
+    Route::post('/receipt/store', [ReceiptController::class, 'manualStore'])->name('admin.receipt.store');
+    Route::get('/receipt/print/{id}', [ReceiptController::class, 'manualPrint'])->name('admin.receipt.print');
+    Route::get('/receipt/history', [ReceiptController::class, 'manualHistory'])->name('admin.receipt.history');
 });
 
 require __DIR__.'/auth.php';
