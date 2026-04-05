@@ -257,13 +257,20 @@ class FinanceController extends Controller
         $finance = Finance::find($id);
 
         if (!$finance) {
-            return response()->json(['message' => 'Data tidak ditemukan'], 404);
+            if (request()->wantsJson()) {
+                return response()->json(['message' => 'Data tidak ditemukan'], 404);
+            }
+            abort(404);
         }
 
-        return response()->json([
-            'success' => true,
-            'data' => $finance
-        ]);
+        if (request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'data' => $finance
+            ]);
+        }
+
+        return view('finances.show', compact('finance'));
     }
 
     public function edit(Finance $finance)
