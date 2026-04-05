@@ -67,16 +67,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Finances (Clean Version)
         Route::prefix('finances')->name('finances.')->group(function () {
-        Route::get('/', [FinanceController::class, 'index'])->name('index');
-        Route::get('/dashboard', [FinanceController::class, 'dashboard'])->name('dashboard');
-        Route::get('/report', [FinanceController::class, 'report'])->name('report');
-        Route::get('/create', [FinanceController::class, 'create'])->name('create');
-        Route::post('/', [FinanceController::class, 'store'])->name('store');
-        Route::get('/{finance}', [FinanceController::class, 'show'])->name('show');
-        Route::get('/{finance}/edit', [FinanceController::class, 'edit'])->name('edit');
-        Route::put('/{finance}', [FinanceController::class, 'update'])->name('update');
-        Route::delete('/{finance}', [FinanceController::class, 'destroy'])->name('destroy');
-    });
+            Route::get('/', [FinanceController::class, 'index'])->name('index');
+            Route::get('/dashboard', [FinanceController::class, 'dashboard'])->name('dashboard');
+            Route::get('/report', [FinanceController::class, 'report'])->name('report');
+            Route::get('/create', [FinanceController::class, 'create'])->name('create');
+            Route::post('/', [FinanceController::class, 'store'])->name('store');
+            Route::get('/{finance}', [FinanceController::class, 'show'])->name('show');
+            Route::get('/{finance}/edit', [FinanceController::class, 'edit'])->name('edit');
+            Route::put('/{finance}', [FinanceController::class, 'update'])->name('update');
+            Route::delete('/{finance}', [FinanceController::class, 'destroy'])->name('destroy');
+        });
 
         // Reports
         Route::prefix('reports')->name('reports.')->group(function () {
