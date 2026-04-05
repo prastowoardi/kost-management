@@ -79,6 +79,7 @@ Route::middleware(['auth:sanctum'])
 
     Route::get('/categories', [FinanceController::class, 'getApiCategories']);
     Route::apiResource('/finances', FinanceController::class);
+    Route::apiResource('/finances', FinanceController::class);
 });
 
 Route::middleware('auth:sanctum')->post('/update-push-token', function (Request $request) {
@@ -86,7 +87,4 @@ Route::middleware('auth:sanctum')->post('/update-push-token', function (Request 
     $request->user()->update(['expo_push_token' => $request->token]);
     \App\Helpers\LogHelper::log('UPDATE_PUSH_TOKEN', "User " . $request->user()->name . " memperbarui Push Token device");
     return response()->json(['message' => 'Token updated']);
-});
-        // Keuangan - Sekarang namanya menjadi admin.finances.index
-        Route::apiResource('/finances', FinanceController::class);
-});
+});     
