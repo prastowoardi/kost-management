@@ -252,9 +252,18 @@ class FinanceController extends Controller
             ->with('success', 'Data keuangan berhasil ditambahkan!');
     }
 
-    public function show(Finance $finance)
+    public function show($id)
     {
-        return view('finances.show', compact('finance'));
+        $finance = Finance::find($id);
+
+        if (!$finance) {
+            return response()->json(['message' => 'Data tidak ditemukan'], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $finance
+        ]);
     }
 
     public function edit(Finance $finance)

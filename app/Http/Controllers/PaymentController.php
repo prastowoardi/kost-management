@@ -260,6 +260,7 @@ class PaymentController extends Controller
                     'description' => $description,
                     'notes' => 'Dicatat otomatis dari update pembayaran',
                     'payment_id' => $payment->id,
+                    'receipt_file' => $payment->receipt_file,
                 ]);
             }
         }
