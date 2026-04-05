@@ -57,6 +57,15 @@
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('payments.index') ? 'bg-gray-50 font-semibold' : '' }}">
                                     <span class="mr-2">💳</span> Pembayaran Sewa
                                 </a>
+                                <hr class="my-1 border-gray-100"> <!-- Garis pemisah -->
+                                <a href="{{ route('admin.receipt.create') }}" 
+                                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-teal-50 hover:text-teal-700 {{ request()->routeIs('admin.receipt.create') ? 'bg-teal-50 font-semibold text-teal-700' : '' }}">
+                                    <span class="mr-2">📝</span> Buat Kwitansi Manual
+                                </a>
+                                <a href="{{ route('admin.receipt.history') }}" 
+                                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-teal-50 hover:text-teal-700 {{ request()->routeIs('admin.receipt.history') ? 'bg-teal-50 font-semibold text-teal-700' : '' }}">
+                                    <span class="mr-2">📜</span> Riwayat Kwitansi
+                                </a>
                                 <a href="{{ route('finances.report') }}" 
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('finances.report') ? 'bg-gray-50 font-semibold' : '' }}">
                                     <span class="mr-2">📄</span> Laporan Keuangan
@@ -180,6 +189,13 @@
                     </x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('payments.index')" :active="request()->routeIs('payments.index')" class="pl-8">
                         💳 Pembayaran Sewa
+                    </x-responsive-nav-link>
+                    <div class="border-t border-gray-100 my-1"></div>
+                    <x-responsive-nav-link :href="route('admin.receipt.create')" :active="request()->routeIs('admin.receipt.create')" class="pl-8 text-teal-600">
+                        📝 Buat Kwitansi Manual
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('admin.receipt.history')" :active="request()->routeIs('admin.receipt.history')" class="pl-8">
+                        📜 Riwayat Kwitansi
                     </x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('finances.report')" :active="request()->routeIs('finances.report')" class="pl-8">
                         📄 Laporan Keuangan

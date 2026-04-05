@@ -29,9 +29,11 @@ class ReceiptController extends Controller
             
             if (count($parts) === 3) {
                 $lastDate = $parts[1];
-                $lastSequence = (int)$parts[2];
+                $lastSequence = (int) $parts[2];
 
                 if ($lastDate == $today) {
+                    $nextNumber = $lastSequence + 1;
+                } else {
                     $nextNumber = $lastSequence + 1;
                 }
             }
@@ -42,13 +44,37 @@ class ReceiptController extends Controller
         return view('admin.receipt.manual_form', compact('newInvoiceNumber'));
     }
 
-    public function manualPrint($id) {
-        $payment = ManualReceipt::findOrFail($id);
+    public function manualStore(Request $request)
+    {
+        $request->validate([
+            'tenant_name'    => 'required|string|max:255',
+            'room_number'    => 'required|string',
+            'period'         => 'required|string',
+            'total_amount'   => 'required|numeric',
+            'invoice_number' => 'required|string|unique:manual_receipts,invoice_number',
+        ]);
+
+        $receipt = new \App\Models\ManualReceipt();
+        $receipt->invoice_number = $request->invoice_number;
+        $receipt->tenant_name    = $request->tenant_name;
+        $receipt->room_number    = $request->room_number;
+        $receipt->period         = $request->period;
+        $receipt->total_amount   = $request->total_amount;
+        $receipt->save();
+
+        return redirect()->route('admin.receipt.print', $receipt->id)
+                            ->with('success', 'Kwitansi berhasil dibuat!');
+    }
+
+    public function manualPrint($id)
+    {
+        $payment = \App\Models\ManualReceipt::findOrFail($id);
         return view('admin.receipt.manual_print', compact('payment'));
     }
 
-    public function manualHistory() {
-        $history = ManualReceipt::latest()->get();
-        return view('admin.receipt.manual_history', compact('history'));
+    public function manualHistory()
+    {
+        $receipts = \App\Models\ManualReceipt::orderBy('created_at', 'desc')->get();
+        return view('admin.receipt.manual_history', compact('receipts'));
     }
 }
