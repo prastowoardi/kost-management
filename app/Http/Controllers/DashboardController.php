@@ -83,7 +83,7 @@ class DashboardController extends Controller
             if ($daysLeft < 0) {
                 // Pesan untuk yang telat
                 $daysLate = abs($daysLeft);
-                $message = "Yth. *" . $tenant->name . "*,\n\n" .
+                $message = "Halo kak *" . $tenant->name . "*,\n\n" .
                         "Mohon maaf mengganggu. Kami menginformasikan bahwa tagihan sewa Kamar *" . $tenant->room->room_number . "* telah *MELEWATI JATUH TEMPO* selama *" . $daysLate . " hari* (Tgl: " . $request->due_date . ").\n\n" .
                         "Total Tagihan: *Rp " . number_format($tenant->room->price, 0, ',', '.') . "*\n\n" .
                         "Mohon segera melakukan pembayaran agar tidak terkena denda atau pemutusan fasilitas. Jika sudah membayar, abaikan pesan ini.\n\n" .
@@ -91,7 +91,7 @@ class DashboardController extends Controller
             } else {
                 // Pesan untuk pengingat
                 $statusTeks = ($daysLeft == 0) ? "HARI INI" : "dalam " . $daysLeft . " hari lagi";
-                $message = "Halo *" . $tenant->name . "*,\n\n" .
+                $message = "Halo kak *" . $tenant->name . "*,\n\n" .
                         "Sekadar mengingatkan bahwa sewa Kamar *" . $tenant->room->room_number . "* akan jatuh tempo *" . $statusTeks . "* (" . $request->due_date . ").\n\n" .
                         "Nilai Tagihan: *Rp " . number_format($tenant->room->price, 0, ',', '.') . "*\n\n" .
                         "Terima kasih atas kerjasamanya.";

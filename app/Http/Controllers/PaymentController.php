@@ -152,7 +152,7 @@ class PaymentController extends Controller
             $invoice = $payment->invoice_number;
             $total = number_format($payment->total, 0, ',', '.');
 
-            $message = "Halo {$tenantName},\n\n";
+            $message = "Halo kak {$tenantName},\n\n";
             $message .= "Pembayaran kos periode {$period} telah kami terima.\n\n";
             $message .= "Detail:\n";
             $message .= "* No. Invoice: {$invoice}\n";
