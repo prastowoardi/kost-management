@@ -38,15 +38,17 @@ class Tenant extends Model
         if (!$this->entry_date) return null;
 
         $now = Carbon::now()->startOfDay();
-        $entryDate = Carbon::parse($this->entry_date);
-        
+        $entryDate = Carbon::parse($this->entry_date)->startOfDay();
+
+        if ($entryDate->greaterThan($now)) return null;
+
         $targetDate = Carbon::now()->setDay($entryDate->day)->startOfDay();
 
         $diff = $now->diffInDays($targetDate, false);
-        if ($diff < -20) { 
-            $targetDate->addMonth(); 
-        } elseif ($diff > 20) { 
-            $targetDate->subMonth(); 
+        if ($diff < -20) {
+            $targetDate->addMonth();
+        } elseif ($diff > 20) {
+            $targetDate->subMonth();
         }
 
         return $targetDate;
@@ -55,8 +57,9 @@ class Tenant extends Model
     public function getDaysLeftAttribute()
     {
         $dueDate = $this->calculated_due_date;
-        if (!$dueDate) return 0;
-        
+
+        if (!$dueDate) return null;
+
         return (int) Carbon::now()->startOfDay()->diffInDays($dueDate, false);
     }
 
