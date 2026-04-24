@@ -30,7 +30,10 @@ class DashboardController extends Controller
                 if (!$tenant->entry_date) return false;
                 
                 $now = Carbon::now()->startOfDay();
-                $entryDate = Carbon::parse($tenant->entry_date);
+                $entryDate = Carbon::parse($tenant->entry_date)->startOfDay();
+
+                if ($entryDate->greaterThan($now)) return false;
+
                 $targetDate = Carbon::now()->setDay($entryDate->day)->startOfDay();
 
                 $diff = $now->diffInDays($targetDate, false);
