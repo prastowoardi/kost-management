@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Room, Tenant, Payment, Complaint};
+use App\Models\{Room, Tenant, Payment, Complaint, Finance};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
@@ -17,10 +17,11 @@ class DashboardController extends Controller
         $activeTenants = Tenant::where('status', 'active')->count();
         
         // 2. Statistik Pembayaran (Lunas Bulan Ini)
-        $paymentsThisMonth = Payment::whereYear('period_month', Carbon::now()->year)
-                                    ->whereMonth('period_month', Carbon::now()->month)
-                                    ->where('status', 'paid')
-                                    ->sum('total');
+        $paymentsThisMonth = Finance::income()
+            ->whereIn('category', ['Pembayaran Sewa', 'Deposit'])
+            ->whereYear('transaction_date', Carbon::now()->year)
+            ->whereMonth('transaction_date', Carbon::now()->month)
+            ->sum('amount');
         
         // 3. LOGIKA UTAMA: JATUH TEMPO & PENDING (Satu Kali Proses)
         $allDueTenants = Tenant::with(['room', 'payments'])
@@ -57,7 +58,13 @@ class DashboardController extends Controller
         $overduePayments = Payment::where('status', 'overdue')->count();
         $openComplaints = Complaint::where('status', 'open')->count();
 
-        $recentPayments = Payment::with(['tenant', 'room'])->latest()->take(5)->get();
+        $recentPayments = Finance::income()
+            ->whereIn('category', ['Pembayaran Sewa', 'Deposit'])
+            ->orderBy('transaction_date', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
         $recentComplaints = Complaint::with(['tenant', 'room'])->latest()->take(5)->get();
 
         return view('dashboard', compact(
