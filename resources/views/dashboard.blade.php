@@ -171,21 +171,21 @@
                         </a>
                     </div>
                     <div class="divide-y divide-gray-100">
-                        @forelse($recentPayments as $payment)
+                        @forelse($recentPayments as $finance)
                         <div class="p-4 flex items-center justify-between hover:bg-gray-50 transition">
                             <div class="flex items-center">
                                 <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold mr-3 text-xs">
-                                    {{ substr($payment->tenant->name ?? '?', 0, 2) }}
+                                    Rp
                                 </div>
                                 <div>
-                                    <p class="text-sm font-bold text-gray-800">{{ $payment->tenant->name ?? 'N/A' }}</p>
-                                    <p class="text-xs text-gray-500">Kamar {{ $payment->room->room_number ?? '-' }} • {{ $payment->created_at->format('d M') }}</p>
+                                    <p class="text-sm font-bold text-gray-800">{{ $finance->description ?? 'Pembayaran Sewa' }}</p>
+                                    <p class="text-xs text-gray-500">{{ $finance->transaction_date->format('d M Y') }}</p>
                                 </div>
                             </div>
                             <div class="text-right">
-                                <p class="text-sm font-bold text-gray-800">Rp {{ number_format($payment->total, 0, ',', '.') }}</p>
-                                <span class="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase {{ $payment->status == 'paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">
-                                    {{ $payment->status }}
+                                <p class="text-sm font-bold text-gray-800">Rp {{ number_format($finance->amount, 0, ',', '.') }}</p>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase bg-green-100 text-green-700">
+                                    Lunas
                                 </span>
                             </div>
                         </div>

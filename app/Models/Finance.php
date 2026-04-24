@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder; // Penting untuk type hinting Builder
+use Illuminate\Database\Eloquent\Builder;
 
 class Finance extends Model
 {
