@@ -60,7 +60,7 @@ class ComplaintController extends Controller
     {
         $complaint = Complaint::with(['images', 'tenant', 'room'])->findOrFail($id);
         
-        return view('admin.complaints.show', compact('complaint'));
+        return view('complaints.show', compact('complaint'));
     }
 
     public function edit(Complaint $complaint)
