@@ -94,7 +94,8 @@ class DashboardController extends Controller
                 $message = "Halo kak *" . $tenant->name . "*,\n\n" .
                         "Sekadar mengingatkan bahwa sewa Kamar *" . $tenant->room->room_number . "* akan jatuh tempo *" . $statusTeks . "* (" . $request->due_date . ").\n\n" .
                         "Nilai Tagihan: *Rp " . number_format($tenant->room->price, 0, ',', '.') . "*\n\n" .
-                        "Terima kasih atas kerjasamanya.";
+                        "Mohon segera melakukan pembayaran agar tidak terkena denda atau pemutusan fasilitas. Jika sudah membayar, abaikan pesan ini.\n\n" .
+                        "Terima kasih";
             }
 
             $response = Http::timeout(20)->post('http://127.0.0.1:3000/send-message', [
