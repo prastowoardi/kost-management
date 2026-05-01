@@ -9,7 +9,7 @@
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
-                    <form action="{{ route('payments.store') }}" method="POST" enctype="multipart/form-data">
+                    <form id="paymentForm" action="{{ route('payments.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         
                         <div class="grid grid-cols-1 gap-6">
@@ -114,7 +114,7 @@
                             <a href="{{ route('payments.index') }}" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
                                 Batal
                             </a>
-                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                            <button type="submit" id="btnSubmit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                                 Simpan
                             </button>
                         </div>
@@ -170,14 +170,26 @@
 
         input.value = rupiah;
     }
-    
-    const paymentForm = document.querySelector('form');
-    paymentForm.addEventListener('submit', function() {
+
+    const paymentForm = document.getElementById('paymentForm');
+    const btnSubmit = document.getElementById('btnSubmit');
+
+    paymentForm.addEventListener('submit', function(e) {
         const amountInput = document.getElementById('amount');
         const lateFeeInput = document.getElementById('late_fee');
         
-        amountInput.value = amountInput.value.replace(/\./g, '').replace(/,/g, '');
-        lateFeeInput.value = lateFeeInput.value.replace(/\./g, '').replace(/,/g, '');
+        if(amountInput.value) {
+            amountInput.value = amountInput.value.replace(/\./g, '').replace(/,/g, '');
+        }
+        if(lateFeeInput.value) {
+            lateFeeInput.value = lateFeeInput.value.replace(/\./g, '').replace(/,/g, '');
+        }
+
+        setTimeout(() => {
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = 'Memproses...';
+            btnSubmit.classList.add('opacity-50', 'cursor-not-allowed');
+        }, 10);
     });
 
     document.addEventListener('DOMContentLoaded', function() {
