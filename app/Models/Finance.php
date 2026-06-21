@@ -48,4 +48,9 @@ class Finance extends Model
         $query->whereYear('transaction_date', $year)
                 ->whereMonth('transaction_date', $month);
     }
+
+    public function payment()
+    {
+        return $this->belongsTo(Payment::class, 'payment_id');
+    }
 }
