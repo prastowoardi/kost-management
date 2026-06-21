@@ -71,23 +71,26 @@
                         {{-- Baris 4: Bukti Transaksi --}}
                         <div class="md:col-span-2 mt-4">
                             <p class="text-sm font-medium text-gray-500">Bukti Transaksi</p>
-                            @if($finance->receipt_file)
+                            @if($finance->payment && $finance->payment->receipt_file)
                                 {{-- CEK JIKA FILE ADALAH GAMBAR --}}
-                                @if(in_array(pathinfo($finance->receipt_file, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png', 'gif']))
+                                @if(in_array(pathinfo($finance->payment->receipt_file, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png', 'gif']))
                                     <div class="mt-2 mb-3">
-                                        <img src="{{ asset('storage/' . $finance->receipt_file) }}" 
+                                        <img src="{{ asset('storage/' . $finance->payment->receipt_file) }}" 
                                             alt="Bukti Transaksi" 
                                             class="max-w-xs rounded-lg shadow-md border p-1">
                                     </div>
                                 @endif
 
-                                <a href="{{ asset('storage/' . $finance->receipt_file) }}" 
-                                    target="_blank"
-                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
-                                    Buka Gambar ({{ strtoupper(pathinfo($finance->receipt_file, PATHINFO_EXTENSION)) }})
+                                <a href="{{ asset('storage/' . ($finance->receipt_file ?? $finance->payment?->receipt_file)) }}" 
+                                    target="_blank" 
+                                    class="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-medium rounded-md shadow-sm transition">
+                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                        </svg>
+                                        Buka File
                                 </a>
                             @else
-                                <p class="mt-2 text-base text-gray-500 italic">Tidak ada bukti transaksi terlampir.</p>
+                                <p class="text-sm text-gray-400 italic mt-1">Tidak ada bukti transaksi yang diunggah.</p>
                             @endif
                         </div>
                     </div>
