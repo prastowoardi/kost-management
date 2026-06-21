@@ -90,35 +90,6 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-6">
                     <form method="GET" class="space-y-4">
-                        <!-- Type, Category, Button -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Tipe</label>
-                                <select name="type"
-                                    class="w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
-                                    <option value="">Semua</option>
-                                    <option value="income" {{ request('type') == 'income' ? 'selected' : '' }}>Pemasukan
-                                    </option>
-                                    <option value="expense" {{ request('type') == 'expense' ? 'selected' : '' }}>
-                                        Pengeluaran</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-                                <input type="text" name="category" value="{{ request('category') }}"
-                                    class="w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
-                                    placeholder="Nama kategori">
-                            </div>
-
-                            <div class="flex items-end">
-                                <button type="submit"
-                                    class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium">
-                                    Filter
-                                </button>
-                            </div>
-                        </div>
-
                         <!-- Date Range -->
                         <div x-data="dateRangePicker()" class="border-t pt-4">
                             <p class="text-sm font-medium text-gray-700 mb-2">Rentang Tanggal</p>
@@ -182,6 +153,35 @@
                                         </button>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Type, Category, Button -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tipe</label>
+                                <select name="type"
+                                    class="w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                                    <option value="">Semua</option>
+                                    <option value="income" {{ request('type') == 'income' ? 'selected' : '' }}>Pemasukan
+                                    </option>
+                                    <option value="expense" {{ request('type') == 'expense' ? 'selected' : '' }}>
+                                        Pengeluaran</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
+                                <input type="text" name="category" value="{{ request('category') }}"
+                                    class="w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                    placeholder="Nama kategori">
+                            </div>
+
+                            <div class="flex items-end">
+                                <button type="submit"
+                                    class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium">
+                                    Filter
+                                </button>
                             </div>
                         </div>
                     </form>

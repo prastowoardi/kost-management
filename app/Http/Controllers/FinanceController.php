@@ -18,13 +18,18 @@ class FinanceController extends Controller
         $defaultEndDate = now()->format('Y-m-d');
         $defaultStartDate = now()->subDays(30)->format('Y-m-d');
 
-        $startDate = $request->input('start_date', date('Y-01-01'));
-        $endDate = $request->input('end_date', $defaultEndDate);
+        $startDate = $request->filled('start_date') ? $request->input('start_date') : date('Y-01-01');
+        $endDate = $request->filled('end_date') ? $request->input('end_date') : $defaultEndDate;
+
+        if (strtotime($startDate) > strtotime($endDate)) {
+            return redirect()->back()
+                ->with('error', 'Tanggal awal (Start Date) tidak boleh lebih besar dari tanggal akhir (End Date)!')
+                ->withInput();
+        }
 
         $query = Finance::query();
 
         if ($request->filled('type')) {
-            // Menggunakan scope income/expense yang baru
             $query->where('type', $request->type); 
         }
 
@@ -39,7 +44,6 @@ class FinanceController extends Controller
                             ->orderBy('created_at', 'desc')
                             ->paginate(20);
 
-        // Menggunakan scope income() dan expense() yang baru
         $totalIncome = Finance::income()
             ->where('transaction_date', '>=', $startDate)
             ->where('transaction_date', '<=', $endDate)
@@ -50,9 +54,8 @@ class FinanceController extends Controller
             ->where('transaction_date', '<=', $endDate)
             ->sum('amount');
         
-        // ... (compact dan return view)
         $balance = $totalIncome - $totalExpense;
-    
+
         $incomeCategories = Finance::income()->distinct()->pluck('category');
         $expenseCategories = Finance::expense()->distinct()->pluck('category');
 
@@ -70,24 +73,21 @@ class FinanceController extends Controller
 
     public function report(Request $request)
     {
-        // PERBAIKAN: Cast bulan/tahun ke integer agar aman saat dikirim ke Carbon
         $month = (int) $request->input('month', now()->month);
         $year = (int) $request->input('year', now()->year);
         
         $startDate = \Carbon\Carbon::createFromDate($year, $month, 1)->startOfMonth();
         $endDate = \Carbon\Carbon::createFromDate($year, $month, 1)->endOfMonth();
         
-        // ... (Logika Report - menggunakan whereBetween, yang sudah benar)
-        
         $finances = Finance::whereBetween('transaction_date', [$startDate, $endDate])
             ->orderBy('transaction_date', 'desc')
             ->get();
         
-        $totalIncome = Finance::income() // Menggunakan scope income()
+        $totalIncome = Finance::income()
             ->whereBetween('transaction_date', [$startDate, $endDate])
             ->sum('amount');
         
-        $totalExpense = Finance::expense() // Menggunakan scope expense()
+        $totalExpense = Finance::expense()
             ->whereBetween('transaction_date', [$startDate, $endDate])
             ->sum('amount');
         
@@ -148,7 +148,6 @@ class FinanceController extends Controller
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('finances.report-pdf', $data);
         
         $filename = 'laporan-keuangan-' . 
-                    // PERBAIKAN: Gunakan createFromDate yang aman
                     \Carbon\Carbon::createFromDate($data['year'], $data['month'], 1)->format('F') . 
                     '-' . $data['year'] . '.pdf';
         
@@ -175,9 +174,6 @@ class FinanceController extends Controller
                                     ->take(10)
                                     ->get();
 
-        // --- PERBAIKAN LOGIKA MONTHLY TREND (Semua Bulan Tahun Ini) ---
-        
-        // 1. Ambil data agregat (income, expense) dari database untuk tahun ini
         $monthlyDataRaw = Finance::selectRaw("
             DATE_FORMAT(transaction_date, '%m') as month_num,
             SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) as income,
@@ -189,7 +185,6 @@ class FinanceController extends Controller
         ->get()
         ->keyBy('month_num');
 
-        // 2. Isi array tren untuk 12 bulan (hanya sampai bulan saat ini)
         $monthlyTrend = [];
         $today = now();
 
@@ -201,7 +196,6 @@ class FinanceController extends Controller
             $expense = $data->expense ?? 0;
             
             $monthlyTrend[] = [
-                // Menggunakan Carbon untuk nama bulan, dijamin tidak error
                 'month' => \Carbon\Carbon::createFromDate($currentYear, $m, 1)->format('M Y'),
                 'income' => $income,
                 'expense' => $expense,
@@ -321,32 +315,6 @@ class FinanceController extends Controller
             ->with('success', 'Data keuangan berhasil dihapus!');
     }
 
-    // private function getCategories()
-    // {
-    //     $incomeCategories = [
-    //         'Pembayaran Sewa',
-    //         'Deposit',
-    //         'Denda Keterlambatan',
-    //         'Biaya Listrik',
-    //         'Biaya Air',
-    //         'Lainnya'
-    //     ];
-
-    //     $expenseCategories = [
-    //         'Gaji Karyawan',
-    //         'Listrik',
-    //         'Air',
-    //         'Internet',
-    //         'Perawatan Bangunan',
-    //         'Perbaikan Fasilitas',
-    //         'Kebersihan',
-    //         'Keamanan',
-    //         'Pajak',
-    //         'Lainnya'
-    //     ];
-
-    //     return compact('incomeCategories', 'expenseCategories');
-    // }
     private function getCategories()
     {
         $categories = Category::where('is_active', true)
