@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>E-Receipt - {{ $payment->invoice_number }}</title>
     
-    <!-- Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
@@ -113,7 +112,6 @@
 </head>
 <body>
 
-    <!-- Tampilan Kwitansi (Sama persis dengan designmu) -->
     <div id="receipt-content">
         <div class="card">
             <div class="header">
@@ -156,14 +154,15 @@
         </div>
     </div>
 
-    <!-- Tombol Navigasi & Download -->
-    <div class="action-container">
-        <div class="btn-group">
-            <button onclick="downloadPDF()" class="btn btn-pdf">📄 PDF</button>
-            <button onclick="downloadImage()" class="btn btn-image">🖼️ Image</button>
+    @if(!request()->has('hide_buttons'))
+        <div class="action-container">
+            <div class="btn-group">
+                <button onclick="downloadPDF()" class="btn btn-pdf">📄 PDF</button>
+                <button onclick="downloadImage()" class="btn btn-image">🖼️ Image</button>
+            </div>
+            <a href="{{ route('admin.receipt.create') }}" style="color: #0d9488; text-decoration: none; font-size: 13px; font-weight: 600;">← Buat Baru</a>
         </div>
-        <a href="{{ route('admin.receipt.create') }}" style="color: #0d9488; text-decoration: none; font-size: 13px; font-weight: 600;">← Buat Baru</a>
-    </div>
+    @endif
 
     <script>
         const element = document.querySelector('.card');
@@ -188,6 +187,12 @@
                 link.click();
             });
         }
+
+        window.addEventListener('message', function(event) {
+            if (event.data === 'trigger-download-image') {
+                downloadImage();
+            }
+        });
     </script>
 </body>
 </html>
