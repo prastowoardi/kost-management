@@ -11,6 +11,7 @@ const qrcode = require("qrcode-terminal");
 const express = require("express");
 const pino = require("pino");
 const os = require("os");
+const fs = require("fs");
 
 const app = express();
 app.use(express.json({ limit: '50mb' }));
@@ -19,10 +20,16 @@ let sock;
 
 // Deteksi Path Chrome agar Puppeteer bisa jalan di Windows/Mac/Linux
 const chromePath = (() => {
-    const platform = os.platform();
-    if (platform === 'darwin') return '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-    if (platform === 'win32') return 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-    return null; 
+    switch (os.platform()) {
+        case 'linux':
+            return '/usr/bin/google-chrome';
+        case 'darwin':
+            return '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+        case 'win32':
+            return 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+        default:
+            return undefined;
+    }
 })();
 
 async function connectToWhatsApp() {
@@ -119,18 +126,19 @@ app.post('/send-image', async (req, res) => {
         let executablePath = undefined;
         if (platform === 'darwin') {
             executablePath = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+        } else if (platform === 'linux') {
+            executablePath = '/usr/bin/google-chrome';
         } else if (platform === 'win32') {
             executablePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
         }
 
         browser = await puppeteer.launch({
-            executablePath: executablePath,
-            headless: "new",
+            executablePath: chromePath,
+            headless: true,
             args: [
-                '--no-sandbox', 
+                '--no-sandbox',
                 '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage',
-                '--disable-gpu'
+                '--disable-dev-shm-usage'
             ]
         });
 
@@ -140,7 +148,7 @@ app.post('/send-image', async (req, res) => {
         await page.setViewport({ width: 750, height: 1000, deviceScaleFactor: 2 });
         
         // Masukkan HTML dari Laravel
-        await page.setContent(html, { waitUntil: 'networkidle0' });
+        await page.setContent(html, { waitUntil: 'domcontentloaded' });
 
         // Tunggu render
         await new Promise(resolve => setTimeout(resolve, 1000));

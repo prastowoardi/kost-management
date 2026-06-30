@@ -5,11 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>E-Receipt - {{ $payment->invoice_number }}</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-
         html, body { 
             background-color: #f0f9f9; 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
+            font-family: Arial, Helvetica, sans-serif;
             margin: 0; 
             padding: 40px 20px;
             color: #134e4a; /* Deep Teal */
