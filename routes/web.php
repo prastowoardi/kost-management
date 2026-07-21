@@ -18,9 +18,16 @@ use App\Http\Controllers\PublicRegistrationController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
 use App\Models\Tenant;
+use App\Models\Room;
 
 Route::get('/', function () {
-    return Auth::check() ? redirect()->route('dashboard') : view('welcome');
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+
+    $sisaKamar = Room::where('status', 'available')->count();
+
+    return view('welcome', compact('sisaKamar'));
 });
 
 // Halaman Pembayaran Publik (Tanpa Login)

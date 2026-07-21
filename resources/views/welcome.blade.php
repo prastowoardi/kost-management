@@ -52,11 +52,48 @@
         </nav>
 
         <main class="pt-32 pb-20">
-            <section class="max-w-6xl mx-auto px-6 text-center mb-24">
+            <section class="relative max-w-6xl mx-auto px-6 text-center mb-24 overflow-hidden">
+                @php
+                    $sisaKamar = $sisaKamar ?? 0;
+                @endphp
+                <div class="hidden sm:block absolute top-0 left-0 w-40 h-40 overflow-hidden z-20 pointer-events-none">
+                    @if ($sisaKamar > 0)
+                        <span class="absolute top-[32px] -left-[42px] w-[190px] -rotate-45 bg-green-500 text-white text-xs font-extrabold py-2 shadow-lg flex items-center justify-center gap-1.5">
+                            <span class="relative flex h-2 w-2">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                            </span>
+                            Sisa {{ $sisaKamar }} Kamar
+                        </span>
+                    @else
+                        <span class="absolute top-[32px] -left-[42px] w-[190px] -rotate-45 bg-red-500 text-white text-xs font-extrabold py-2 shadow-lg flex items-center justify-center gap-1.5">
+                            <span class="h-2 w-2 rounded-full bg-white"></span>
+                            Kamar Penuh
+                        </span>
+                    @endif
+                </div>
+
                 <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-300 rounded-full text-xs font-bold mb-6">
                     <span>✨ Hunian chill</span>
                     <span class="w-1 h-1 bg-pink-300 rounded-full"></span>
                     <span>Sleman, Yogyakarta</span>
+                </div>
+
+                <div class="sm:hidden flex justify-center mb-6">
+                    @if ($sisaKamar > 0)
+                        <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-300 rounded-full text-xs font-bold">
+                            <span class="relative flex h-2 w-2">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                            </span>
+                            Sisa {{ $sisaKamar }} Kamar
+                        </span>
+                    @else
+                        <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-300 rounded-full text-xs font-bold">
+                            <span class="h-2 w-2 rounded-full bg-red-500"></span>
+                            Kamar Penuh
+                        </span>
+                    @endif
                 </div>
 
                 <h1 class="text-5xl lg:text-7xl font-extrabold mb-8 tracking-tight dark:text-white">
@@ -184,22 +221,18 @@
                 const menu = document.getElementById('menu-text');
                 
                 if (window.scrollY > 50) {
-                    // SAAT SCROLL (Jadi Floating Card yang Modern)
-                    navbar.classList.add('pt-6'); // Memberi jarak dari atas layar
+                    navbar.classList.add('pt-6');
                     bg.classList.add('bg-white/80', 'backdrop-blur-xl', 'shadow-lg', 'border', 'border-white/20');
                     bg.classList.remove('max-w-6xl');
-                    bg.classList.add('max-w-4xl'); // Mengecilkan lebar navbar agar terlihat "floating"
+                    bg.classList.add('max-w-4xl');
                     
-                    // Ubah warna teks jadi gelap karena background navbar jadi putih transparan
                     logo.classList.replace('text-white', 'text-slate-900');
                     menu.classList.replace('text-white', 'text-slate-900');
                 } else {
-                    // SAAT DI ATAS (Menyatu dengan Background)
                     navbar.classList.remove('pt-6');
                     bg.classList.remove('bg-white/80', 'backdrop-blur-xl', 'shadow-lg', 'border', 'border-white/20', 'max-w-4xl');
                     bg.classList.add('max-w-6xl');
                     
-                    // Kembalikan teks jadi putih agar terlihat di background gelap
                     logo.classList.replace('text-slate-900', 'text-white');
                     menu.classList.replace('text-slate-900', 'text-white');
                 }
