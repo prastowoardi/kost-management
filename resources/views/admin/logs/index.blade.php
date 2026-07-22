@@ -4,26 +4,48 @@
 .select2-container--default .select2-selection--single {
     border: 1px solid #e2e8f0 !important;
     border-radius: 0.75rem !important;
-    height: 40px !important;
-    padding-left: 8px;
-    background: #f8fafc;
+    height: 42px !important;
+    padding: 0 12px;
+    background: #fff !important;
 }
 .select2-container--default .select2-selection--single .select2-selection__rendered {
-    line-height: 38px !important;
+    line-height: 40px !important;
     font-size: 14px;
+    color: #334155 !important;
 }
 .select2-container--default .select2-selection--single .select2-selection__arrow {
-    height: 38px !important;
+    height: 40px !important;
+    right: 8px !important;
+}
+.select2-container--default .select2-selection--single .select2-selection__placeholder {
+    color: #94a3b8 !important;
 }
 .select2-dropdown {
     border: 1px solid #e2e8f0 !important;
     border-radius: 0.75rem !important;
     overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+.select2-search--dropdown {
+    padding: 8px;
 }
 .select2-search__field {
     border-radius: 0.5rem !important;
     border: 1px solid #e2e8f0 !important;
-    padding: 4px 8px !important;
+    padding: 6px 10px !important;
+    font-size: 13px !important;
+}
+.select2-results__option {
+    padding: 8px 12px !important;
+    font-size: 13px;
+}
+.select2-results__option--highlighted {
+    background-color: #f1f5f9 !important;
+    color: #1e293b !important;
+}
+.select2-container--default .select2-results__option--selected {
+    background-color: #f0fdf4 !important;
+    color: #166534 !important;
 }
 </style>
 @endpush
@@ -32,16 +54,17 @@
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-$(function() {
-    $('.select2-action').select2({
+jQuery(function() {
+    jQuery('.select2-action').select2({
         placeholder: 'Cari aksi...',
         allowClear: true,
         width: '100%'
     }).on('change', function() {
-        if (!$(this).val()) {
+        var val = jQuery(this).val();
+        if (!val) {
             window.location.href = '{{ route('admin.logs') }}';
         } else {
-            window.location.href = '{{ route('admin.logs') }}?action=' + encodeURIComponent($(this).val());
+            window.location.href = '{{ route('admin.logs') }}?action=' + encodeURIComponent(val);
         }
     });
 });
