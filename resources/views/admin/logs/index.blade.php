@@ -1,3 +1,53 @@
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+<style>
+.select2-container--default .select2-selection--single {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 0.75rem !important;
+    height: 40px !important;
+    padding-left: 8px;
+    background: #f8fafc;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 38px !important;
+    font-size: 14px;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 38px !important;
+}
+.select2-dropdown {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 0.75rem !important;
+    overflow: hidden;
+}
+.select2-search__field {
+    border-radius: 0.5rem !important;
+    border: 1px solid #e2e8f0 !important;
+    padding: 4px 8px !important;
+}
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+$(function() {
+    $('.select2-action').select2({
+        placeholder: 'Cari aksi...',
+        allowClear: true,
+        width: '100%'
+    }).on('change', function() {
+        if (!$(this).val()) {
+            window.location.href = '{{ route('admin.logs') }}';
+        } else {
+            window.location.href = '{{ route('admin.logs') }}?action=' + encodeURIComponent($(this).val());
+        }
+    });
+});
+</script>
+@endpush
+
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-slate-800 leading-tight">Log Aktivitas</h2>
@@ -50,9 +100,9 @@
 
             {{-- Filters --}}
             <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
-                <form method="GET" class="flex flex-wrap gap-3 items-center">
+                <div class="flex flex-wrap gap-3 items-center">
                     <div class="flex-1 min-w-[180px]">
-                        <select name="action" class="w-full rounded-xl border-slate-200 text-sm bg-slate-50" onchange="this.form.submit()">
+                        <select class="select2-action">
                             <option value="">Semua Aksi</option>
                             @foreach($actions as $a)
                                 <option value="{{ $a }}" {{ request('action') == $a ? 'selected' : '' }}>{{ $a }}</option>
@@ -63,7 +113,7 @@
                         <a href="{{ route('admin.logs') }}" class="px-4 py-2.5 bg-slate-100 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-200 transition {{ !request('action') ? 'ring-2 ring-slate-300' : '' }}">Semua</a>
                         <a href="{{ route('admin.logs') }}?action=FAILED" class="px-4 py-2.5 text-sm font-bold rounded-xl transition {{ request('action') == 'FAILED' ? 'bg-red-600 text-white shadow-md' : 'bg-red-50 text-red-600 hover:bg-red-100' }}">Error</a>
                     </div>
-                </form>
+                </div>
             </div>
 
             {{-- Timeline --}}
