@@ -4,13 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Room extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Models\Concerns\HasUuidColumn;
 
     protected $table = 'rooms';
 
@@ -24,6 +24,8 @@ class Room extends Model
         'description',
         'images',
     ];
+
+    protected $hidden = ['id'];
 
     protected $casts = [
         'price' => 'integer',
@@ -40,9 +42,14 @@ class Room extends Model
     ];
 
     // Relationships
-    public function activeTenant(): BelongsTo
+    public function activeTenant(): HasOne
     {
-        return $this->belongsTo(Tenant::class, 'tenant_id');
+        return $this->hasOne(Tenant::class)->where('status', 'active');
+    }
+
+    public function tenants(): HasMany
+    {
+        return $this->hasMany(Tenant::class);
     }
 
     public function facilities(): BelongsToMany

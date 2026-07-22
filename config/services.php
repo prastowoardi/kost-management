@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'whatsapp' => [
+        'gateway_url' => env('WHATSAPP_GATEWAY_URL', 'http://localhost:3000'),
+        'admin_phone' => env('WHATSAPP_ADMIN_PHONE', ''),
+    ],
+
 ];

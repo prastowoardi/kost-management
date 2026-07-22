@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Tenant;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use App\Models\Broadcast;
 use App\Models\BroadcastLog;
-use Carbon\Carbon;
+use App\Models\Tenant;
+use App\Services\WhatsAppService;
+use Illuminate\Http\Request;
 
 class BroadcastController extends Controller
 {
+    public function __construct(
+        private WhatsAppService $whatsapp,
+    ) {}
+
     public function index()
     {
         return view('broadcast.index');
@@ -21,9 +24,9 @@ class BroadcastController extends Controller
         $request->validate(['message' => 'required']);
 
         $tenants = Tenant::whereNotNull('phone')
-                        ->where('status', 'active')
-                        ->get(); 
-                        
+            ->where('status', 'active')
+            ->get();
+
         if ($tenants->isEmpty()) {
             return back()->withErrors(['msg' => 'Tidak ada Penghuni aktif yang ditemukan.']);
         }
@@ -31,27 +34,21 @@ class BroadcastController extends Controller
         $broadcast = Broadcast::create([
             'message' => $request->message,
         ]);
-        
-        $success = 0; $failed = 0;
+
+        $success = 0;
+        $failed = 0;
 
         foreach ($tenants as $tenant) {
             $errorMsg = null;
-            try {
-                $response = Http::timeout(10)->post('http://127.0.0.1:3000/send-message', [
-                    'number' => $tenant->phone,
-                    'message' => $request->message,
-                ]);
+            $sent = $this->whatsapp->sendMessage($tenant->phone, $request->message);
 
-                if ($response->successful()) {
-                    $status = 'success';
-                    $success++;
-                } else {
-                    throw new \Exception("Response Gagal");
-                }
-            } catch (\Exception $e) {
+            if ($sent) {
+                $status = 'success';
+                $success++;
+            } else {
                 $status = 'failed';
                 $failed++;
-                $errorMsg = $e->getMessage();
+                $errorMsg = 'Gagal kirim pesan';
             }
 
             BroadcastLog::create([
@@ -67,31 +64,26 @@ class BroadcastController extends Controller
             'total_success' => $success,
             'total_failed' => $failed,
         ]);
-        return back()->with('status', 'Broadcast terkirim ke ' . $success . ' penghuni!');
+
+        return back()->with('status', 'Broadcast terkirim ke '.$success.' penghuni!');
     }
 
     public function history()
     {
         $history = Broadcast::with('logs')->latest()->paginate(10);
+
         return view('broadcast.history', compact('history'));
     }
 
     public function showChat($id)
     {
-        $tenant = Tenant::with('room')->findOrFail($id);
+        $tenant = Tenant::with('room')->where('uuid', $id)->firstOrFail();
         $chats = [];
         $error = null;
 
-        try {
-            $response = Http::timeout(10)->get('http://127.0.0.1:3000/get-chats', [
-                'number' => $tenant->phone,
-            ]);
-
-            if ($response->successful()) {
-                $chats = $response->json()['data'];
-            }
-        } catch (\Exception $e) {
-            $error = "Gateway Offline";
+        $chats = $this->whatsapp->getChats($tenant->phone);
+        if (empty($chats)) {
+            $error = 'Gateway Offline atau tidak ada chat';
         }
 
         return view('broadcast.chat-view', compact('tenant', 'chats', 'error'));
@@ -100,23 +92,16 @@ class BroadcastController extends Controller
     public function sendPersonal(Request $request)
     {
         $request->validate([
-            'message' => 'required', 
-            'phone' => 'required'
+            'message' => 'required',
+            'phone' => 'required',
         ]);
 
-        try {
-            $response = Http::timeout(10)->post('http://127.0.0.1:3000/send-message', [
-                'number' => $request->phone,
-                'message' => $request->message,
-            ]);
+        $sent = $this->whatsapp->sendMessage($request->phone, $request->message);
 
-            if ($response->successful()) {
-                return back()->with('status', 'Pesan terkirim!');
-            }
-            
-            return back()->withErrors(['msg' => 'Gateway merespon dengan error.']);
-        } catch (\Exception $e) {
-            return back()->withErrors(['msg' => 'Gagal terhubung ke Gateway WA.']);
+        if ($sent) {
+            return back()->with('status', 'Pesan terkirim!');
         }
+
+        return back()->withErrors(['msg' => 'Gagal terhubung ke Gateway WA.']);
     }
 }

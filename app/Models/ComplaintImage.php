@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class ComplaintImage extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Models\Concerns\HasUuidColumn;
 
     protected $fillable = ['complaint_id', 'path'];
+
+    protected $hidden = ['id'];
 
     public function complaint()
     {
@@ -20,6 +22,6 @@ class ComplaintImage extends Model
 
     public function getFullUrlAttribute()
     {
-        return asset('storage/' . $this->image_path);
+        return asset('storage/'.$this->image_path);
     }
 }

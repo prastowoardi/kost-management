@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Finance;
-use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 
 class FinanceSeeder extends Seeder
 {
@@ -139,6 +138,6 @@ class FinanceSeeder extends Seeder
             $count++;
         }
 
-        echo "✅ " . $count . " data finance berhasil di-sync (dibuat/diupdate)!\n";
+        echo '✅ '.$count." data finance berhasil di-sync (dibuat/diupdate)!\n";
     }
 }
