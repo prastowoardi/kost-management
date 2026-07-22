@@ -2,14 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Finance;
-use App\Models\Payment;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\DB;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Carbon\Carbon;
-use App\Models\Category;
 
 class FinanceController extends Controller
 {
@@ -30,19 +27,19 @@ class FinanceController extends Controller
         $query = Finance::query();
 
         if ($request->filled('type')) {
-            $query->where('type', $request->type); 
+            $query->where('type', $request->type);
         }
 
         $query->where('transaction_date', '>=', $startDate)
-                ->where('transaction_date', '<=', $endDate);
+            ->where('transaction_date', '<=', $endDate);
 
         if ($request->filled('category')) {
             $query->where('category', $request->category);
         }
 
         $finances = $query->orderBy('transaction_date', 'desc')
-                            ->orderBy('created_at', 'desc')
-                            ->paginate(20);
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
 
         $totalIncome = Finance::income()
             ->where('transaction_date', '>=', $startDate)
@@ -53,7 +50,7 @@ class FinanceController extends Controller
             ->where('transaction_date', '>=', $startDate)
             ->where('transaction_date', '<=', $endDate)
             ->sum('amount');
-        
+
         $balance = $totalIncome - $totalExpense;
 
         $incomeCategories = Finance::income()->distinct()->pluck('category');
@@ -67,7 +64,7 @@ class FinanceController extends Controller
             'incomeCategories',
             'expenseCategories',
             'startDate',
-            'endDate'  
+            'endDate'
         ));
     }
 
@@ -75,82 +72,82 @@ class FinanceController extends Controller
     {
         $month = (int) $request->input('month', now()->month);
         $year = (int) $request->input('year', now()->year);
-        
+
         $startDate = \Carbon\Carbon::createFromDate($year, $month, 1)->startOfMonth();
         $endDate = \Carbon\Carbon::createFromDate($year, $month, 1)->endOfMonth();
-        
+
         $finances = Finance::whereBetween('transaction_date', [$startDate, $endDate])
             ->orderBy('transaction_date', 'desc')
             ->get();
-        
+
         $totalIncome = Finance::income()
             ->whereBetween('transaction_date', [$startDate, $endDate])
             ->sum('amount');
-        
+
         $totalExpense = Finance::expense()
             ->whereBetween('transaction_date', [$startDate, $endDate])
             ->sum('amount');
-        
+
         $balance = $totalIncome - $totalExpense;
-        
+
         $incomeByCategory = Finance::income()
             ->whereBetween('transaction_date', [$startDate, $endDate])
             ->selectRaw('category, SUM(amount) as total')
             ->groupBy('category')
             ->get();
-        
+
         $expenseByCategory = Finance::expense()
             ->whereBetween('transaction_date', [$startDate, $endDate])
             ->selectRaw('category, SUM(amount) as total')
             ->groupBy('category')
             ->get();
-        
+
         // Monthly Trend (6 bulan)
         $monthlyTrend = [];
         for ($i = 5; $i >= 0; $i--) {
             $date = now()->subMonths($i);
             $m = $date->month;
             $y = $date->year;
-            
+
             $income = Finance::income()->byMonthYear($m, $y)->sum('amount');
             $expense = Finance::expense()->byMonthYear($m, $y)->sum('amount');
-            
+
             $monthlyTrend[] = [
                 'month' => $date->format('F Y'),
                 'income' => $income,
                 'expense' => $expense,
-                'balance' => $income - $expense, 
+                'balance' => $income - $expense,
             ];
         }
-        
+
         $data = compact(
-            'finances', 
-            'month', 
-            'year', 
-            'totalIncome', 
-            'totalExpense', 
+            'finances',
+            'month',
+            'year',
+            'totalIncome',
+            'totalExpense',
             'balance',
             'incomeByCategory',
             'expenseByCategory',
             'monthlyTrend'
         );
-        
+
         // Check if download PDF
         if ($request->has('download') && $request->download === 'pdf') {
             return $this->downloadPdf($data);
         }
-        
+
         return view('finances.report', $data);
     }
 
     private function downloadPdf($data)
     {
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('finances.report-pdf', $data);
-        
-        $filename = 'laporan-keuangan-' . 
-                    \Carbon\Carbon::createFromDate($data['year'], $data['month'], 1)->format('F') . 
-                    '-' . $data['year'] . '.pdf';
-        
+
+        $filename = 'laporan-keuangan-'.
+                    \Carbon\Carbon::createFromDate($data['year'], $data['month'], 1)->format('F').
+                    '-'.$data['year'].'.pdf';
+
         return $pdf->download($filename);
     }
 
@@ -158,8 +155,6 @@ class FinanceController extends Controller
     {
         $currentMonth = now()->month;
         $currentYear = now()->year;
-
-        // ... (Logika monthlyIncome, monthlyExpense, ytdStats tetap sama)
 
         $monthlyIncome = Finance::income()->byMonthYear($currentMonth, $currentYear)->sum('amount');
         $monthlyExpense = Finance::expense()->byMonthYear($currentMonth, $currentYear)->sum('amount');
@@ -170,20 +165,20 @@ class FinanceController extends Controller
         $ytdBalance = $ytdIncome - $ytdExpense;
 
         $recentTransactions = Finance::orderBy('transaction_date', 'desc')
-                                    ->orderBy('created_at', 'desc')
-                                    ->take(10)
-                                    ->get();
+            ->orderBy('created_at', 'desc')
+            ->take(10)
+            ->get();
 
         $monthlyDataRaw = Finance::selectRaw("
             DATE_FORMAT(transaction_date, '%m') as month_num,
             SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) as income,
             SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) as expense
         ")
-        ->whereYear('transaction_date', $currentYear)
-        ->groupBy('month_num')
-        ->orderBy('month_num')
-        ->get()
-        ->keyBy('month_num');
+            ->whereYear('transaction_date', $currentYear)
+            ->groupBy('month_num')
+            ->orderBy('month_num')
+            ->get()
+            ->keyBy('month_num');
 
         $monthlyTrend = [];
         $today = now();
@@ -191,19 +186,19 @@ class FinanceController extends Controller
         for ($m = 1; $m <= $today->month; $m++) {
             $monthKey = str_pad($m, 2, '0', STR_PAD_LEFT);
             $data = $monthlyDataRaw->get($monthKey);
-            
+
             $income = $data->income ?? 0;
             $expense = $data->expense ?? 0;
-            
+
             $monthlyTrend[] = [
                 'month' => \Carbon\Carbon::createFromDate($currentYear, $m, 1)->format('M Y'),
                 'income' => $income,
                 'expense' => $expense,
-                'balance' => $income - $expense
+                'balance' => $income - $expense,
             ];
         }
-        
-        $monthlyTrend = array_reverse($monthlyTrend); 
+
+        $monthlyTrend = array_reverse($monthlyTrend);
 
         return view('finances.dashboard', compact(
             'monthlyIncome',
@@ -226,7 +221,7 @@ class FinanceController extends Controller
     {
         $cleanAmount = preg_replace('/[^0-9]/', '', $request->amount);
         $request->merge(['amount' => $cleanAmount]);
-        
+
         $validated = $request->validate([
             'type' => 'required|in:income,expense',
             'category' => 'required|string|max:255',
@@ -248,9 +243,9 @@ class FinanceController extends Controller
 
     public function show($id)
     {
-        $finance = Finance::find($id);
+        $finance = Finance::where('uuid', $id)->first();
 
-        if (!$finance) {
+        if (! $finance) {
             if (request()->wantsJson()) {
                 return response()->json(['message' => 'Data tidak ditemukan'], 404);
             }
@@ -260,7 +255,7 @@ class FinanceController extends Controller
         if (request()->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'data' => $finance
+                'data' => $finance,
             ]);
         }
 
@@ -279,7 +274,7 @@ class FinanceController extends Controller
 
         if ($request->has('amount')) {
             $request->merge([
-                'amount' => str_replace('.', '', $request->amount)
+                'amount' => str_replace('.', '', $request->amount),
             ]);
         }
 
@@ -301,7 +296,7 @@ class FinanceController extends Controller
         }
 
         $finance->update($validated);
-        $finance->touch(); 
+        $finance->touch();
 
         return redirect()->route('finances.index')
             ->with('success', 'Data keuangan berhasil diupdate!');
@@ -318,8 +313,8 @@ class FinanceController extends Controller
     private function getCategories()
     {
         $categories = Category::where('is_active', true)
-                                ->orderBy('name', 'asc')
-                                ->get();
+            ->orderBy('name', 'asc')
+            ->get();
 
         $incomeCategories = $categories
             ->where('type', 'income')
@@ -331,7 +326,7 @@ class FinanceController extends Controller
             ->pluck('name')
             ->toArray();
 
-        // Catatan: Jika ingin menyimpan array sebagai Collection, 
+        // Catatan: Jika ingin menyimpan array sebagai Collection,
         // bisa menghilangkan ->toArray()
 
         return compact('incomeCategories', 'expenseCategories');

@@ -4,24 +4,27 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Complaint;
+use App\Services\PushNotificationService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 class AdminComplaintController extends Controller
 {
+    public function __construct(
+        private PushNotificationService $pushNotification,
+    ) {}
+
     public function index()
     {
-        
         $complaints = Complaint::with(['tenant.user', 'room', 'images'])->latest()->get();
+
         return response()->json(['success' => true, 'data' => $complaints]);
     }
 
     public function show($id)
     {
-        $complaint = Complaint::with(['tenant', 'room', 'images'])->find($id);
+        $complaint = Complaint::with(['tenant', 'room', 'images'])->where('uuid', $id)->first();
 
-        if (!$complaint) {
+        if (! $complaint) {
             return response()->json(['success' => false, 'message' => 'Data tidak ditemukan'], 404);
         }
 
@@ -32,19 +35,19 @@ class AdminComplaintController extends Controller
     {
         $request->validate([
             'status' => 'required|in:open,in_progress,resolved,closed',
-            'response' => 'nullable|string'
+            'response' => 'nullable|string',
         ]);
 
-        $complaint = Complaint::findOrFail($id);
+        $complaint = Complaint::where('uuid', $id)->firstOrFail();
         $complaint->update([
             'status' => $request->status,
-            'response' => $request->response
+            'response' => $request->response,
         ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Laporan berhasil diperbarui',
-            'data' => $complaint
+            'data' => $complaint,
         ]);
     }
 
@@ -55,41 +58,27 @@ class AdminComplaintController extends Controller
             'response' => 'nullable|string',
         ]);
 
-        $complaint = Complaint::with('tenant.user')->findOrFail($id);
+        $complaint = Complaint::with('tenant.user')->where('uuid', $id)->firstOrFail();
         $complaint->update([
             'status' => $request->status,
             'response' => $request->response,
         ]);
 
         $user = $complaint->tenant->user;
-        
+
         if ($user && $user->expo_push_token) {
             $statusLabel = [
                 'in_progress' => 'sedang diproses',
                 'resolved' => 'telah selesai',
             ][$request->status] ?? 'diperbarui';
 
-            $this->sendExpoNotification(
+            $this->pushNotification->send(
                 $user->expo_push_token,
-                "Update Laporan: " . $complaint->title,
-                "Laporan kamu $statusLabel. " . ($request->response ? "Pesan: " . $request->response : "")
+                'Update Laporan: '.$complaint->title,
+                "Laporan kamu $statusLabel. ".($request->response ? 'Pesan: '.$request->response : '')
             );
         }
 
         return response()->json(['message' => 'Status berhasil diperbarui']);
-    }
-
-    private function sendExpoNotification($token, $title, $body)
-    {
-        $response = Http::post('https://exp.host/--/api/v2/push/send', [
-            'to'    => $token,
-            'title' => $title,
-            'body'  => $body,
-            'sound' => 'default',
-        ]);
-
-        Log::info("Expo Response: " . $response->body());
-
-        return $response;
     }
 }

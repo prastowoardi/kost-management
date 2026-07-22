@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 class MobileDashboardController extends Controller
 {
-    public function index(Request $request) 
+    public function index(Request $request)
     {
         $user = $request->user();
         $tenant = \App\Models\Tenant::where('user_id', $user->id)->with('room')->first();
@@ -25,7 +25,7 @@ class MobileDashboardController extends Controller
             'room_number' => $tenant->room->room_number ?? '-',
             'bill_amount' => $tenant->room->price ?? 0,
             'payment_status' => $isPaid ? 'Lunas' : ($isPending ? 'Pending' : 'Belum Bayar'),
-            'due_date' => '10 ' . now()->format('M Y'),
+            'due_date' => '10 '.now()->format('M Y'),
         ]);
     }
 }
