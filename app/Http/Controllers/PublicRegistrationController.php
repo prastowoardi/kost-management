@@ -6,6 +6,7 @@ use App\Models\Room;
 use App\Services\TenantRegistrationService;
 use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class PublicRegistrationController extends Controller
 {
@@ -26,9 +27,9 @@ class PublicRegistrationController extends Controller
         $validated = $request->validate([
             'room_id' => 'required|exists:rooms,id',
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:tenants',
+            'email' => ['required', 'email', Rule::unique('tenants')->whereNull('deleted_at')],
             'phone' => 'required|string|max:20',
-            'id_card' => 'required|string|unique:tenants',
+            'id_card' => ['required', 'string', Rule::unique('tenants')->whereNull('deleted_at')],
             'address' => 'required|string',
             'entry_date' => 'required|date',
             'payment_method' => 'required|in:transfer,cash',

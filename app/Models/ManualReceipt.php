@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ManualReceipt extends Model
 {
-    use \App\Models\Concerns\HasUuidColumn;
+    use SoftDeletes, \App\Models\Concerns\HasUuidColumn;
     protected $fillable = [
         'tenant_name',
         'room_number',

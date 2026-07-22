@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Broadcast extends Model
 {
-    use HasFactory, \App\Models\Concerns\HasUuidColumn;
+    use HasFactory, SoftDeletes, \App\Models\Concerns\HasUuidColumn;
 
     protected $fillable = [
         'message',

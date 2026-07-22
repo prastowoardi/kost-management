@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Finance extends Model
 {
-    use HasFactory, \App\Models\Concerns\HasUuidColumn;
+    use HasFactory, SoftDeletes, \App\Models\Concerns\HasUuidColumn;
 
     protected $fillable = [
         'type', 'category', 'transaction_date', 'amount', 'description', 'notes', 'receipt_file', 'payment_id',

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class ReceiptController extends Controller
 {
@@ -50,7 +51,7 @@ class ReceiptController extends Controller
             'room_number' => 'required|string',
             'period' => 'required|string',
             'total_amount' => 'required|numeric',
-            'invoice_number' => 'required|string|unique:manual_receipts,invoice_number',
+            'invoice_number' => ['required', 'string', Rule::unique('manual_receipts', 'invoice_number')->whereNull('deleted_at')],
         ]);
 
         $receipt = new \App\Models\ManualReceipt;

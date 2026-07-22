@@ -8,6 +8,7 @@ use App\Services\TenantRegistrationService;
 use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class TenantController extends Controller
 {
@@ -37,9 +38,9 @@ class TenantController extends Controller
         $validated = $request->validate([
             'room_id' => 'required|exists:rooms,id',
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:tenants',
+            'email' => ['required', 'email', Rule::unique('tenants')->whereNull('deleted_at')],
             'phone' => 'required|string|max:20',
-            'id_card' => 'required|string|unique:tenants',
+            'id_card' => ['required', 'string', Rule::unique('tenants')->whereNull('deleted_at')],
             'address' => 'required|string',
             'entry_date' => 'required|date',
             'emergency_contact_name' => 'nullable|string|max:255',
@@ -92,9 +93,9 @@ class TenantController extends Controller
         $validated = $request->validate([
             'room_id' => 'required|exists:rooms,id',
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:tenants,email,'.$tenant->id,
+            'email' => ['required', 'email', Rule::unique('tenants')->ignore($tenant->id)->whereNull('deleted_at')],
             'phone' => 'required|string|max:20',
-            'id_card' => 'required|string|unique:tenants,id_card,'.$tenant->id,
+            'id_card' => ['required', 'string', Rule::unique('tenants')->ignore($tenant->id)->whereNull('deleted_at')],
             'address' => 'required|string',
             'entry_date' => 'required|date',
             'exit_date' => 'nullable|date',
