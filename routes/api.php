@@ -61,8 +61,11 @@ Route::middleware(['auth:sanctum'])
         Route::post('/complaints/{id}/respond', [AdminComplaintController::class, 'respond']);
 
         Route::get('/tenants', [AdminTenantController::class, 'index']);
+        Route::get('/rooms', [AdminTenantController::class, 'allRooms']);
         Route::get('/rooms/available', [AdminTenantController::class, 'availableRooms']);
         Route::post('/tenants/store', [AdminTenantController::class, 'store']);
+        Route::match(['put', 'patch', 'post'], '/tenants/update/{uuid}', [AdminTenantController::class, 'update']);
+        Route::post('/tenants/delete/{uuid}', [AdminTenantController::class, 'destroy']);
 
         Route::get('/categories', [FinanceController::class, 'getApiCategories']);
         Route::apiResource('/finances', FinanceController::class);
