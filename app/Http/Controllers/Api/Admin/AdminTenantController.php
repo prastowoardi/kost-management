@@ -4,13 +4,13 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Helpers\LogHelper;
 use App\Http\Controllers\Controller;
+use App\Models\Payment;
 use App\Models\Room;
 use App\Models\Tenant;
 use App\Services\TenantRegistrationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 use Throwable;
 
 class AdminTenantController extends Controller
@@ -22,6 +22,13 @@ class AdminTenantController extends Controller
     public function index()
     {
         return \App\Models\Tenant::with(['user', 'room'])->get();
+    }
+
+    public function activeTenants()
+    {
+        return \App\Models\Tenant::with(['user', 'room'])
+            ->where('status', 'active')
+            ->get();
     }
 
     public function allRooms()
@@ -38,8 +45,8 @@ class AdminTenantController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => ['required', 'email', Rule::unique('users', 'email')->whereNull('deleted_at')],
-            'room_id' => 'required|exists:rooms,id',
+            'email' => 'required|email|unique:users,email',
+            'room_id' => 'required|string',
             'phone' => 'required',
             'id_card' => 'required',
         ]);
@@ -50,7 +57,7 @@ class AdminTenantController extends Controller
 
         return DB::transaction(function () use ($request) {
             try {
-                $room = Room::findOrFail($request->room_id);
+                $room = Room::where('uuid', $request->room_id)->firstOrFail();
 
                 $tenant = $this->registration->registerWithUser([
                     'room_id' => $room->id,
@@ -58,10 +65,10 @@ class AdminTenantController extends Controller
                     'email' => $request->email,
                     'phone' => $request->phone,
                     'id_card' => $request->id_card,
-                    'address' => $request->address,
+                    'address' => $request->address ?? '',
                     'entry_date' => $request->entry_date ?? now(),
-                    'emergency_contact_name' => $request->emergency_contact_name,
-                    'emergency_contact_phone' => $request->emergency_contact_phone,
+                    'emergency_contact_name' => $request->emergency_contact_name ?? '',
+                    'emergency_contact_phone' => $request->emergency_contact_phone ?? '',
                     'status' => 'active',
                 ], $request->password ?? 'serratajos');
 
@@ -74,16 +81,33 @@ class AdminTenantController extends Controller
                 return response()->json([
                     'status' => 'success',
                     'message' => 'Tenant berhasil didaftarkan!',
-                    'data' => $tenant,
+                    'data' => $tenant->fresh()->load(['user', 'room']),
                 ]);
 
             } catch (\Exception $e) {
+                LogHelper::logError('CREATE_TENANT_FAILED', 'Gagal simpan tenant', $e);
+
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Gagal simpan: '.$e->getMessage(),
+                    'message' => 'Gagal menyimpan data tenant. Periksa kembali input Anda.',
                 ], 500);
             }
         });
+    }
+
+    public function payments($uuid)
+    {
+        $tenant = Tenant::where('uuid', $uuid)->firstOrFail();
+
+        $payments = Payment::where('tenant_id', $tenant->id)
+            ->with(['room'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $payments,
+        ]);
     }
 
     public function destroy($uuid)
@@ -132,8 +156,8 @@ class AdminTenantController extends Controller
 
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
-                'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($tenant->user_id)->whereNull('deleted_at')],
-                'room_id' => 'required|exists:rooms,id',
+                'email' => 'required|email|unique:users,email,'.$tenant->user_id,
+                'room_id' => 'required|string',
                 'phone' => 'required',
                 'id_card' => 'required',
                 'address' => 'nullable|string',
@@ -143,8 +167,10 @@ class AdminTenantController extends Controller
                 'status' => 'nullable|in:active,inactive',
             ]);
 
+            $room = Room::where('uuid', $request->room_id)->firstOrFail();
+
             $tenant->update([
-                'room_id' => $validated['room_id'],
+                'room_id' => $room->id,
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'phone' => $validated['phone'],

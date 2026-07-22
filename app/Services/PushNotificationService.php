@@ -68,4 +68,16 @@ class PushNotificationService
             ]
         );
     }
+
+    public function sendPaymentReceipt(string $token, string $name, string $invoice, float $total): bool
+    {
+        return $this->send(
+            $token,
+            'Kwitansi Pembayaran Tersedia 🧾',
+            "Halo {$name}, pembayaran {$invoice} sebesar Rp ".number_format($total, 0, ',', '.').' telah dicatat oleh admin. Kwitansi dapat dilihat di riwayat pembayaran.',
+            [
+                'type' => 'payment_verified',
+            ]
+        );
+    }
 }

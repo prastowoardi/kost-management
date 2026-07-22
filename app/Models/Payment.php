@@ -53,8 +53,7 @@ class Payment extends Model
 
         static::creating(function ($payment) {
             if (!$payment->invoice_number) {
-                $count = Payment::whereDate('created_at', today())->count() + 1;
-                $payment->invoice_number = 'INV-' . date('Ymd') . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
+                $payment->invoice_number = 'INV-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -6));
             }
         });
     }

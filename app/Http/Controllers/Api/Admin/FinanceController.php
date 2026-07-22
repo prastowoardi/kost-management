@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Helpers\LogHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Finance;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class FinanceController extends Controller
 {
@@ -29,9 +30,6 @@ class FinanceController extends Controller
 
     public function store(Request $request)
     {
-        Log::info('Jenis receipt_file: '.gettype($request->file('receipt_file')));
-        Log::info('Data Request:', $request->all());
-
         $validated = $request->validate([
             'type' => 'required|in:income,expense',
             'category' => 'required|string|max:255',
@@ -47,26 +45,42 @@ class FinanceController extends Controller
         }
 
         try {
-            $finance = \App\Models\Finance::create($validated);
+            $finance = Finance::create($validated);
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Transaksi berhasil disimpan',
                 'data' => $finance,
             ], 201);
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
+            LogHelper::logError(
+                'CREATE_FINANCE_FAILED',
+                'Gagal menyimpan transaksi dari API',
+                $e
+            );
+
             return response()->json([
                 'status' => 'error',
-                'message' => 'Gagal menyimpan data: '.$e->getMessage(),
+                'message' => 'Gagal menyimpan data',
             ], 500);
         }
     }
 
     public function destroy($id)
     {
-        Finance::where('uuid', $id)->firstOrFail()->delete();
+        try {
+            Finance::where('uuid', $id)->firstOrFail()->delete();
 
-        return response()->json(['message' => 'Transaksi berhasil dihapus']);
+            return response()->json(['message' => 'Transaksi berhasil dihapus']);
+        } catch (Throwable $e) {
+            LogHelper::logError(
+                'DELETE_FINANCE_FAILED',
+                "Gagal hapus transaksi #{$id} dari API",
+                $e
+            );
+
+            return response()->json(['message' => 'Gagal menghapus transaksi'], 500);
+        }
     }
 
     public function getApiCategories()

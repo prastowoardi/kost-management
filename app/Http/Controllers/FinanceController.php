@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\LogHelper;
 use App\Models\Category;
 use App\Models\Finance;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 class FinanceController extends Controller
 {
@@ -219,26 +221,37 @@ class FinanceController extends Controller
 
     public function store(Request $request)
     {
-        $cleanAmount = preg_replace('/[^0-9]/', '', $request->amount);
-        $request->merge(['amount' => $cleanAmount]);
+        try {
+            $cleanAmount = preg_replace('/[^0-9]/', '', $request->amount);
+            $request->merge(['amount' => $cleanAmount]);
 
-        $validated = $request->validate([
-            'type' => 'required|in:income,expense',
-            'category' => 'required|string|max:255',
-            'amount' => 'required|numeric|min:0',
-            'transaction_date' => 'required|date',
-            'description' => 'nullable|string',
-            'receipt_file' => 'nullable|image|mimes:jpg,jpeg,png,pdf|max:5120',
-        ]);
+            $validated = $request->validate([
+                'type' => 'required|in:income,expense',
+                'category' => 'required|string|max:255',
+                'amount' => 'required|numeric|min:0',
+                'transaction_date' => 'required|date',
+                'description' => 'nullable|string',
+                'receipt_file' => 'nullable|image|mimes:jpg,jpeg,png,pdf|max:5120',
+            ]);
 
-        if ($request->hasFile('receipt_file')) {
-            $validated['receipt_file'] = $request->file('receipt_file')->store('receipts', 'public');
+            if ($request->hasFile('receipt_file')) {
+                $validated['receipt_file'] = $request->file('receipt_file')->store('receipts', 'public');
+            }
+
+            Finance::create($validated);
+
+            return redirect()->route('finances.index')
+                ->with('success', 'Data keuangan berhasil ditambahkan!');
+        } catch (Throwable $e) {
+            LogHelper::logError(
+                'CREATE_FINANCE_FAILED',
+                'Gagal menambah transaksi keuangan',
+                $e,
+                ['type' => $request->type, 'amount' => $request->amount]
+            );
+
+            return back()->with('error', 'Gagal menambah transaksi')->withInput();
         }
-
-        Finance::create($validated);
-
-        return redirect()->route('finances.index')
-            ->with('success', 'Data keuangan berhasil ditambahkan!');
     }
 
     public function show($id)
@@ -269,45 +282,65 @@ class FinanceController extends Controller
 
     public function update(Request $request, Finance $finance)
     {
-        $cleanAmount = preg_replace('/[^0-9]/', '', $request->amount);
-        $request->merge(['amount' => $cleanAmount]);
+        try {
+            $cleanAmount = preg_replace('/[^0-9]/', '', $request->amount);
+            $request->merge(['amount' => $cleanAmount]);
 
-        if ($request->has('amount')) {
-            $request->merge([
-                'amount' => str_replace('.', '', $request->amount),
-            ]);
-        }
-
-        $validated = $request->validate([
-            'type' => 'required|in:income,expense',
-            'category' => 'required|string|max:255',
-            'amount' => 'required|numeric|min:0',
-            'transaction_date' => 'required|date',
-            'description' => 'required|string',
-            'notes' => 'nullable|string',
-            'receipt_file' => 'nullable|image|mimes:jpg,jpeg,png,pdf|max:5120',
-        ]);
-
-        if ($request->hasFile('receipt_file')) {
-            if ($finance->receipt_file) {
-                Storage::disk('public')->delete($finance->receipt_file);
+            if ($request->has('amount')) {
+                $request->merge([
+                    'amount' => str_replace('.', '', $request->amount),
+                ]);
             }
-            $validated['receipt_file'] = $request->file('receipt_file')->store('receipts', 'public');
+
+            $validated = $request->validate([
+                'type' => 'required|in:income,expense',
+                'category' => 'required|string|max:255',
+                'amount' => 'required|numeric|min:0',
+                'transaction_date' => 'required|date',
+                'description' => 'required|string',
+                'notes' => 'nullable|string',
+                'receipt_file' => 'nullable|image|mimes:jpg,jpeg,png,pdf|max:5120',
+            ]);
+
+            if ($request->hasFile('receipt_file')) {
+                if ($finance->receipt_file) {
+                    Storage::disk('public')->delete($finance->receipt_file);
+                }
+                $validated['receipt_file'] = $request->file('receipt_file')->store('receipts', 'public');
+            }
+
+            $finance->update($validated);
+            $finance->touch();
+
+            return redirect()->route('finances.index')
+                ->with('success', 'Data keuangan berhasil diupdate!');
+        } catch (Throwable $e) {
+            LogHelper::logError(
+                'UPDATE_FINANCE_FAILED',
+                "Gagal update transaksi keuangan #{$finance->id}",
+                $e
+            );
+
+            return back()->with('error', 'Gagal mengupdate transaksi')->withInput();
         }
-
-        $finance->update($validated);
-        $finance->touch();
-
-        return redirect()->route('finances.index')
-            ->with('success', 'Data keuangan berhasil diupdate!');
     }
 
     public function destroy(Finance $finance)
     {
-        $finance->delete();
+        try {
+            $finance->delete();
 
-        return redirect()->route('finances.index')
-            ->with('success', 'Data keuangan berhasil dihapus!');
+            return redirect()->route('finances.index')
+                ->with('success', 'Data keuangan berhasil dihapus!');
+        } catch (Throwable $e) {
+            LogHelper::logError(
+                'DELETE_FINANCE_FAILED',
+                "Gagal hapus transaksi keuangan #{$finance->id}",
+                $e
+            );
+
+            return back()->with('error', 'Gagal menghapus transaksi');
+        }
     }
 
     private function getCategories()

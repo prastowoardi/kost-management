@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\AdminComplaintController;
+use App\Http\Controllers\Api\Admin\AdminPaymentController;
+use App\Http\Controllers\Api\Admin\AdminRoomController;
 use App\Http\Controllers\Api\Admin\AdminTenantController;
 use App\Http\Controllers\Api\Admin\FinanceController;
 use App\Http\Controllers\Api\Admin\StatsController;
@@ -53,6 +55,8 @@ Route::middleware(['auth:sanctum'])
                 ->where('status', 'pending')->get();
         });
 
+        Route::post('/payments/store', [AdminPaymentController::class, 'store']);
+        Route::get('/payments/{uuid}', [AdminPaymentController::class, 'show']);
         Route::post('/payments/{id}/verify', [MobilePaymentController::class, 'verifyPayment']);
 
         Route::get('/complaints', [AdminComplaintController::class, 'index']);
@@ -61,8 +65,16 @@ Route::middleware(['auth:sanctum'])
         Route::post('/complaints/{id}/respond', [AdminComplaintController::class, 'respond']);
 
         Route::get('/tenants', [AdminTenantController::class, 'index']);
+        Route::get('/tenants/active', [AdminTenantController::class, 'activeTenants']);
+        Route::get('/rooms', [AdminRoomController::class, 'index']);
         Route::get('/rooms/available', [AdminTenantController::class, 'availableRooms']);
+        Route::get('/rooms/{uuid}', [AdminRoomController::class, 'show']);
+        Route::match(['put', 'patch', 'post'], '/rooms/{uuid}', [AdminRoomController::class, 'update']);
+        Route::put('/rooms/{uuid}/status', [AdminRoomController::class, 'updateStatus']);
         Route::post('/tenants/store', [AdminTenantController::class, 'store']);
+        Route::match(['put', 'patch', 'post'], '/tenants/update/{uuid}', [AdminTenantController::class, 'update']);
+        Route::post('/tenants/delete/{uuid}', [AdminTenantController::class, 'destroy']);
+        Route::get('/tenants/{uuid}/payments', [AdminTenantController::class, 'payments']);
 
         Route::get('/categories', [FinanceController::class, 'getApiCategories']);
         Route::apiResource('/finances', FinanceController::class);

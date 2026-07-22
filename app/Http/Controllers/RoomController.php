@@ -7,7 +7,6 @@ use App\Models\Facility;
 use App\Models\Room;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 use Throwable;
 
 class RoomController extends Controller
@@ -32,8 +31,8 @@ class RoomController extends Controller
     {
         try {
             $validated = $request->validate([
-            'room_number' => ['required', Rule::unique('rooms')->whereNull('deleted_at')],
-            'type' => 'required|in:singlenoac,singleac,shared',
+                'room_number' => 'required|unique:rooms',
+                'type' => 'required|in:singlenoac,singleac,shared',
                 'price' => 'required|numeric|min:0',
                 'capacity' => 'required|integer|min:1',
                 'size' => 'nullable|numeric|min:0',
@@ -90,7 +89,7 @@ class RoomController extends Controller
     public function update(Request $request, Room $room)
     {
         $validated = $request->validate([
-            'room_number' => ['required', Rule::unique('rooms')->ignore($room->id)->whereNull('deleted_at')],
+            'room_number' => 'required|unique:rooms,room_number,'.$room->id,
             'type' => 'required|in:singlenoac,singleac,shared',
             'price' => 'required|numeric|min:0',
             'capacity' => 'required|integer|min:1',

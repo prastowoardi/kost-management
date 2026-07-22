@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\LogHelper;
 use App\Models\Broadcast;
 use App\Models\BroadcastLog;
 use App\Models\Tenant;
 use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
+use Throwable;
 
 class BroadcastController extends Controller
 {
@@ -21,51 +23,61 @@ class BroadcastController extends Controller
 
     public function send(Request $request)
     {
-        $request->validate(['message' => 'required']);
+        try {
+            $request->validate(['message' => 'required']);
 
-        $tenants = Tenant::whereNotNull('phone')
-            ->where('status', 'active')
-            ->get();
+            $tenants = Tenant::whereNotNull('phone')
+                ->where('status', 'active')
+                ->get();
 
-        if ($tenants->isEmpty()) {
-            return back()->withErrors(['msg' => 'Tidak ada Penghuni aktif yang ditemukan.']);
-        }
-
-        $broadcast = Broadcast::create([
-            'message' => $request->message,
-        ]);
-
-        $success = 0;
-        $failed = 0;
-
-        foreach ($tenants as $tenant) {
-            $errorMsg = null;
-            $sent = $this->whatsapp->sendMessage($tenant->phone, $request->message);
-
-            if ($sent) {
-                $status = 'success';
-                $success++;
-            } else {
-                $status = 'failed';
-                $failed++;
-                $errorMsg = 'Gagal kirim pesan';
+            if ($tenants->isEmpty()) {
+                return back()->withErrors(['msg' => 'Tidak ada Penghuni aktif yang ditemukan.']);
             }
 
-            BroadcastLog::create([
-                'broadcast_id' => $broadcast->id,
-                'tenant_name' => $tenant->name,
-                'phone' => $tenant->phone,
-                'status' => $status,
-                'error_message' => $errorMsg,
+            $broadcast = Broadcast::create([
+                'message' => $request->message,
             ]);
+
+            $success = 0;
+            $failed = 0;
+
+            foreach ($tenants as $tenant) {
+                $errorMsg = null;
+                $sent = $this->whatsapp->sendMessage($tenant->phone, $request->message);
+
+                if ($sent) {
+                    $status = 'success';
+                    $success++;
+                } else {
+                    $status = 'failed';
+                    $failed++;
+                    $errorMsg = 'Gagal kirim pesan';
+                }
+
+                BroadcastLog::create([
+                    'broadcast_id' => $broadcast->id,
+                    'tenant_name' => $tenant->name,
+                    'phone' => $tenant->phone,
+                    'status' => $status,
+                    'error_message' => $errorMsg,
+                ]);
+            }
+
+            $broadcast->update([
+                'total_success' => $success,
+                'total_failed' => $failed,
+            ]);
+
+            return back()->with('status', 'Broadcast terkirim ke '.$success.' penghuni!');
+        } catch (Throwable $e) {
+            LogHelper::logError(
+                'BROADCAST_FAILED',
+                'Gagal mengirim broadcast',
+                $e
+            );
+
+            return back()->withErrors(['msg' => 'Gagal mengirim broadcast']);
         }
-
-        $broadcast->update([
-            'total_success' => $success,
-            'total_failed' => $failed,
-        ]);
-
-        return back()->with('status', 'Broadcast terkirim ke '.$success.' penghuni!');
     }
 
     public function history()
