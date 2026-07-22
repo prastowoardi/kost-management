@@ -25,6 +25,8 @@ class UserAgentParser
         if (preg_match('/Firefox\/([\d.]+)/i', $ua, $m)) return 'Firefox ' . $m[1];
         if (preg_match('/Chrome\/([\d.]+)/i', $ua, $m)) return 'Chrome ' . $m[1];
         if (preg_match('/Safari\/([\d.]+)/i', $ua, $m)) return 'Safari ' . $m[1];
+        if (stripos($ua, 'okhttp') !== false) return 'OkHttp';
+        if (preg_match('/Dalvik\/([\d.]+)/i', $ua, $m)) return 'Android App';
         return 'Unknown';
     }
 
@@ -37,8 +39,11 @@ class UserAgentParser
         }
         if (preg_match('/Android ([\d.]+)/i', $ua, $m)) return 'Android ' . $m[1];
         if (preg_match('/iPhone OS ([\d_]+)/i', $ua, $m)) return 'iOS ' . str_replace('_', '.', $m[1]);
+        if (preg_match('/CPU OS ([\d_]+)/i', $ua, $m)) return 'iPadOS ' . str_replace('_', '.', $m[1]);
         if (preg_match('/Mac OS X ([\d_]+)/i', $ua, $m)) return 'macOS ' . str_replace('_', '.', $m[1]);
         if (preg_match('/Linux/i', $ua)) return 'Linux';
+        if (stripos($ua, 'okhttp') !== false) return 'Android';
+        if (preg_match('/KFAPWI|Kindle|Silk/i', $ua)) return 'Fire OS';
         return 'Unknown';
     }
 
@@ -46,6 +51,7 @@ class UserAgentParser
     {
         if (stripos($ua, 'tablet') !== false || stripos($ua, 'ipad') !== false) return 'tablet';
         if (stripos($ua, 'mobile') !== false || stripos($ua, 'iphone') !== false || stripos($ua, 'android') !== false) return 'mobile';
+        if (stripos($ua, 'okhttp') !== false || stripos($ua, 'dalvik') !== false) return 'mobile';
         return 'desktop';
     }
 }
