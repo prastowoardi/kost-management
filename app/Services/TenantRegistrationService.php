@@ -16,7 +16,7 @@ class TenantRegistrationService
             $user = User::create([
                 'name' => $tenantData['name'],
                 'email' => $tenantData['email'],
-                'password' => Hash::make($password ?? 'password123'),
+                'password' => $password ?? 'password123',
                 'role' => 'tenant',
             ]);
 

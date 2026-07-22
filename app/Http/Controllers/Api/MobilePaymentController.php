@@ -8,6 +8,7 @@ use App\Models\Payment;
 use App\Models\Tenant;
 use App\Services\PushNotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 class MobilePaymentController extends Controller
@@ -78,18 +79,20 @@ class MobilePaymentController extends Controller
         try {
             $path = $request->file('proof_image')->store('receipts', 'public');
 
-            $payment = Payment::create([
-                'tenant_id' => $tenant->id,
-                'room_id' => $tenant->room_id,
-                'payment_date' => now(),
-                'period_month' => now()->startOfMonth(),
-                'amount' => $tenant->room->price ?? 0,
-                'total' => $tenant->room->price ?? 0,
-                'status' => 'pending',
-                'payment_method' => 'transfer',
-                'receipt_file' => $path,
-                'notes' => 'Pembayaran via Mobile',
-            ]);
+            $payment = DB::transaction(function () use ($tenant, $path) {
+                return Payment::create([
+                    'tenant_id' => $tenant->id,
+                    'room_id' => $tenant->room_id,
+                    'payment_date' => now(),
+                    'period_month' => now()->startOfMonth(),
+                    'amount' => $tenant->room->price ?? 0,
+                    'total' => $tenant->room->price ?? 0,
+                    'status' => 'pending',
+                    'payment_method' => 'transfer',
+                    'receipt_file' => $path,
+                    'notes' => 'Pembayaran via Mobile',
+                ]);
+            });
 
             LogHelper::log(
                 'UPLOAD_RECEIPT',

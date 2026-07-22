@@ -53,8 +53,12 @@ class Payment extends Model
 
         static::creating(function ($payment) {
             if (!$payment->invoice_number) {
-                $count = Payment::whereDate('created_at', today())->count() + 1;
-                $payment->invoice_number = 'INV-' . date('Ymd') . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
+                $last = Payment::whereDate('created_at', today())
+                    ->where('invoice_number', 'like', 'INV-' . date('Ymd') . '-%')
+                    ->orderBy('invoice_number', 'desc')
+                    ->value('invoice_number');
+                $num = $last ? (int) substr($last, -4) + 1 : 1;
+                $payment->invoice_number = 'INV-' . date('Ymd') . '-' . str_pad($num, 4, '0', STR_PAD_LEFT);
             }
         });
     }

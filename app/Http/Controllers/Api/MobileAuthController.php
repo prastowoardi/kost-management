@@ -26,7 +26,31 @@ class MobileAuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
+        if (! $user) {
+            \Illuminate\Support\Facades\Log::error('LOGIN: User not found for email: '.$request->email);
+
+            LogHelper::log(
+                'LOGIN_FAILED',
+                "Percobaan login gagal pada email: {$request->email}",
+                null,
+                ['ip' => $request->ip(), 'user_agent' => $request->userAgent()]
+            );
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal Login.',
+            ], 401);
+        }
+
+        \Illuminate\Support\Facades\Log::info('LOGIN: User found', [
+            'email' => $user->email,
+            'password_hash_prefix' => substr($user->password, 0, 20),
+            'password_check' => Hash::check($request->password, $user->password),
+        ]);
+
+        if (! Hash::check($request->password, $user->password)) {
+            \Illuminate\Support\Facades\Log::error('LOGIN: Password mismatch for: '.$request->email);
+
             LogHelper::log(
                 'LOGIN_FAILED',
                 "Percobaan login gagal pada email: {$request->email}",
