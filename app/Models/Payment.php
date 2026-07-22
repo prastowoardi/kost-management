@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Payment extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes, \App\Models\Concerns\HasUuidColumn;
 
     protected $fillable = [
         'tenant_id',
@@ -23,6 +24,8 @@ class Payment extends Model
         'notes',
         'receipt_file'
     ];
+
+    protected $hidden = ['id'];
 
     protected $casts = [
         'payment_date' => 'date',

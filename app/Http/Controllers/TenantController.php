@@ -2,28 +2,34 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Tenant;
 use App\Models\Room;
-use App\Models\User;
+use App\Models\Tenant;
+use App\Services\TenantRegistrationService;
+use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
+
 class TenantController extends Controller
 {
+    public function __construct(
+        private WhatsAppService $whatsapp,
+        private TenantRegistrationService $registration,
+    ) {}
+
     public function index()
     {
         $tenants = Tenant::with('room')
-                        ->orderBy('created_at', 'desc')
-                        ->paginate(10);
-        
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
         return view('tenants.index', compact('tenants'));
     }
 
     public function create()
     {
         $availableRooms = Room::where('status', 'available')->get();
+
         return view('tenants.create', compact('availableRooms'));
     }
 
@@ -32,57 +38,53 @@ class TenantController extends Controller
         $validated = $request->validate([
             'room_id' => 'required|exists:rooms,id',
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:tenants',
+            'email' => ['required', 'email', Rule::unique('tenants')->whereNull('deleted_at')],
             'phone' => 'required|string|max:20',
-            'id_card' => 'required|string|unique:tenants',
+            'id_card' => ['required', 'string', Rule::unique('tenants')->whereNull('deleted_at')],
             'address' => 'required|string',
             'entry_date' => 'required|date',
             'emergency_contact_name' => 'nullable|string|max:255',
             'emergency_contact_phone' => 'nullable|string|max:20',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:5120'
-        ]);
-
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make('password123'), // Password default
-            'role' => 'tenant',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
         ]);
 
         if ($request->hasFile('photo')) {
             $validated['photo'] = $request->file('photo')->store('tenants', 'public');
         }
 
-        $validated['user_id'] = $user->id;
-        $tenant = Tenant::create($validated);
-        $tenant->room->update(['status' => 'occupied']);
+        $tenant = $this->registration->registerWithUser($validated);
 
-        $waUrl = $this->sendWelcomeMessage($tenant);
+        $message = $this->whatsapp->getWelcomeMessage($tenant->name);
+        $waUrl = 'https://wa.me/'.$tenant->phone.'?text='.urlencode($message);
+
+        $this->whatsapp->sendMessage($tenant->phone, $message);
 
         if ($request->wantsJson() || $request->is('api/*')) {
             return response()->json([
                 'status' => 'success',
                 'message' => 'Penghuni dan Akun Login berhasil dibuat.',
-                'data' => $tenant->load('user')
+                'data' => $tenant->load('user'),
             ], 201);
         }
+
         return redirect()->route('tenants.index')
-                    ->with('success', 'Penghuni berhasil ditambahkan. Password default: password123')
-                    ->with('wa_url', $waUrl);
+            ->with('success', 'Penghuni berhasil ditambahkan. Password default: password123')
+            ->with('wa_url', $waUrl);
     }
 
     public function show(Tenant $tenant)
     {
         $tenant->load(['room', 'payments', 'complaints']);
+
         return view('tenants.show', compact('tenant'));
     }
 
     public function edit(Tenant $tenant)
     {
         $rooms = Room::where('status', 'available')
-                    ->orWhere('id', $tenant->room_id)
-                    ->get();
-        
+            ->orWhere('id', $tenant->room_id)
+            ->get();
+
         return view('tenants.edit', compact('tenant', 'rooms'));
     }
 
@@ -91,16 +93,16 @@ class TenantController extends Controller
         $validated = $request->validate([
             'room_id' => 'required|exists:rooms,id',
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:tenants,email,' . $tenant->id,
+            'email' => ['required', 'email', Rule::unique('tenants')->ignore($tenant->id)->whereNull('deleted_at')],
             'phone' => 'required|string|max:20',
-            'id_card' => 'required|string|unique:tenants,id_card,' . $tenant->id,
+            'id_card' => ['required', 'string', Rule::unique('tenants')->ignore($tenant->id)->whereNull('deleted_at')],
             'address' => 'required|string',
             'entry_date' => 'required|date',
             'exit_date' => 'nullable|date',
             'status' => 'required|in:active,inactive',
             'emergency_contact_name' => 'nullable|string|max:255',
             'emergency_contact_phone' => 'nullable|string|max:20',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:5120'
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
         ]);
 
         $oldRoomId = $tenant->room_id;
@@ -124,7 +126,7 @@ class TenantController extends Controller
         }
 
         return redirect()->route('tenants.index')
-                ->with('success', 'Data penghuni berhasil diupdate');
+            ->with('success', 'Data penghuni berhasil diupdate');
     }
 
     public function destroy(Tenant $tenant)
@@ -134,18 +136,18 @@ class TenantController extends Controller
         }
 
         Room::find($tenant->room_id)->update(['status' => 'available']);
-        
+
         $tenant->delete();
 
         return redirect()->route('tenants.index')
-                        ->with('success', 'Penghuni berhasil dihapus');
+            ->with('success', 'Penghuni berhasil dihapus');
     }
 
     public function updateStatus(Request $request, Tenant $tenant)
     {
         $validated = $request->validate([
             'status' => 'required|in:active,inactive',
-            'exit_date' => 'required_if:status,inactive|nullable|date'
+            'exit_date' => 'required_if:status,inactive|nullable|date',
         ]);
 
         $tenant->update($validated);
@@ -155,55 +157,6 @@ class TenantController extends Controller
         }
 
         return redirect()->back()
-                        ->with('success', 'Status penghuni berhasil diupdate');
-    }
-
-    private function sendWelcomeMessage($tenant)
-    {
-        $message = "Halo Kak {$tenant->name}! Selamat datang di Serrata Kost! 👋✨\n\n" .
-
-                "Makasih banyak ya sudah memilih Serrata Kost jadi rumah barumu. Semoga betah, nyaman, dan produktif selama tinggal di sini! 😊\n\n" .
-
-                "*Biar makin nyaman bareng, yuk intip 'House Rules' kita sebentar:* 📝\n\n" .
-
-                "📍 *UMUM*\n" .
-                    "1. Saling jaga ketenangan dan keamanan ya, biar istirahat makin pol.\n" .
-                    "2. Kost kita bersih dari Miras, Narkoba, atau barang terlarang lainnya.\n" .
-                    "3. No smoking inside! Kamar tetap wangi tanpa asap rokok ya.\n" .
-                    "4. Mohon maaf, kita belum bisa terima anabul atau hewan peliharaan.\n" .
-                    "5. Saling jaga etika dan hindari asusila demi kenyamanan bersama.\n" .
-                    "6. Kita jaga nama baik Serrata Kost bareng-bareng ya, Kak.\n" .
-                    "7. Jangan lupa pembayaran kost tepat waktu sesuai tanggal janjian.\n" .
-                    "8. Khusus tamu laki-laki tidak boleh masuk kamar.\n" .
-                    "9. Kalau ada keluarga mau menginap, info ke Ibu Kost dulu ya (max 2 orang).\n\n" .
-
-                "✨ *KEBERSIHAN & KERAPIHAN*\n" .
-                    "1. Kamar dan kamar mandi sendiri dijaga tetap bersih ya, biar makin betah.\n" .
-                    "2. Buang sampah di tempatnya. Tolong banget jangan buang sampah/pembalut di kloset biar nggak mampet.\n" .
-                    "3. Jemur pakaian di tempat jemuran yang sudah ada ya, jangan di depan kamar agar tetap rapi.\n\n" .
-
-                "🚰 *FASILITAS*\n" .
-                    "1. Gunakan fasilitas kost dengan bijak dan penuh rasa tanggung jawab.\n" .
-                    "2. Jika ada kerusakan karena kelalaian, biaya perbaikannya ditanggung penghuni dulu ya.\n" .
-                    "3. Hemat air ya Kak, gunakan secukupnya saja sesuai kebutuhan.\n\n" .
-
-                "Sekali lagi, selamat bergabung di keluarga besar Serrata Kost! Kalau ada apa-apa, jangan sungkan hubungi kami ya. Enjoy your stay! 🏠💖";
-
-        try {
-            $response = Http::timeout(10)->post('http://localhost:3000/send-message', [
-                'number'  => $tenant->phone,
-                'message' => $message
-            ]);
-
-            if ($response->successful()) {
-                Log::info("Pesan WA Terkirim ke {$tenant->phone}");
-            } else {
-                Log::error("API Gateway Error: " . $response->body());
-            }
-        } catch (\Exception $e) {
-            Log::error("Gagal koneksi ke WhatsApp Gateway: " . $e->getMessage());
-        }
-
-        return "https://wa.me/" . $tenant->phone . "?text=" . urlencode($message);
+            ->with('success', 'Status penghuni berhasil diupdate');
     }
 }

@@ -3,12 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Complaint extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes, \App\Models\Concerns\HasUuidColumn;
 
     protected $fillable = [
         'tenant_id',
@@ -21,12 +21,13 @@ class Complaint extends Model
         'response',
         'resolved_date',
         'images',
-        'image_path'
     ];
+
+    protected $hidden = ['id'];
 
     protected $casts = [
         'resolved_date' => 'date',
-        'images' => 'array' // Cast ke array untuk JSON
+        'images' => 'array', // Cast ke array untuk JSON
     ];
 
     public function tenant()

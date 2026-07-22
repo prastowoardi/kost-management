@@ -4,12 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ComplaintImage extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes, \App\Models\Concerns\HasUuidColumn;
 
     protected $fillable = ['complaint_id', 'path'];
+
+    protected $hidden = ['id'];
 
     public function complaint()
     {
@@ -20,6 +23,6 @@ class ComplaintImage extends Model
 
     public function getFullUrlAttribute()
     {
-        return asset('storage/' . $this->image_path);
+        return asset('storage/'.$this->image_path);
     }
 }

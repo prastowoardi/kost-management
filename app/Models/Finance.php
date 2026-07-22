@@ -2,18 +2,20 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Finance extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes, \App\Models\Concerns\HasUuidColumn;
 
     protected $fillable = [
-        // ... (fillable Anda)
         'type', 'category', 'transaction_date', 'amount', 'description', 'notes', 'receipt_file', 'payment_id',
     ];
+
+    protected $hidden = ['id'];
 
     protected $casts = [
         'transaction_date' => 'date',
@@ -46,7 +48,7 @@ class Finance extends Model
     public function scopeByMonthYear(Builder $query, int $month, int $year): void
     {
         $query->whereYear('transaction_date', $year)
-                ->whereMonth('transaction_date', $month);
+            ->whereMonth('transaction_date', $month);
     }
 
     public function payment()
