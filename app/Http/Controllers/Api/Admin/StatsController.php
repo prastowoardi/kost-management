@@ -3,10 +3,8 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Room;
 use App\Models\Payment;
-use App\Models\Complaint;
-use Illuminate\Support\Facades\DB;
+use App\Models\Room;
 
 class StatsController extends Controller
 {
@@ -31,7 +29,7 @@ class StatsController extends Controller
 
             $monthly_reports[] = [
                 'month' => $month->format('M'),
-                'amount' => (int)$amount,
+                'amount' => (int) $amount,
             ];
         }
 
@@ -43,7 +41,7 @@ class StatsController extends Controller
                 return [
                     'name' => $pay->tenant->name ?? 'N/A',
                     'room' => $pay->tenant->room->room_number ?? '-',
-                    'amount' => (int)$pay->amount,
+                    'amount' => (int) $pay->amount,
                     'date' => $pay->payment_date->format('d M Y'),
                     'status' => ucfirst(strtolower($pay->status)),
                 ];
@@ -53,7 +51,7 @@ class StatsController extends Controller
             'total_rooms' => $total_rooms,
             'occupied_rooms' => $occupied_rooms,
             'vacant_rooms' => $vacant_rooms,
-            'monthly_income' => (int)$monthly_income,
+            'monthly_income' => (int) $monthly_income,
             'monthly_reports' => $monthly_reports,
             'payment_history' => $payment_history,
         ]);

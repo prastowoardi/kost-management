@@ -4,16 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Models\Payment;
 use App\Models\Tenant;
-use App\Models\Finance;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
+use App\Services\PaymentService;
+use App\Services\WhatsAppService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PaymentController extends Controller
 {
+    public function __construct(
+        private WhatsAppService $whatsapp,
+        private PaymentService $paymentService,
+    ) {}
+
     public function index(Request $request)
     {
         $tenants = Tenant::orderBy('name')->get();
@@ -24,21 +28,13 @@ class PaymentController extends Controller
         if ($request->filled('period')) {
             $period = Carbon::createFromFormat('Y-m', $request->period);
             $query->whereMonth('period_month', $period->month)
-                    ->whereYear('period_month', $period->year);
+                ->whereYear('period_month', $period->year);
         }
 
         if ($request->filled('tenant_id')) {
             $query->where('tenant_id', $request->tenant_id);
         }
 
-        $currentYear = date('Y');
-        $startYear = 2023;
-        $endYear = $currentYear + 1;
-
-        $query = Payment::with(['tenant', 'room'])
-            ->orderBy('created_at', 'desc');
-
-        // Filter Tahun
         if ($request->filled('filter_year')) {
             $query->whereYear('period_month', $request->filter_year);
         }
@@ -55,6 +51,7 @@ class PaymentController extends Controller
     public function create()
     {
         $tenants = Tenant::where('status', 'active')->with('room')->get();
+
         return view('payments.create', compact('tenants'));
     }
 
@@ -73,7 +70,7 @@ class PaymentController extends Controller
             'late_fee' => 'nullable|numeric|min:0',
             'payment_method' => 'required|in:cash,transfer,e-wallet',
             'notes' => 'nullable|string',
-            'receipt_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120'
+            'receipt_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
         $tenant = Tenant::findOrFail($validated['tenant_id']);
@@ -88,114 +85,69 @@ class PaymentController extends Controller
         $payment = Payment::create($validated);
         $payment->load(['room', 'tenant']);
 
-        Finance::create([
-            'type' => 'income',
-            'category' => 'Pembayaran Sewa',
-            'transaction_date' => $payment->payment_date,
-            'amount' => $payment->total,
-            'description' => 'Pembayaran Sewa ' . Carbon::parse($payment->period_month)->translatedFormat('F Y') . ' - Kamar ' . $payment->room->room_number . ' (' . $payment->tenant->name . ')',
-            'notes' => 'Dicatat otomatis dari pembayaran',
-            'payment_id' => $payment->id,
-        ]);
-
+        $this->paymentService->createFinanceRecord($payment);
         $this->sendWhatsAppReceipt($payment);
+
         return redirect()->route('payments.index')->with('success', 'Pembayaran dicatat & Kwitansi dikirim!');
     }
 
     private function sendWhatsAppReceipt($payment)
     {
         $tenant = $payment->tenant;
-        if (!$tenant || !$tenant->phone) return;
-
-        try {
-            $htmlContent = view('payments.receipt', compact('payment'))->render();
-            $caption = "Halo Kak *{$tenant->name}*, berikut adalah kwitansi pembayaran Anda.";
-
-            // 1. Kirim ke Node.js
-            $response = Http::timeout(40)->post('http://127.0.0.1:3000/send-image', [
-                'number'  => $tenant->phone,
-                'html'    => $htmlContent,
-                'message' => $caption
-            ]);
-
-            // 2. Log ke Database
-            if ($response->successful()) {
-                \App\Models\BroadcastLog::create([
-                    'broadcast_id'  => null,
-                    'tenant_name'   => $tenant->name,
-                    'phone'         => $tenant->phone,
-                    'status'        => 'success',
-                    'error_message' => null,
-                ]);
-            } else {
-                throw new \Exception("Gateway merespon dengan error: " . $response->body());
-            }
-
-        } catch (\Exception $e) {
-            // 3. Log ke Database jika gagal
-            \App\Models\BroadcastLog::create([
-                'tenant_name'   => $tenant->name,
-                'phone'         => $tenant->phone,
-                'status'        => 'failed',
-                'error_message' => $e->getMessage(),
-            ]);
-            
-            Log::error("Gagal Kirim Pesan ke WA: " . $e->getMessage());
+        if (! $tenant || ! $tenant->phone) {
+            return;
         }
+
+        $htmlContent = view('payments.receipt', compact('payment'))->render();
+        $caption = $this->whatsapp->getPaymentReceiptCaption($tenant->name);
+
+        $success = $this->whatsapp->sendImage($tenant->phone, $htmlContent, $caption);
+
+        \App\Models\BroadcastLog::create([
+            'broadcast_id' => null,
+            'tenant_name' => $tenant->name,
+            'phone' => $tenant->phone,
+            'status' => $success ? 'success' : 'failed',
+            'error_message' => $success ? null : 'Gagal kirim gambar WA',
+        ]);
     }
 
     public function sendGatewayWA(Payment $payment)
     {
-        try {
-            $tenantName = $payment->tenant->name;
-            $period = \Carbon\Carbon::parse($payment->period_month)->translatedFormat('F Y');
-            $invoice = $payment->invoice_number;
-            $total = number_format($payment->total, 0, ',', '.');
+        $tenantName = $payment->tenant->name;
+        $period = Carbon::parse($payment->period_month)->translatedFormat('F Y');
+        $invoice = $payment->invoice_number;
+        $total = $payment->total;
 
-            $message = "Halo kak {$tenantName},\n\n";
-            $message .= "Pembayaran kos periode {$period} telah kami terima.\n\n";
-            $message .= "Detail:\n";
-            $message .= "* No. Invoice: {$invoice}\n";
-            $message .= "* Total: Rp {$total}\n\n";
-            $message .= "Terima kasih.";
+        $message = $this->whatsapp->getPaymentConfirmationMessage($tenantName, $period, $invoice, $total);
+        $html = view('payments.receipt', compact('payment'))->render();
 
-            $html = view('payments.receipt', compact('payment'))->render();
+        $success = $this->whatsapp->sendImage($payment->tenant->phone, $html, $message);
 
-            $response = Http::timeout(60)->post('http://127.0.0.1:3000/send-image', [
-                'number'  => $payment->tenant->phone,
-                'message' => $message,
-                'html'    => $html
+        if ($success) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Kwitansi dan pesan berhasil dikirim!',
             ]);
-
-            if ($response->successful()) {
-                return response()->json([
-                    'status'  => 'success',
-                    'message' => 'Kwitansi dan pesan berhasil dikirim!'
-                ]);
-            }
-
-            return response()->json([
-                'status'  => 'error',
-                'message' => 'Gateway gagal mengirim pesan.'
-            ], 500);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'status'  => 'error',
-                'message' => $e->getMessage()
-            ], 500);
         }
+
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Gateway gagal mengirim pesan.',
+        ], 500);
     }
 
     public function show(Payment $payment)
     {
         $payment->load(['tenant', 'room']);
+
         return view('payments.show', compact('payment'));
     }
 
     public function edit(Payment $payment)
     {
         $tenants = Tenant::where('status', 'active')->with('room')->get();
+
         return view('payments.edit', compact('payment', 'tenants'));
     }
 
@@ -215,7 +167,7 @@ class PaymentController extends Controller
             'status' => 'required|in:pending,paid,overdue',
             'payment_method' => 'nullable|in:cash,transfer,e-wallet',
             'notes' => 'nullable|string',
-            'receipt_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120'
+            'receipt_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
         $tenant = Tenant::findOrFail($validated['tenant_id']);
@@ -231,43 +183,10 @@ class PaymentController extends Controller
                 ->store('receipts', 'public');
         }
 
-        $oldStatus = $payment->status;
-
         $payment->update($validated);
         $payment->load(['room', 'tenant']);
 
-        $finance = Finance::where('payment_id', $payment->id)->first();
-
-        if ($validated['status'] === 'paid') {
-            $description =
-                'Pembayaran Sewa ' .
-                Carbon::parse($payment->period_month)->translatedFormat('F Y') .
-                ' - Kamar ' . $payment->room->room_number .
-                ' (' . $payment->tenant->name . ')';
-
-            if ($finance) {
-                $finance->update([
-                    'transaction_date' => $payment->payment_date,
-                    'amount' => $payment->total,
-                    'description' => $description,
-                ]);
-            } else {
-                Finance::create([
-                    'type' => 'income',
-                    'category' => 'Pembayaran Sewa',
-                    'transaction_date' => $payment->payment_date,
-                    'amount' => $payment->total,
-                    'description' => $description,
-                    'notes' => 'Dicatat otomatis dari update pembayaran',
-                    'payment_id' => $payment->id,
-                    'receipt_file' => $payment->receipt_file,
-                ]);
-            }
-        }
-
-        if ($oldStatus === 'paid' && $validated['status'] !== 'paid' && $finance) {
-            $finance->delete();
-        }
+        $this->paymentService->syncFinanceRecord($payment);
 
         return redirect()->route('payments.index')
             ->with('success', 'Pembayaran berhasil diupdate');
@@ -275,10 +194,7 @@ class PaymentController extends Controller
 
     public function destroy(Payment $payment)
     {
-        $finance = Finance::where('payment_id', $payment->id)->first();
-        if ($finance) {
-            $finance->delete();
-        }
+        $this->paymentService->deleteFinanceRecord($payment);
 
         if ($payment->receipt_file) {
             Storage::disk('public')->delete($payment->receipt_file);
@@ -293,34 +209,13 @@ class PaymentController extends Controller
     public function updateStatus(Request $request, Payment $payment)
     {
         $validated = $request->validate([
-            'status' => 'required|in:pending,paid,overdue'
+            'status' => 'required|in:pending,paid,overdue',
         ]);
 
-        $oldStatus = $payment->status;
         $payment->update($validated);
         $payment->load(['room', 'tenant']);
 
-        $finance = Finance::where('payment_id', $payment->id)->first();
-
-        if ($validated['status'] === 'paid' && !$finance) {
-            Finance::create([
-                'type' => 'income',
-                'category' => 'Pembayaran Sewa',
-                'transaction_date' => $payment->payment_date,
-                'amount' => $payment->total,
-                'description' =>
-                    'Pembayaran Sewa ' .
-                    Carbon::parse($payment->period_month)->translatedFormat('F Y') .
-                    ' - Kamar ' . $payment->room->room_number .
-                    ' (' . $payment->tenant->name . ')',
-                'notes' => 'Dicatat dari update status',
-                'payment_id' => $payment->id,
-            ]);
-        }
-
-        if ($oldStatus === 'paid' && $validated['status'] !== 'paid' && $finance) {
-            $finance->delete();
-        }
+        $this->paymentService->syncFinanceRecord($payment);
 
         return back()->with('success', 'Status pembayaran berhasil diperbarui');
     }
@@ -329,18 +224,20 @@ class PaymentController extends Controller
     {
         $payment->load(['tenant', 'room']);
         $pdf = Pdf::loadView('payments.receipt', compact('payment'));
-        return $pdf->download('receipt-' . $payment->invoice_number . '.pdf');
+
+        return $pdf->download('receipt-'.$payment->invoice_number.'.pdf');
     }
 
     public function receipt(Payment $payment)
     {
         $payment->load(['tenant', 'room']);
+
         return view('payments.receipt', compact('payment'));
     }
 
     public function upload(Request $request, $hash)
     {
-        $id = decrypt($hash); // Mengambil ID asli dari link aman
+        $id = decrypt($hash);
         $payment = Payment::findOrFail($id);
 
         $request->validate([
@@ -349,16 +246,13 @@ class PaymentController extends Controller
 
         if ($request->hasFile('proof')) {
             $file = $request->file('proof');
-            $filename = 'proof_' . $id . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $filename = 'proof_'.$id.'_'.time().'.'.$file->getClientOriginalExtension();
             $file->storeAs('public/proofs', $filename);
 
             $payment->update([
                 'proof_of_payment' => $filename,
-                'status' => 'pending' // Menunggu verifikasi admin
+                'status' => 'pending',
             ]);
-
-            // Kirim Notif WA ke Admin pakai gateway yang sudah ada
-            // ... (Logic Http::post ke localhost:3000)
 
             return redirect()->route('public.pay.success', $hash);
         }

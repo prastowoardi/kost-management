@@ -1,24 +1,22 @@
 <?php
 
-use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Admin\ReceiptController;
+use App\Http\Controllers\BroadcastController;
+use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FacilityController;
+use App\Http\Controllers\FinanceController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PaymentPageController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicRegistrationController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\TenantController;
-use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\FinanceController;
-use App\Http\Controllers\FacilityController;
-use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\BroadcastController;
-use App\Http\Controllers\PaymentPageController;
-use App\Http\Controllers\Admin\ReceiptController;
-use App\Http\Controllers\PublicRegistrationController;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Http;
-use App\Models\Tenant;
 use App\Models\Room;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     if (Auth::check()) {
@@ -45,7 +43,7 @@ Route::get('/join/success', [PublicRegistrationController::class, 'success'])->n
 Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('/send-reminder', [App\Http\Controllers\DashboardController::class, 'sendReminder'])->name('send.reminder');
-    
+
     // Profile (Semua User)
     Route::controller(ProfileController::class)->group(function () {
         Route::get('/profile', 'edit')->name('profile.edit');
@@ -60,9 +58,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Management Resources
         Route::resource('rooms', RoomController::class);
         Route::put('rooms/{room}/status', [RoomController::class, 'updateStatus'])->name('rooms.updateStatus');
-        
+
         Route::resource('tenants', TenantController::class);
-        
+
         Route::resource('payments', PaymentController::class);
         Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt');
         Route::put('payments/{payment}/status', [PaymentController::class, 'updateStatus'])->name('payments.updateStatus');
@@ -116,50 +114,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/complaints', [ComplaintController::class, 'tenantComplaints'])->name('complaints');
         Route::post('/complaints', [ComplaintController::class, 'storeByTenant'])->name('complaints.store');
     });
-});
-
-Route::get('/test-wa/{id}', function ($id) {
-    $tenant = Tenant::with('room')->findOrFail($id);
-    
-    $message = "Halo Kak {$tenant->name}! Selamat datang di Serrata Kost! 👋✨\n\n" .
-
-                "Makasih banyak ya sudah memilih Serrata Kost jadi rumah barumu. Semoga betah, nyaman, dan produktif selama tinggal di sini! 😊\n\n" .
-
-                "*Biar makin nyaman bareng, yuk intip 'House Rules' kita sebentar:* 📝\n\n" .
-
-                "📍 *UMUM*\n" .
-                    "1. Saling jaga ketenangan dan keamanan ya, biar istirahat makin pol.\n" .
-                    "2. Kost kita bersih dari Miras, Narkoba, atau barang terlarang lainnya.\n" .
-                    "3. No smoking inside! Kamar tetap wangi tanpa asap rokok ya.\n" .
-                    "4. Mohon maaf, kita belum bisa terima anabul atau hewan peliharaan.\n" .
-                    "5. Saling jaga etika dan hindari asusila demi kenyamanan bersama.\n" .
-                    "6. Kita jaga nama baik Serrata Kost bareng-bareng ya, Kak.\n" .
-                    "7. Jangan lupa pembayaran kost tepat waktu sesuai tanggal janjian.\n" .
-                    "8. Khusus tamu laki-laki tidak boleh masuk kamar.\n" .
-                    "9. Kalau ada keluarga mau menginap, info ke Ibu Kost dulu ya (max 2 orang).\n\n" .
-
-                "✨ *KEBERSIHAN & KERAPIHAN*\n" .
-                    "1. Kamar dan kamar mandi sendiri dijaga tetap bersih ya, biar makin betah.\n" .
-                    "2. Buang sampah di tempatnya. Tolong banget jangan buang sampah/pembalut di kloset biar nggak mampet.\n" .
-                    "3. Jemur pakaian di tempat jemuran yang sudah ada ya, jangan di depan kamar agar tetap rapi.\n\n" .
-
-                "🚰 *FASILITAS*\n" .
-                    "1. Gunakan fasilitas kost dengan bijak dan penuh rasa tanggung jawab.\n" .
-                    "2. Jika ada kerusakan karena kelalaian, biaya perbaikannya ditanggung penghuni dulu ya.\n" .
-                    "3. Hemat air ya Kak, gunakan secukupnya saja sesuai kebutuhan.\n\n" .
-
-                "Sekali lagi, selamat bergabung di keluarga besar Serrata Kost! Kalau ada apa-apa, jangan sungkan hubungi kami ya. Enjoy your stay! 🏠💖";
-
-    try {
-        $response = Http::timeout(10)->post('http://localhost:3000/send-message', [
-            'number'  => $tenant->phone,
-            'message' => $message
-        ]);
-
-        return $response->json();
-    } catch (\Exception $e) {
-        return "Gagal: " . $e->getMessage();
-    }
 });
 
 Route::prefix('bo-admin')->group(function () {

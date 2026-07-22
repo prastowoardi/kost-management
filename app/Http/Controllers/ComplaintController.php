@@ -2,27 +2,32 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\LogHelper;
 use App\Models\Complaint;
 use App\Models\Tenant;
+use App\Services\PushNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Http;
-use App\Helpers\LogHelper;
 
 class ComplaintController extends Controller
 {
+    public function __construct(
+        private PushNotificationService $pushNotification,
+    ) {}
+
     public function index()
     {
         $complaints = Complaint::with(['tenant', 'room'])
-                                ->orderBy('created_at', 'desc')
-                                ->paginate(15);
-        
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
         return view('complaints.index', compact('complaints'));
     }
 
     public function create()
     {
         $tenants = Tenant::where('status', 'active')->with('room')->get();
+
         return view('complaints.create', compact('tenants'));
     }
 
@@ -35,13 +40,12 @@ class ComplaintController extends Controller
             'category' => 'required|in:facility,cleanliness,security,other',
             'priority' => 'required|in:low,medium,high',
             'images' => 'nullable|array|max:5',
-            'images.*' => 'image|mimes:jpeg,png,jpg|max:5120'
+            'images.*' => 'image|mimes:jpeg,png,jpg|max:5120',
         ]);
 
         $tenant = Tenant::find($validated['tenant_id']);
         $validated['room_id'] = $tenant->room_id;
 
-        // Handle multiple images
         if ($request->hasFile('images')) {
             $imagePaths = [];
             foreach ($request->file('images') as $image) {
@@ -53,19 +57,20 @@ class ComplaintController extends Controller
         Complaint::create($validated);
 
         return redirect()->route('complaints.index')
-                        ->with('success', 'Keluhan berhasil ditambahkan');
+            ->with('success', 'Keluhan berhasil ditambahkan');
     }
 
     public function show($id)
     {
         $complaint = Complaint::with(['images', 'tenant', 'room'])->findOrFail($id);
-        
+
         return view('complaints.show', compact('complaint'));
     }
 
     public function edit(Complaint $complaint)
     {
         $tenants = Tenant::where('status', 'active')->with('room')->get();
+
         return view('complaints.edit', compact('complaint', 'tenants'));
     }
 
@@ -82,7 +87,7 @@ class ComplaintController extends Controller
             'resolved_date' => 'nullable|date',
             'images' => 'nullable|array|max:5',
             'images.*' => 'image|mimes:jpeg,png,jpg|max:5120',
-            'remove_images' => 'nullable|array'
+            'remove_images' => 'nullable|array',
         ]);
 
         $tenant = Tenant::find($validated['tenant_id']);
@@ -102,19 +107,19 @@ class ComplaintController extends Controller
 
         if ($request->hasFile('images')) {
             $currentImages = $validated['images'] ?? $complaint->images ?? [];
-            
+
             if (count($currentImages) + count($request->file('images')) > 5) {
                 return back()->with('error', 'Maksimal 5 foto!');
             }
-            
+
             foreach ($request->file('images') as $image) {
                 $currentImages[] = $image->store('complaints', 'public');
             }
             $validated['images'] = $currentImages;
         }
-    
+
         if ($newStatus == 'resolved' || $newStatus == 'closed') {
-            $validated['resolved_date'] = now(); 
+            $validated['resolved_date'] = now();
         } else {
             $validated['resolved_date'] = null;
         }
@@ -122,7 +127,7 @@ class ComplaintController extends Controller
         $complaint->update($validated);
 
         return redirect()->route('complaints.index')
-                        ->with('success', 'Keluhan berhasil diupdate');
+            ->with('success', 'Keluhan berhasil diupdate');
     }
 
     public function destroy(Complaint $complaint)
@@ -136,14 +141,14 @@ class ComplaintController extends Controller
         $complaint->delete();
 
         return redirect()->route('complaints.index')
-                        ->with('success', 'Keluhan berhasil dihapus');
+            ->with('success', 'Keluhan berhasil dihapus');
     }
 
     public function updateStatus(Request $request, Complaint $complaint)
     {
         $validated = $request->validate([
             'status' => 'required|in:open,in_progress,resolved,closed',
-            'response' => 'nullable|string'
+            'response' => 'nullable|string',
         ]);
 
         if ($validated['status'] == 'resolved' || $validated['status'] == 'closed') {
@@ -152,30 +157,26 @@ class ComplaintController extends Controller
 
         $complaint->update($validated);
 
-        $tenant = $complaint->tenant; 
+        $tenant = $complaint->tenant;
 
         if ($tenant && $tenant->expo_push_token) {
-            
-            Http::post('https://exp.host/--/api/v2/push/send', [
-                'to' => $tenant->expo_push_token,
-                'title' => 'Update Laporan: ' . $complaint->title,
-                'body' => 'Status laporan Anda: ' . strtoupper($validated['status']) . '. ' . ($validated['response'] ?? ''),
-                'data' => [
-                    'type' => 'complaint_update',
-                    'id' => $complaint->id
-                ],
-                'sound' => 'default',
-            ]);
+            $this->pushNotification->sendComplaintUpdate(
+                $tenant->expo_push_token,
+                $complaint->title,
+                $validated['status'],
+                $validated['response'] ?? null,
+                $complaint->id
+            );
         }
 
         LogHelper::log(
-            'RESPOND_COMPLAINT', 
+            'RESPOND_COMPLAINT',
             "Admin merespon keluhan #{$complaint->id}: {$complaint->title}",
             $complaint,
             ['status_baru' => $request->status, 'respon' => $request->response]
         );
 
         return redirect()->back()
-                        ->with('success', 'Status keluhan berhasil diupdate & Notifikasi dikirim');
+            ->with('success', 'Status keluhan berhasil diupdate & Notifikasi dikirim');
     }
 }

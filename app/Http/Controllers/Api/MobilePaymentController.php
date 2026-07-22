@@ -2,21 +2,25 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\LogHelper;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Payment;
 use App\Models\Tenant;
-use App\Helpers\LogHelper;
-use Illuminate\Support\Facades\Http;
+use App\Services\PushNotificationService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class MobilePaymentController extends Controller
 {
+    public function __construct(
+        private PushNotificationService $pushNotification,
+    ) {}
+
     public function index(Request $request)
     {
         $tenant = $request->user()->tenant;
-        
-        if (!$tenant) {
+
+        if (! $tenant) {
             return response()->json([], 200);
         }
 
@@ -31,17 +35,17 @@ class MobilePaymentController extends Controller
     public function getHistory(Request $request)
     {
         $user = $request->user();
-        
-        $tenant = \App\Models\Tenant::where('user_id', $user->id)->first();
 
-        if (!$tenant) {
+        $tenant = Tenant::where('user_id', $user->id)->first();
+
+        if (! $tenant) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Data tenant tidak ditemukan'
+                'message' => 'Data tenant tidak ditemukan',
             ], 404);
         }
 
-        $payments = \App\Models\Payment::where('tenant_id', $tenant->id)
+        $payments = Payment::where('tenant_id', $tenant->id)
             ->with(['room'])
             ->whereIn('status', ['paid', 'overdue'])
             ->orderBy('created_at', 'desc')
@@ -49,7 +53,7 @@ class MobilePaymentController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $payments
+            'data' => $payments,
         ]);
     }
 
@@ -62,7 +66,7 @@ class MobilePaymentController extends Controller
         $user = $request->user();
         $tenant = Tenant::where('user_id', $user->id)->first();
 
-        if (!$tenant) {
+        if (! $tenant) {
             return response()->json(['message' => 'Data tenant tidak ditemukan'], 404);
         }
 
@@ -78,19 +82,19 @@ class MobilePaymentController extends Controller
             'status' => 'pending',
             'payment_method' => 'transfer',
             'receipt_file' => $path,
-            'notes' => 'Pembayaran via Mobile'
+            'notes' => 'Pembayaran via Mobile',
         ]);
 
         LogHelper::log(
-            'UPLOAD_RECEIPT', 
-            "Tenant {$user->name} mengunggah bukti bayar untuk tagihan bulan " . now()->format('F'),
+            'UPLOAD_RECEIPT',
+            "Tenant {$user->name} mengunggah bukti bayar untuk tagihan bulan ".now()->format('F'),
             $payment
         );
 
         return response()->json([
             'status' => 'success',
             'message' => 'Bukti pembayaran berhasil diupload',
-            'invoice' => $payment->invoice_number ?? $payment->id
+            'invoice' => $payment->invoice_number ?? $payment->id,
         ]);
     }
 
@@ -116,42 +120,39 @@ class MobilePaymentController extends Controller
             ]);
 
             LogHelper::log(
-                'VERIFY_PAYMENT', 
+                'VERIFY_PAYMENT',
                 "Admin {$request->user()->name} {$logAction} pembayaran #{$payment->invoice_number}",
                 $payment,
                 ['amount' => $payment->total, 'status' => $newStatus]
             );
 
             $tenantUser = $payment->tenant->user ?? null;
-            
-            Log::info("Mengecek Token untuk User ID: " . ($tenantUser->id ?? 'Kosong'));
-            Log::info("Token: " . ($tenantUser->expo_push_token ?? 'NULL'));
 
             if ($tenantUser && $tenantUser->expo_push_token) {
-                $isPaid = ($newStatus === 'paid');
-
-                $response = Http::post('https://exp.host/--/api/v2/push/send', [
-                    'to' => $tenantUser->expo_push_token,
-                    'title' => $isPaid ? 'Pembayaran Diterima! ✅' : 'Pembayaran Ditolak! ❌',
-                    'body' => $isPaid 
-                        ? "Pembayaran sebesar Rp " . number_format($payment->total, 0, ',', '.') . " telah diverifikasi."
-                        : "Maaf, pembayaran Rp " . number_format($payment->total, 0, ',', '.') . " ditolak Admin. Silakan hubungi pengelola.",
-                    'data' => [
-                        'type' => $isPaid ? 'payment_verified' : 'payment_rejected', 
-                        'id' => (int)$payment->id
-                    ],
-                    'sound' => 'default',
-                ]);
-                
-                Log::info("Respon Expo: " . $response->body());
+                if ($newStatus === 'paid') {
+                    $this->pushNotification->sendPaymentVerified(
+                        $tenantUser->expo_push_token,
+                        $tenantUser->name,
+                        $payment->total,
+                        $payment->id
+                    );
+                } else {
+                    $this->pushNotification->sendPaymentRejected(
+                        $tenantUser->expo_push_token,
+                        $tenantUser->name,
+                        $payment->total,
+                        $payment->id
+                    );
+                }
             }
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Status updated to ' . $newStatus
+                'message' => 'Status updated to '.$newStatus,
             ]);
         } catch (\Exception $e) {
-            Log::error("Verify Error: " . $e->getMessage());
+            Log::error('Verify Error: '.$e->getMessage());
+
             return response()->json(['message' => $e->getMessage()], 500);
         }
     }
@@ -162,7 +163,7 @@ class MobilePaymentController extends Controller
             ->where('id', $id)
             ->first();
 
-        if (!$payment) {
+        if (! $payment) {
             return response()->json(['message' => 'Data pembayaran tidak ditemukan.'], 404);
         }
 

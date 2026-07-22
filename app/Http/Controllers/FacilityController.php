@@ -10,6 +10,7 @@ class FacilityController extends Controller
     public function index()
     {
         $facilities = Facility::orderBy('type')->orderBy('name')->paginate(15);
+
         return view('facilities.index', compact('facilities'));
     }
 
@@ -25,13 +26,13 @@ class FacilityController extends Controller
             'type' => 'required|in:common,room',
             'quantity' => 'required|integer|min:1',
             'condition' => 'required|in:good,fair,poor',
-            'description' => 'nullable|string'
+            'description' => 'nullable|string',
         ]);
 
         Facility::create($validated);
 
         return redirect()->route('facilities.index')
-                        ->with('success', 'Fasilitas berhasil ditambahkan');
+            ->with('success', 'Fasilitas berhasil ditambahkan');
     }
 
     public function edit(Facility $facility)
@@ -46,13 +47,13 @@ class FacilityController extends Controller
             'type' => 'required|in:common,room',
             'quantity' => 'required|integer|min:1',
             'condition' => 'required|in:good,fair,poor',
-            'description' => 'nullable|string'
+            'description' => 'nullable|string',
         ]);
 
         $facility->update($validated);
 
         return redirect()->route('facilities.index')
-                        ->with('success', 'Fasilitas berhasil diupdate');
+            ->with('success', 'Fasilitas berhasil diupdate');
     }
 
     public function destroy(Facility $facility)
@@ -60,6 +61,6 @@ class FacilityController extends Controller
         $facility->delete();
 
         return redirect()->route('facilities.index')
-                        ->with('success', 'Fasilitas berhasil dihapus');
+            ->with('success', 'Fasilitas berhasil dihapus');
     }
 }

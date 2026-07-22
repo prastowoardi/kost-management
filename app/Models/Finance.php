@@ -2,16 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
 
 class Finance extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        // ... (fillable Anda)
         'type', 'category', 'transaction_date', 'amount', 'description', 'notes', 'receipt_file', 'payment_id',
     ];
 
@@ -46,7 +45,7 @@ class Finance extends Model
     public function scopeByMonthYear(Builder $query, int $month, int $year): void
     {
         $query->whereYear('transaction_date', $year)
-                ->whereMonth('transaction_date', $month);
+            ->whereMonth('transaction_date', $month);
     }
 
     public function payment()

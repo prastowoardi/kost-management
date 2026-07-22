@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -40,9 +39,9 @@ class Room extends Model
     ];
 
     // Relationships
-    public function activeTenant(): BelongsTo
+    public function tenants(): HasMany
     {
-        return $this->belongsTo(Tenant::class, 'tenant_id');
+        return $this->hasMany(Tenant::class);
     }
 
     public function facilities(): BelongsToMany

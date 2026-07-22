@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\LogHelper;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\User;
-use App\Models\Room;
 use App\Models\Complaint;
 use App\Models\Payment;
+use App\Models\Room;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use App\Helpers\LogHelper;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rules\Password;
 
 class MobileAuthController extends Controller
 {
@@ -21,12 +20,12 @@ class MobileAuthController extends Controller
         $request->validate([
             'email' => 'required|email',
             'password' => 'required',
-            'push_token' => 'nullable|string'
+            'push_token' => 'nullable|string',
         ]);
 
         $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (! $user || ! Hash::check($request->password, $user->password)) {
             LogHelper::log(
                 'LOGIN_FAILED',
                 "Percobaan login gagal pada email: {$request->email}",
@@ -36,7 +35,7 @@ class MobileAuthController extends Controller
 
             return response()->json([
                 'status' => 'error',
-                'message' => 'Gagal Login.'
+                'message' => 'Gagal Login.',
             ], 401);
         }
 
@@ -61,7 +60,7 @@ class MobileAuthController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->role,
-            ]
+            ],
         ]);
     }
 
@@ -74,11 +73,12 @@ class MobileAuthController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Berhasil Logout'
+            'message' => 'Berhasil Logout',
         ]);
     }
 
-    public function getAdminStats() {
+    public function getAdminStats()
+    {
         return response()->json([
             'total_rooms' => Room::count(),
             'occupied_rooms' => Room::where('status', 'occupied')->count(),
@@ -103,26 +103,26 @@ class MobileAuthController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => $validator->errors()->first(),
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
         $user = $request->user();
 
-        if (!Hash::check($request->current_password, $user->password)) {
+        if (! Hash::check($request->current_password, $user->password)) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Password lama yang Anda masukkan salah.'
+                'message' => 'Password lama yang Anda masukkan salah.',
             ], 401);
         }
 
         $user->update([
-            'password' => Hash::make($request->new_password)
+            'password' => Hash::make($request->new_password),
         ]);
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Password berhasil diperbarui.'
+            'message' => 'Password berhasil diperbarui.',
         ], 200);
     }
 }

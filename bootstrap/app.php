@@ -1,10 +1,10 @@
 <?php
 
+use App\Http\Middleware\CheckActive;
+use App\Http\Middleware\CheckRole;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use App\Http\Middleware\CheckRole;
-use App\Http\Middleware\CheckActive;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -18,15 +18,15 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => CheckRole::class,
             'active' => CheckActive::class,
         ]);
-        
+
         $middleware->validateCsrfTokens(except: [
-            'api/*', 
+            'api/*',
         ]);
 
         $middleware->appendToGroup('web', [
             CheckActive::class,
         ]);
-        
+
         $middleware->statefulApi();
     })
     ->withExceptions(function (Exceptions $exceptions) {

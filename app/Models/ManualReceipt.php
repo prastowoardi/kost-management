@@ -3,8 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 
 class ManualReceipt extends Model
 {
@@ -13,19 +11,6 @@ class ManualReceipt extends Model
         'room_number',
         'period',
         'invoice_number',
-        'total_amount'
+        'total_amount',
     ];
-
-    public function up()
-    {
-        Schema::create('manual_receipts', function (Blueprint $table) {
-            $table->id();
-            $table->string('tenant_name');
-            $table->string('room_number');
-            $table->string('period');
-            $table->string('invoice_number')->unique();
-            $table->decimal('total_amount', 15, 2);
-            $table->timestamps();
-        });
-    }
 }

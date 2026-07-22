@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
 
 class Tenant extends Model
 {
@@ -21,9 +21,9 @@ class Tenant extends Model
         'entry_date',
         'exit_date',
         'status',
-        'emergency_contact_name', 
+        'emergency_contact_name',
         'emergency_contact_phone',
-        'photo'
+        'photo',
     ];
 
     protected $casts = [
@@ -35,12 +35,16 @@ class Tenant extends Model
 
     public function getCalculatedDueDateAttribute()
     {
-        if (!$this->entry_date) return null;
+        if (! $this->entry_date) {
+            return null;
+        }
 
         $now = Carbon::now()->startOfDay();
         $entryDate = Carbon::parse($this->entry_date)->startOfDay();
 
-        if ($entryDate->greaterThan($now)) return null;
+        if ($entryDate->greaterThan($now)) {
+            return null;
+        }
 
         $targetDate = Carbon::now()->setDay($entryDate->day)->startOfDay();
 
@@ -58,7 +62,9 @@ class Tenant extends Model
     {
         $dueDate = $this->calculated_due_date;
 
-        if (!$dueDate) return null;
+        if (! $dueDate) {
+            return null;
+        }
 
         return (int) Carbon::now()->startOfDay()->diffInDays($dueDate, false);
     }

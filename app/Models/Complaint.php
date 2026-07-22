@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 
 class Complaint extends Model
@@ -21,12 +20,11 @@ class Complaint extends Model
         'response',
         'resolved_date',
         'images',
-        'image_path'
     ];
 
     protected $casts = [
         'resolved_date' => 'date',
-        'images' => 'array' // Cast ke array untuk JSON
+        'images' => 'array', // Cast ke array untuk JSON
     ];
 
     public function tenant()
