@@ -7,13 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Broadcast extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Models\Concerns\HasUuidColumn;
 
     protected $fillable = [
         'message',
         'total_success',
         'total_failed',
     ];
+
+    protected $hidden = ['id'];
 
     public function logs()
     {

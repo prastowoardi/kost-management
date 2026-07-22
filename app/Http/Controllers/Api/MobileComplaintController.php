@@ -49,13 +49,13 @@ class MobileComplaintController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Laporan berhasil dibuat',
-            'id' => $complaint->id,
+            'uuid' => $complaint->uuid,
         ]);
     }
 
     public function show($id)
     {
-        $complaint = Complaint::with('images')->find($id);
+        $complaint = Complaint::with('images')->where('uuid', $id)->first();
 
         if (! $complaint) {
             return response()->json([

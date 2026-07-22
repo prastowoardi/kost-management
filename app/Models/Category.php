@@ -7,11 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Models\Concerns\HasUuidColumn;
 
     protected $fillable = [
         'name',
         'type',
         'is_active',
     ];
+
+    protected $hidden = ['id'];
 }

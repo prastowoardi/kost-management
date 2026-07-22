@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Facility extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Models\Concerns\HasUuidColumn;
 
     protected $fillable = [
         'name',
@@ -16,6 +16,8 @@ class Facility extends Model
         'quantity',
         'condition'
     ];
+
+    protected $hidden = ['id'];
 
     public function rooms()
     {

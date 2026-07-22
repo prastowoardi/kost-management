@@ -104,7 +104,7 @@ class MobilePaymentController extends Controller
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
 
-        $payment = Payment::with(['tenant.user', 'room'])->findOrFail($id);
+        $payment = Payment::with(['tenant.user', 'room'])->where('uuid', $id)->firstOrFail();
 
         $newStatus = ($request->status === 'rejected') ? 'overdue' : 'paid';
         $logAction = ($newStatus === 'paid') ? 'MENERIMA' : 'MENOLAK';
@@ -160,7 +160,7 @@ class MobilePaymentController extends Controller
     public function show(Request $request, $id)
     {
         $payment = Payment::with(['tenant.user', 'room'])
-            ->where('id', $id)
+            ->where('uuid', $id)
             ->first();
 
         if (! $payment) {

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Tenant extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Models\Concerns\HasUuidColumn;
 
     protected $fillable = [
         'room_id',
@@ -25,6 +25,8 @@ class Tenant extends Model
         'emergency_contact_phone',
         'photo',
     ];
+
+    protected $hidden = ['id'];
 
     protected $casts = [
         'entry_date' => 'date',

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Payment extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Models\Concerns\HasUuidColumn;
 
     protected $fillable = [
         'tenant_id',
@@ -23,6 +23,8 @@ class Payment extends Model
         'notes',
         'receipt_file'
     ];
+
+    protected $hidden = ['id'];
 
     protected $casts = [
         'payment_date' => 'date',

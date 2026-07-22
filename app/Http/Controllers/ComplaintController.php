@@ -62,7 +62,7 @@ class ComplaintController extends Controller
 
     public function show($id)
     {
-        $complaint = Complaint::with(['images', 'tenant', 'room'])->findOrFail($id);
+        $complaint = Complaint::with(['images', 'tenant', 'room'])->where('uuid', $id)->firstOrFail();
 
         return view('complaints.show', compact('complaint'));
     }

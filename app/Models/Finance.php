@@ -8,11 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class Finance extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Models\Concerns\HasUuidColumn;
 
     protected $fillable = [
         'type', 'category', 'transaction_date', 'amount', 'description', 'notes', 'receipt_file', 'payment_id',
     ];
+
+    protected $hidden = ['id'];
 
     protected $casts = [
         'transaction_date' => 'date',

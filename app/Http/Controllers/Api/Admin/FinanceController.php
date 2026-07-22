@@ -22,7 +22,7 @@ class FinanceController extends Controller
 
     public function show($id)
     {
-        $finance = Finance::findOrFail($id);
+        $finance = Finance::where('uuid', $id)->firstOrFail();
 
         return response()->json($finance);
     }
@@ -64,7 +64,7 @@ class FinanceController extends Controller
 
     public function destroy($id)
     {
-        Finance::findOrFail($id)->delete();
+        Finance::where('uuid', $id)->firstOrFail()->delete();
 
         return response()->json(['message' => 'Transaksi berhasil dihapus']);
     }

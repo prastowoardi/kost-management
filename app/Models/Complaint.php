@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Complaint extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Models\Concerns\HasUuidColumn;
 
     protected $fillable = [
         'tenant_id',
@@ -21,6 +21,8 @@ class Complaint extends Model
         'resolved_date',
         'images',
     ];
+
+    protected $hidden = ['id'];
 
     protected $casts = [
         'resolved_date' => 'date',

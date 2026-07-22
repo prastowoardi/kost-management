@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class ComplaintImage extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Models\Concerns\HasUuidColumn;
 
     protected $fillable = ['complaint_id', 'path'];
+
+    protected $hidden = ['id'];
 
     public function complaint()
     {

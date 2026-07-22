@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Room extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Models\Concerns\HasUuidColumn;
 
     protected $table = 'rooms';
 
@@ -24,6 +24,8 @@ class Room extends Model
         'description',
         'images',
     ];
+
+    protected $hidden = ['id'];
 
     protected $casts = [
         'price' => 'integer',

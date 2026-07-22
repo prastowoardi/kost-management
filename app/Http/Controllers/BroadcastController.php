@@ -77,7 +77,7 @@ class BroadcastController extends Controller
 
     public function showChat($id)
     {
-        $tenant = Tenant::with('room')->findOrFail($id);
+        $tenant = Tenant::with('room')->where('uuid', $id)->firstOrFail();
         $chats = [];
         $error = null;
 

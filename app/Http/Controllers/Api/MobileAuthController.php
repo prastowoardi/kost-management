@@ -56,7 +56,7 @@ class MobileAuthController extends Controller
             'message' => 'Login Berhasil',
             'token' => $token,
             'user' => [
-                'id' => $user->id,
+                'uuid' => $user->uuid,
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->role,

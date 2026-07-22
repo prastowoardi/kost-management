@@ -67,7 +67,7 @@ class ReceiptController extends Controller
 
     public function manualPrint($id)
     {
-        $payment = \App\Models\ManualReceipt::findOrFail($id);
+        $payment = \App\Models\ManualReceipt::where('uuid', $id)->firstOrFail();
 
         return view('admin.receipt.manual_print', compact('payment'));
     }

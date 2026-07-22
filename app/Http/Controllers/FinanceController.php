@@ -243,7 +243,7 @@ class FinanceController extends Controller
 
     public function show($id)
     {
-        $finance = Finance::find($id);
+        $finance = Finance::where('uuid', $id)->first();
 
         if (! $finance) {
             if (request()->wantsJson()) {
