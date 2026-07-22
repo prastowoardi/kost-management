@@ -81,6 +81,10 @@
                     <x-nav-link :href="route('complaints.index')" :active="request()->routeIs('complaints.*')">
                         {{ __('Keluhan') }}
                     </x-nav-link>
+
+                    <x-nav-link :href="route('admin.logs')" :active="request()->routeIs('admin.logs')">
+                        {{ __('Logs') }}
+                    </x-nav-link>
                     
                     <div class="hidden sm:flex sm:items-center sm:ms-6">
                         <x-dropdown align="right" width="48">
@@ -209,6 +213,10 @@
             
             <x-responsive-nav-link :href="route('complaints.index')" :active="request()->routeIs('complaints.*')">
                 {{ __('Keluhan') }}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link :href="route('admin.logs')" :active="request()->routeIs('admin.logs')">
+                {{ __('Logs') }}
             </x-responsive-nav-link>
             
             <div x-data="{ openBroadcast: {{ request()->routeIs('broadcast.*') ? 'true' : 'false' }} }">

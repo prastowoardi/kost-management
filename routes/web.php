@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\LogController;
 use App\Http\Controllers\Admin\ReceiptController;
 use App\Http\Controllers\BroadcastController;
 use App\Http\Controllers\ComplaintController;
@@ -82,6 +83,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::put('/{finance}', [FinanceController::class, 'update'])->name('update');
             Route::delete('/{finance}', [FinanceController::class, 'destroy'])->name('destroy');
         });
+
+        // Logs
+        Route::get('/logs', [LogController::class, 'index'])->name('admin.logs');
 
         // Reports
         Route::prefix('reports')->name('reports.')->group(function () {
