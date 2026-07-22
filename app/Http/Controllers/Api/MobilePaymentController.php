@@ -8,7 +8,7 @@ use App\Models\Payment;
 use App\Models\Tenant;
 use App\Services\PushNotificationService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class MobilePaymentController extends Controller
 {
@@ -67,35 +67,50 @@ class MobilePaymentController extends Controller
         $tenant = Tenant::where('user_id', $user->id)->first();
 
         if (! $tenant) {
+            LogHelper::logError(
+                'UPLOAD_RECEIPT_FAILED',
+                "User {$user->email} gagal upload bukti bayar: tenant tidak ditemukan"
+            );
+
             return response()->json(['message' => 'Data tenant tidak ditemukan'], 404);
         }
 
-        $path = $request->file('proof_image')->store('receipts', 'public');
+        try {
+            $path = $request->file('proof_image')->store('receipts', 'public');
 
-        $payment = Payment::create([
-            'tenant_id' => $tenant->id,
-            'room_id' => $tenant->room_id,
-            'payment_date' => now(),
-            'period_month' => now()->startOfMonth(),
-            'amount' => $tenant->room->price ?? 0,
-            'total' => $tenant->room->price ?? 0,
-            'status' => 'pending',
-            'payment_method' => 'transfer',
-            'receipt_file' => $path,
-            'notes' => 'Pembayaran via Mobile',
-        ]);
+            $payment = Payment::create([
+                'tenant_id' => $tenant->id,
+                'room_id' => $tenant->room_id,
+                'payment_date' => now(),
+                'period_month' => now()->startOfMonth(),
+                'amount' => $tenant->room->price ?? 0,
+                'total' => $tenant->room->price ?? 0,
+                'status' => 'pending',
+                'payment_method' => 'transfer',
+                'receipt_file' => $path,
+                'notes' => 'Pembayaran via Mobile',
+            ]);
 
-        LogHelper::log(
-            'UPLOAD_RECEIPT',
-            "Tenant {$user->name} mengunggah bukti bayar untuk tagihan bulan ".now()->format('F'),
-            $payment
-        );
+            LogHelper::log(
+                'UPLOAD_RECEIPT',
+                "Tenant {$user->name} mengunggah bukti bayar untuk tagihan bulan ".now()->format('F'),
+                $payment
+            );
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Bukti pembayaran berhasil diupload',
-            'invoice' => $payment->invoice_number ?? $payment->id,
-        ]);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Bukti pembayaran berhasil diupload',
+                'invoice' => $payment->invoice_number ?? $payment->id,
+            ]);
+        } catch (Throwable $e) {
+            LogHelper::logError(
+                'UPLOAD_RECEIPT_FAILED',
+                "User {$user->email} gagal upload bukti bayar",
+                $e
+            );
+
+            return response()->json(['message' => 'Gagal mengupload bukti bayar'], 500);
+        }
     }
 
     public function verifyPayment(Request $request, $id)
@@ -150,10 +165,15 @@ class MobilePaymentController extends Controller
                 'status' => 'success',
                 'message' => 'Status updated to '.$newStatus,
             ]);
-        } catch (\Exception $e) {
-            Log::error('Verify Error: '.$e->getMessage());
+        } catch (Throwable $e) {
+            LogHelper::logError(
+                'VERIFY_PAYMENT_FAILED',
+                "Admin {$request->user()->name} gagal verifikasi pembayaran #{$payment->invoice_number}",
+                $e,
+                ['payment_id' => $payment->id, 'request_status' => $request->status]
+            );
 
-            return response()->json(['message' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Gagal memverifikasi pembayaran'], 500);
         }
     }
 

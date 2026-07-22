@@ -7,6 +7,7 @@ use App\Models\Facility;
 use App\Models\Room;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 class RoomController extends Controller
 {
@@ -28,37 +29,46 @@ class RoomController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'room_number' => 'required|unique:rooms',
-            'type' => 'required|in:singlenoac,singleac,shared',
-            'price' => 'required|numeric|min:0',
-            'capacity' => 'required|integer|min:1',
-            'size' => 'nullable|numeric|min:0',
-            'description' => 'nullable|string',
-            'facilities' => 'nullable|array',
-            'images' => 'nullable|array|max:5',
-            'images.*' => 'image|mimes:jpeg,png,jpg|max:5120',
-        ]);
+        try {
+            $validated = $request->validate([
+                'room_number' => 'required|unique:rooms',
+                'type' => 'required|in:singlenoac,singleac,shared',
+                'price' => 'required|numeric|min:0',
+                'capacity' => 'required|integer|min:1',
+                'size' => 'nullable|numeric|min:0',
+                'description' => 'nullable|string',
+                'facilities' => 'nullable|array',
+                'images' => 'nullable|array|max:5',
+                'images.*' => 'image|mimes:jpeg,png,jpg|max:5120',
+            ]);
 
-        // Handle multiple images
-        $imagePaths = [];
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $image) {
-                $imagePaths[] = $image->store('rooms', 'public');
+            $imagePaths = [];
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    $imagePaths[] = $image->store('rooms', 'public');
+                }
             }
+
+            $validated['images'] = json_encode($imagePaths);
+
+            $room = Room::create($validated);
+
+            if ($request->has('facilities')) {
+                $room->facilities()->attach($request->facilities);
+            }
+
+            return redirect()->route('rooms.index')
+                ->with('success', 'Kamar berhasil ditambahkan');
+        } catch (Throwable $e) {
+            LogHelper::logError(
+                'CREATE_ROOM_FAILED',
+                'Gagal menambah kamar',
+                $e,
+                ['room_number' => $request->room_number]
+            );
+
+            return back()->with('error', 'Gagal menambah kamar')->withInput();
         }
-
-        // Store as JSON
-        $validated['images'] = json_encode($imagePaths);
-
-        $room = Room::create($validated);
-
-        if ($request->has('facilities')) {
-            $room->facilities()->attach($request->facilities);
-        }
-
-        return redirect()->route('rooms.index')
-            ->with('success', 'Kamar berhasil ditambahkan');
     }
 
     public function show(Room $room)
@@ -155,27 +165,41 @@ class RoomController extends Controller
     public function destroy(Room $room)
     {
         if ($room->activeTenant) {
+            LogHelper::logError(
+                'DELETE_ROOM_FAILED',
+                "Gagal hapus kamar {$room->room_number}: masih ditempati"
+            );
+
             return redirect()->route('rooms.index')
                 ->with('error', 'Tidak dapat menghapus kamar yang masih ditempati');
         }
 
-        // Delete all images
-        $images = is_string($room->images)
-            ? json_decode($room->images, true)
-            : ($room->images ?? []);
+        try {
+            $images = is_string($room->images)
+                ? json_decode($room->images, true)
+                : ($room->images ?? []);
 
-        if (! empty($images)) {
-            foreach ($images as $image) {
-                if (Storage::disk('public')->exists($image)) {
-                    Storage::disk('public')->delete($image);
+            if (! empty($images)) {
+                foreach ($images as $image) {
+                    if (Storage::disk('public')->exists($image)) {
+                        Storage::disk('public')->delete($image);
+                    }
                 }
             }
+
+            $room->delete();
+
+            return redirect()->route('rooms.index')
+                ->with('success', 'Kamar berhasil dihapus');
+        } catch (Throwable $e) {
+            LogHelper::logError(
+                'DELETE_ROOM_FAILED',
+                "Gagal hapus kamar {$room->room_number}",
+                $e
+            );
+
+            return back()->with('error', 'Gagal menghapus kamar');
         }
-
-        $room->delete();
-
-        return redirect()->route('rooms.index')
-            ->with('success', 'Kamar berhasil dihapus');
     }
 
     public function updateStatus(Request $request, Room $room)

@@ -37,4 +37,14 @@ class LogHelper
             'user_agent' => $ua,
         ]);
     }
+
+    public static function logError($action, $description, $exception = null, $payload = null): void
+    {
+        $data = $payload ?: [];
+        if ($exception) {
+            $data['error_message'] = $exception->getMessage();
+            $data['error_file'] = $exception->getFile() . ':' . $exception->getLine();
+        }
+        self::log($action, $description, null, $data);
+    }
 }

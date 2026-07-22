@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
+use Throwable;
 
 class MobileAuthController extends Controller
 {
@@ -110,6 +111,11 @@ class MobileAuthController extends Controller
         $user = $request->user();
 
         if (! Hash::check($request->current_password, $user->password)) {
+            LogHelper::logError(
+                'CHANGE_PASSWORD_FAILED',
+                "User {$user->email} gagal ganti password: password lama salah",
+            );
+
             return response()->json([
                 'status' => 'error',
                 'message' => 'Password lama yang Anda masukkan salah.',
