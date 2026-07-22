@@ -60,13 +60,20 @@ class AdminPaymentController extends Controller
             $this->paymentService->createFinanceRecord($payment);
 
             $tenantUser = $tenant->user;
+            \Illuminate\Support\Facades\Log::info('NOTIF: tenant user', [
+                'exists' => $tenantUser ? 'yes' : 'no',
+                'push_token' => $tenantUser?->expo_push_token ?? 'none',
+            ]);
             if ($tenantUser && $tenantUser->expo_push_token) {
-                $this->pushNotification->sendPaymentReceipt(
+                $sent = $this->pushNotification->sendPaymentReceipt(
                     $tenantUser->expo_push_token,
                     $tenant->name,
                     $payment->invoice_number,
                     $payment->total,
                 );
+                \Illuminate\Support\Facades\Log::info('NOTIF: send result', ['success' => $sent ? 'yes' : 'no']);
+            } else {
+                \Illuminate\Support\Facades\Log::info('NOTIF: skipped - no user or no push token');
             }
 
             LogHelper::log(
