@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\LogHelper;
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,6 +27,7 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
+        $before = $request->user()->toArray();
         $request->user()->fill($request->validated());
 
         if ($request->user()->isDirty('email')) {
@@ -33,6 +35,12 @@ class ProfileController extends Controller
         }
 
         $request->user()->save();
+        $after = $request->user()->fresh()->toArray();
+
+        LogHelper::log('UPDATE_PROFILE', 'Mengubah profil', $request->user(), [
+            'before' => $before,
+            'after' => $after,
+        ]);
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
@@ -47,6 +55,11 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+        $deletedData = $user->toArray();
+
+        LogHelper::log('DELETE_ACCOUNT', 'Menghapus akun sendiri', null, [
+            'deleted' => $deletedData,
+        ]);
 
         Auth::logout();
 

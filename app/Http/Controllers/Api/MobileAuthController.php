@@ -74,7 +74,7 @@ class MobileAuthController extends Controller
         $user->tokens()->delete();
         $token = $user->createToken('mobile_token')->plainTextToken;
 
-        \App\Helpers\LogHelper::log('LOGIN_MOBILE', "User {$user->name} login...");
+        LogHelper::log('LOGIN_MOBILE', "Login via mobile");
 
         return response()->json([
             'status' => 'success',
@@ -137,7 +137,7 @@ class MobileAuthController extends Controller
         if (! Hash::check($request->current_password, $user->password)) {
             LogHelper::logError(
                 'CHANGE_PASSWORD_FAILED',
-                "User {$user->email} gagal ganti password: password lama salah",
+                "Gagal ganti password: password lama salah",
             );
 
             return response()->json([
@@ -149,6 +149,8 @@ class MobileAuthController extends Controller
         $user->update([
             'password' => Hash::make($request->new_password),
         ]);
+
+        LogHelper::log('CHANGE_PASSWORD', "Berhasil ganti password");
 
         return response()->json([
             'status' => 'success',

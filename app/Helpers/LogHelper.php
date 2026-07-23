@@ -11,6 +11,7 @@ class LogHelper
     public static function log($action, $description, $model = null, $payload = null)
     {
         $currentUserId = Auth::id();
+        $userName = Auth::user()?->name ?? 'System';
         $ua = Request::userAgent();
 
         $device = UserAgentParser::parse($ua);
@@ -29,7 +30,7 @@ class LogHelper
         ActivityLog::create([
             'user_id'    => $currentUserId,
             'action'     => $action,
-            'description'=> $description,
+            'description'=> "[$userName] $description",
             'model_type' => $model ? get_class($model) : 'App\Models\User',
             'model_id'   => $model ? ($model->id ?? null) : $currentUserId,
             'payload'    => $mergedPayload,

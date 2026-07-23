@@ -56,7 +56,9 @@ class ComplaintController extends Controller
                 $validated['images'] = $imagePaths;
             }
 
-            Complaint::create($validated);
+            $complaint = Complaint::create($validated);
+
+            LogHelper::log('CREATE_COMPLAINT', "Menambah keluhan: {$complaint->title}", $complaint);
 
             return redirect()->route('complaints.index')
                 ->with('success', 'Keluhan berhasil ditambahkan');
@@ -137,7 +139,14 @@ class ComplaintController extends Controller
                 $validated['resolved_date'] = null;
             }
 
+            $before = $complaint->toArray();
             $complaint->update($validated);
+            $after = $complaint->fresh()->toArray();
+
+            LogHelper::log('UPDATE_COMPLAINT', "Mengubah keluhan: {$complaint->title}", $complaint, [
+                'before' => $before,
+                'after' => $after,
+            ]);
 
             return redirect()->route('complaints.index')
                 ->with('success', 'Keluhan berhasil diupdate');
@@ -161,7 +170,12 @@ class ComplaintController extends Controller
                 }
             }
 
+            $deletedData = $complaint->toArray();
             $complaint->delete();
+
+            LogHelper::log('DELETE_COMPLAINT', "Menghapus keluhan: {$deletedData['title']}", null, [
+                'deleted' => $deletedData,
+            ]);
 
             return redirect()->route('complaints.index')
                 ->with('success', 'Keluhan berhasil dihapus');
@@ -204,7 +218,7 @@ class ComplaintController extends Controller
 
             LogHelper::log(
                 'RESPOND_COMPLAINT',
-                "Admin merespon keluhan #{$complaint->id}: {$complaint->title}",
+                "Merespon keluhan #{$complaint->id}: {$complaint->title}",
                 $complaint,
                 ['status_baru' => $request->status, 'respon' => $request->response]
             );

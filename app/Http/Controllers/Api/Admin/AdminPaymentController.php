@@ -78,7 +78,8 @@ class AdminPaymentController extends Controller
 
             LogHelper::log(
                 'CREATE_PAYMENT_API',
-                "Admin {$request->user()->name} mencatat pembayaran {$payment->invoice_number} untuk {$tenant->name}"
+                "Mencatat pembayaran {$payment->invoice_number} untuk {$tenant->name}",
+                $payment
             );
 
             return response()->json([

@@ -68,6 +68,12 @@ class BroadcastController extends Controller
                 'total_failed' => $failed,
             ]);
 
+            LogHelper::log('SEND_BROADCAST', "Mengirim broadcast ke {$success} berhasil, {$failed} gagal", $broadcast, [
+                'total_tenant' => $tenants->count(),
+                'success' => $success,
+                'failed' => $failed,
+            ]);
+
             return back()->with('status', 'Broadcast terkirim ke '.$success.' penghuni!');
         } catch (Throwable $e) {
             LogHelper::logError(
@@ -111,6 +117,7 @@ class BroadcastController extends Controller
         $sent = $this->whatsapp->sendMessage($request->phone, $request->message);
 
         if ($sent) {
+            LogHelper::log('SEND_PERSONAL_CHAT', "Mengirim pesan personal ke {$request->phone}");
             return back()->with('status', 'Pesan terkirim!');
         }
 
