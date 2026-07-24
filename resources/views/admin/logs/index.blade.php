@@ -47,6 +47,20 @@
     background-color: #f0fdf4 !important;
     color: #166534 !important;
 }
+.select2-container--default .select2-selection--single .select2-selection__clear {
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    line-height: 1;
+    height: auto;
+    margin: 0;
+    color: #94a3b8;
+}
+.select2-container--default .select2-selection--single .select2-selection__clear:hover {
+    color: #ef4444;
+}
 </style>
 @endpush
 
@@ -54,18 +68,28 @@
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
+function buildUrl(params) {
+    var base = '{{ route('admin.logs') }}';
+    var qs = Object.keys(params).filter(function(k) { return params[k] != null && params[k] !== ''; }).map(function(k) { return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]); }).join('&');
+    return qs ? base + '?' + qs : base;
+}
+
 jQuery(function() {
+    var currentParams = {!! json_encode(request()->query()) !!};
+
     jQuery('.select2-action').select2({
         placeholder: 'Cari aksi...',
         allowClear: true,
         width: '100%'
     }).on('change', function() {
         var val = jQuery(this).val();
-        if (!val) {
-            window.location.href = '{{ route('admin.logs') }}';
+        var params = Object.assign({}, currentParams);
+        if (val) {
+            params.action = val;
         } else {
-            window.location.href = '{{ route('admin.logs') }}?action=' + encodeURIComponent(val);
+            delete params.action;
         }
+        window.location.href = buildUrl(params);
     });
 });
 </script>
@@ -81,9 +105,9 @@ jQuery(function() {
 
             {{-- Stats --}}
             @php
-                $total = $logs->total();
-                $failed = $logs->filter(fn($l) => str_contains($l->action, 'FAILED'))->count();
-                $today = $logs->filter(fn($l) => $l->created_at->isToday())->count();
+                $total = $totalLogs ?? $logs->total();
+                $failed = $failedLogs ?? $logs->filter(fn($l) => str_contains($l->action, 'FAILED'))->count();
+                $today = $todayLogs ?? $logs->filter(fn($l) => $l->created_at->isToday())->count();
             @endphp
             <div class="grid grid-cols-3 gap-2 sm:gap-4">
                 <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-100 p-3 sm:p-5">
@@ -123,18 +147,35 @@ jQuery(function() {
 
             {{-- Filters --}}
             <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-100 p-3 sm:p-4">
-                <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-                    <div class="flex-1 min-w-0">
-                        <select class="select2-action">
-                            <option value="">Semua Aksi</option>
-                            @foreach($actions as $a)
-                                <option value="{{ $a }}" {{ request('action') == $a ? 'selected' : '' }}>{{ $a }}</option>
-                            @endforeach
-                        </select>
+                <div class="space-y-3">
+                    {{-- Row 1: Aksi --}}
+                    <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+                        <div class="flex-1 min-w-0">
+                            <select class="select2-action">
+                                <option value="">Semua Aksi</option>
+                                @foreach($actions as $a)
+                                    <option value="{{ $a }}" {{ request('action') == $a ? 'selected' : '' }}>{{ $a }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
-                    <div class="flex gap-2 shrink-0">
-                        <a href="{{ route('admin.logs') }}" class="flex-1 sm:flex-none text-center px-4 py-2.5 bg-slate-100 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-200 transition {{ !request('action') ? 'ring-2 ring-slate-300' : '' }}">Semua</a>
-                        <a href="{{ route('admin.logs') }}?action=FAILED" class="flex-1 sm:flex-none text-center px-4 py-2.5 text-sm font-bold rounded-xl transition {{ request('action') == 'FAILED' ? 'bg-red-600 text-white shadow-md' : 'bg-red-50 text-red-600 hover:bg-red-100' }}">Error</a>
+                    {{-- Row 2: Tipe log + Sumber + Reset --}}
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mr-1">Status</span>
+                        <a href="{{ route('admin.logs', array_merge(request()->query(), ['action' => null])) }}" class="px-3 py-1.5 text-xs font-bold rounded-lg transition {{ !request('action') ? 'bg-slate-800 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">Semua</a>
+                        <a href="{{ route('admin.logs', array_merge(request()->query(), ['action' => 'FAILED'])) }}" class="px-3 py-1.5 text-xs font-bold rounded-lg transition {{ request('action') == 'FAILED' ? 'bg-red-600 text-white shadow' : 'bg-red-50 text-red-600 hover:bg-red-100' }}">Error</a>
+                        <span class="w-px h-5 bg-slate-200 mx-1"></span>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mr-1">Sumber</span>
+                        <a href="{{ route('admin.logs', array_merge(request()->query(), ['source' => null])) }}" class="px-3 py-1.5 text-xs font-bold rounded-lg transition {{ !request('source') ? 'bg-slate-800 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">Semua</a>
+                        <a href="{{ route('admin.logs', array_merge(request()->query(), ['source' => 'web'])) }}" class="px-3 py-1.5 text-xs font-bold rounded-lg transition {{ request('source') == 'web' ? 'bg-blue-600 text-white shadow' : 'bg-blue-50 text-blue-600 hover:bg-blue-100' }}">Web</a>
+                        <a href="{{ route('admin.logs', array_merge(request()->query(), ['source' => 'api'])) }}" class="px-3 py-1.5 text-xs font-bold rounded-lg transition {{ request('source') == 'api' ? 'bg-emerald-600 text-white shadow' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' }}">API</a>
+                        @if(request('action') || request('source'))
+                            <span class="w-px h-5 bg-slate-200 mx-1"></span>
+                            <a href="{{ route('admin.logs') }}" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-red-50 text-red-600 border border-red-200 hover:bg-red-600 hover:text-white hover:border-red-600 transition flex items-center gap-1.5 shadow-sm">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                Reset
+                            </a>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -184,19 +225,19 @@ jQuery(function() {
                                         @if($log->payload && !empty($log->payload['device']))
                                             <div class="space-y-0.5">
                                                 <div class="flex items-center gap-1.5">
-                                                    <span class="w-10 sm:w-12 text-slate-400 shrink-0">Browser</span>
+                                                    <span class="w-14 sm:w-16 text-slate-400 shrink-0">Browser</span>
                                                     <span class="font-medium text-slate-700">{{ $log->payload['browser'] ?? '-' }}</span>
                                                 </div>
                                                 <div class="flex items-center gap-1.5">
-                                                    <span class="w-10 sm:w-12 text-slate-400 shrink-0">OS</span>
+                                                    <span class="w-14 sm:w-16 text-slate-400 shrink-0">OS</span>
                                                     <span class="font-medium text-slate-700">{{ $log->payload['os'] ?? '-' }}</span>
                                                 </div>
                                                 <div class="flex items-center gap-1.5">
-                                                    <span class="w-10 sm:w-12 text-slate-400 shrink-0">Tipe</span>
+                                                    <span class="w-14 sm:w-16 text-slate-400 shrink-0">Tipe</span>
                                                     <span class="font-medium text-slate-700">{{ $log->payload['device'] ?? '-' }}</span>
                                                 </div>
                                                 <div class="flex items-center gap-1.5">
-                                                    <span class="w-10 sm:w-12 text-slate-400 shrink-0">IP</span>
+                                                    <span class="w-14 sm:w-16 text-slate-400 shrink-0">IP</span>
                                                     <span class="font-medium text-slate-700">{{ $log->payload['ip'] ?? $log->ip_address ?? '-' }}</span>
                                                 </div>
                                             </div>
@@ -209,8 +250,17 @@ jQuery(function() {
                                         <div class="font-bold text-slate-400 uppercase tracking-wider text-[10px] mb-1">Error</div>
                                         @if(!empty($log->payload['error_message']))
                                             <div class="text-red-600 font-medium text-xs sm:text-sm">{{ $log->payload['error_message'] }}</div>
-                                            @if(!empty($log->payload['error_file']))
+                                            @if(!empty($log->payload['error_file']) && $log->payload['error_file'] !== 'N/A')
                                                 <div class="text-slate-400 mt-1 font-mono text-[10px] break-all">{{ $log->payload['error_file'] }}</div>
+                                            @endif
+                                            @if(!empty($log->payload['error_trace']))
+                                                <div x-data="{ showTrace: false }" class="mt-1">
+                                                    <button @click="showTrace = !showTrace" class="text-[10px] text-red-400 hover:text-red-600 underline">
+                                                        <span x-show="!showTrace">Lihat trace</span>
+                                                        <span x-show="showTrace">Sembunyikan trace</span>
+                                                    </button>
+                                                    <pre x-show="showTrace" class="mt-1 text-[8px] sm:text-[9px] text-red-700 bg-red-100 p-2 rounded overflow-auto max-h-32 leading-tight font-mono">{{ $log->payload['error_trace'] }}</pre>
+                                                </div>
                                             @endif
                                         @else
                                             <span class="text-slate-400">-</span>
@@ -220,13 +270,16 @@ jQuery(function() {
                                     <div>
                                         <div class="font-bold text-slate-400 uppercase tracking-wider text-[10px] mb-1">Data Tambahan</div>
                                         @php
-                                            $extra = collect($log->payload ?? [])->except(['browser','os','device','ip','error_message','error_file'])->toArray();
+                                            $extra = collect($log->payload ?? [])->except(['browser','os','device','ip','error_message','error_file','error_trace'])->toArray();
                                         @endphp
                                         @if(!empty($extra))
                                             <div class="space-y-0.5">
                                                 @foreach($extra as $k => $v)
+                                                    @php
+                                                        $label = str_replace('_', ' ', ucfirst($k));
+                                                    @endphp
                                                     <div class="flex items-start gap-1">
-                                                        <span class="shrink-0 text-slate-400 text-[10px]">{{ $k }}:</span>
+                                                        <span class="shrink-0 text-slate-400 text-[10px] capitalize">{{ $label }}:</span>
                                                         <span class="text-slate-700 break-all text-[10px]">{{ is_array($v) ? json_encode($v) : $v }}</span>
                                                     </div>
                                                 @endforeach

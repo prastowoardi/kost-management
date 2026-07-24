@@ -5,7 +5,9 @@ use App\Http\Controllers\Api\Admin\AdminPaymentController;
 use App\Http\Controllers\Api\Admin\AdminRoomController;
 use App\Http\Controllers\Api\Admin\AdminTenantController;
 use App\Http\Controllers\Api\Admin\FinanceController;
+use App\Http\Controllers\Api\Admin\LogController as AdminLogController;
 use App\Http\Controllers\Api\Admin\StatsController;
+use App\Http\Controllers\Api\ClientLogController;
 use App\Http\Controllers\Api\MobileAuthController;
 use App\Http\Controllers\Api\MobileComplaintController;
 use App\Http\Controllers\Api\MobilePaymentController;
@@ -26,6 +28,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/tenant/payments', [MobilePaymentController::class, 'getHistory']);
     Route::post('/payments/upload', [MobilePaymentController::class, 'uploadProof']);
     Route::get('/tenant/payments/{id}', [MobilePaymentController::class, 'show']);
+
+    Route::post('/log/client', [ClientLogController::class, 'store']);
 
     Route::get('/complaints', [MobileComplaintController::class, 'index']);
     Route::post('/complaints', [MobileComplaintController::class, 'store']);
@@ -75,6 +79,10 @@ Route::middleware(['auth:sanctum'])
         Route::match(['put', 'patch', 'post'], '/tenants/update/{uuid}', [AdminTenantController::class, 'update']);
         Route::post('/tenants/delete/{uuid}', [AdminTenantController::class, 'destroy']);
         Route::get('/tenants/{uuid}/payments', [AdminTenantController::class, 'payments']);
+
+        Route::get('/logs/stats', [AdminLogController::class, 'stats']);
+        Route::get('/logs', [AdminLogController::class, 'index']);
+        Route::get('/logs/{id}', [AdminLogController::class, 'show']);
 
         Route::get('/categories', [FinanceController::class, 'getApiCategories']);
         Route::apiResource('/finances', FinanceController::class);

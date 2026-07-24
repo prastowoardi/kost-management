@@ -12,7 +12,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
-use Throwable;
 
 class MobileAuthController extends Controller
 {
@@ -27,13 +26,9 @@ class MobileAuthController extends Controller
         $user = User::where('email', $request->email)->first();
 
         if (! $user) {
-            \Illuminate\Support\Facades\Log::error('LOGIN: User not found for email: '.$request->email);
-
-            LogHelper::log(
+            LogHelper::logError(
                 'LOGIN_FAILED',
                 "Percobaan login gagal pada email: {$request->email}",
-                null,
-                ['ip' => $request->ip(), 'user_agent' => $request->userAgent()]
             );
 
             return response()->json([
@@ -42,20 +37,10 @@ class MobileAuthController extends Controller
             ], 401);
         }
 
-        \Illuminate\Support\Facades\Log::info('LOGIN: User found', [
-            'email' => $user->email,
-            'password_hash_prefix' => substr($user->password, 0, 20),
-            'password_check' => Hash::check($request->password, $user->password),
-        ]);
-
         if (! Hash::check($request->password, $user->password)) {
-            \Illuminate\Support\Facades\Log::error('LOGIN: Password mismatch for: '.$request->email);
-
-            LogHelper::log(
+            LogHelper::logError(
                 'LOGIN_FAILED',
-                "Percobaan login gagal pada email: {$request->email}",
-                null,
-                ['ip' => $request->ip(), 'user_agent' => $request->userAgent()]
+                "Percobaan login gagal pada email: {$request->email} — password salah",
             );
 
             return response()->json([
