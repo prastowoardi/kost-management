@@ -24,6 +24,14 @@
                         {{ __('Penghuni') }}
                     </x-nav-link>
                     
+                    <x-nav-link :href="route('facilities.index')" :active="request()->routeIs('facilities.*')">
+                        {{ __('Fasilitas') }}
+                    </x-nav-link>
+                    
+                    <x-nav-link :href="route('complaints.index')" :active="request()->routeIs('complaints.*')">
+                        {{ __('Keluhan') }}
+                    </x-nav-link>
+
                     <!-- Dropdown Menu: Keuangan -->
                     <div class="hidden sm:flex sm:items-center sm:ml-0 relative" x-data="{ openFinance: false }" @click.away="openFinance = false">
                         <button @click="openFinance = !openFinance" 
@@ -73,14 +81,6 @@
                             </div>
                         </div>
                     </div>
-                    
-                    <x-nav-link :href="route('facilities.index')" :active="request()->routeIs('facilities.*')">
-                        {{ __('Fasilitas') }}
-                    </x-nav-link>
-                    
-                    <x-nav-link :href="route('complaints.index')" :active="request()->routeIs('complaints.*')">
-                        {{ __('Keluhan') }}
-                    </x-nav-link>
 
                     <x-nav-link :href="route('admin.logs')" :active="request()->routeIs('admin.logs')">
                         {{ __('Logs') }}
@@ -270,6 +270,14 @@
                 {{ __('Penghuni') }}
             </x-responsive-nav-link>
             
+            <x-responsive-nav-link :href="route('facilities.index')" :active="request()->routeIs('facilities.*')">
+                {{ __('Fasilitas') }}
+            </x-responsive-nav-link>
+            
+            <x-responsive-nav-link :href="route('complaints.index')" :active="request()->routeIs('complaints.*')">
+                {{ __('Keluhan') }}
+            </x-responsive-nav-link>
+
             <div x-data="{ openFin: {{ request()->routeIs('finances.*') || request()->routeIs('payments.*') ? 'true' : 'false' }} }">
                 <button @click="openFin = !openFin" class="w-full flex justify-between items-center pl-3 pr-4 py-2 border-l-4 border-transparent text-left text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300 transition duration-150 ease-in-out">
                     <span class="flex items-center">
@@ -302,14 +310,6 @@
                     </x-responsive-nav-link>
                 </div>
             </div>
-            
-            <x-responsive-nav-link :href="route('facilities.index')" :active="request()->routeIs('facilities.*')">
-                {{ __('Fasilitas') }}
-            </x-responsive-nav-link>
-            
-            <x-responsive-nav-link :href="route('complaints.index')" :active="request()->routeIs('complaints.*')">
-                {{ __('Keluhan') }}
-            </x-responsive-nav-link>
 
             <x-responsive-nav-link :href="route('admin.logs')" :active="request()->routeIs('admin.logs')">
                 {{ __('Logs') }}
