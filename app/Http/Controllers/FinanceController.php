@@ -238,7 +238,9 @@ class FinanceController extends Controller
                 $validated['receipt_file'] = $request->file('receipt_file')->store('receipts', 'public');
             }
 
-            Finance::create($validated);
+            $finance = Finance::create($validated);
+
+            LogHelper::log('CREATE_FINANCE', 'Menambah transaksi keuangan '.$finance->category.' Rp'.number_format($finance->amount, 0, ',', '.'), $finance);
 
             return redirect()->route('finances.index')
                 ->with('success', 'Data keuangan berhasil ditambahkan!');
@@ -309,8 +311,15 @@ class FinanceController extends Controller
                 $validated['receipt_file'] = $request->file('receipt_file')->store('receipts', 'public');
             }
 
+            $before = $finance->toArray();
             $finance->update($validated);
             $finance->touch();
+            $after = $finance->fresh()->toArray();
+
+            LogHelper::log('UPDATE_FINANCE', 'Mengubah transaksi keuangan #'.$finance->id, $finance, [
+                'before' => $before,
+                'after' => $after,
+            ]);
 
             return redirect()->route('finances.index')
                 ->with('success', 'Data keuangan berhasil diupdate!');
@@ -328,7 +337,12 @@ class FinanceController extends Controller
     public function destroy(Finance $finance)
     {
         try {
+            $deletedData = $finance->toArray();
             $finance->delete();
+
+            LogHelper::log('DELETE_FINANCE', 'Menghapus transaksi keuangan #'.$deletedData['id'], null, [
+                'deleted' => $deletedData,
+            ]);
 
             return redirect()->route('finances.index')
                 ->with('success', 'Data keuangan berhasil dihapus!');

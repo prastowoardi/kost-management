@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\LogHelper;
 use App\Models\Payment;
 use App\Models\Tenant;
 use App\Services\PaymentService;
@@ -89,6 +90,8 @@ class PaymentController extends Controller
 
         $this->paymentService->createFinanceRecord($payment);
         $this->sendWhatsAppReceipt($payment);
+
+        LogHelper::log('CREATE_PAYMENT', "Mencatat pembayaran {$payment->invoice_number} untuk {$payment->tenant->name}", $payment);
 
         return redirect()->route('payments.index')->with('success', 'Pembayaran dicatat & Kwitansi dikirim!');
     }
@@ -185,10 +188,17 @@ class PaymentController extends Controller
                 ->store('receipts', 'public');
         }
 
+        $before = $payment->toArray();
         $payment->update($validated);
         $payment->load(['room', 'tenant']);
+        $after = $payment->fresh()->toArray();
 
         $this->paymentService->syncFinanceRecord($payment);
+
+        LogHelper::log('UPDATE_PAYMENT', "Mengubah pembayaran {$payment->invoice_number}", $payment, [
+            'before' => $before,
+            'after' => $after,
+        ]);
 
         return redirect()->route('payments.index')
             ->with('success', 'Pembayaran berhasil diupdate');
@@ -196,6 +206,8 @@ class PaymentController extends Controller
 
     public function destroy(Payment $payment)
     {
+        $deletedData = $payment->toArray();
+
         $this->paymentService->deleteFinanceRecord($payment);
 
         if ($payment->receipt_file) {
@@ -203,6 +215,10 @@ class PaymentController extends Controller
         }
 
         $payment->delete();
+
+        LogHelper::log('DELETE_PAYMENT', "Menghapus pembayaran {$deletedData['invoice_number']}", null, [
+            'deleted' => $deletedData,
+        ]);
 
         return redirect()->route('payments.index')
             ->with('success', 'Pembayaran berhasil dihapus');
@@ -214,10 +230,17 @@ class PaymentController extends Controller
             'status' => 'required|in:pending,paid,overdue',
         ]);
 
+        $before = $payment->toArray();
         $payment->update($validated);
         $payment->load(['room', 'tenant']);
+        $after = $payment->fresh()->toArray();
 
         $this->paymentService->syncFinanceRecord($payment);
+
+        LogHelper::log('UPDATE_PAYMENT_STATUS', "Mengubah status pembayaran {$payment->invoice_number} dari {$before['status']} ke {$after['status']}", $payment, [
+            'before' => $before,
+            'after' => $after,
+        ]);
 
         return back()->with('success', 'Status pembayaran berhasil diperbarui');
     }

@@ -46,6 +46,8 @@ class MobileComplaintController extends Controller
                 }
             }
 
+            LogHelper::log('CREATE_COMPLAINT_MOBILE', "Membuat laporan: {$complaint->title}", $complaint);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Laporan berhasil dibuat',
@@ -54,7 +56,7 @@ class MobileComplaintController extends Controller
         } catch (Throwable $e) {
             LogHelper::logError(
                 'CREATE_COMPLAINT_FAILED',
-                "User {$request->user()->email} gagal membuat laporan",
+                "Gagal membuat laporan",
                 $e,
                 ['title' => $request->title]
             );

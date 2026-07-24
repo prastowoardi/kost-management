@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\LogHelper;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -35,7 +36,9 @@ class UserController extends Controller
         $validated['password'] = Hash::make($validated['password']);
         $validated['is_active'] = $request->has('is_active');
 
-        User::create($validated);
+        $user = User::create($validated);
+
+        LogHelper::log('CREATE_USER', "Menambah user {$user->name} ({$user->email})", $user);
 
         return redirect()->route('users.index')
             ->with('success', 'User berhasil ditambahkan');
@@ -69,7 +72,14 @@ class UserController extends Controller
 
         $validated['is_active'] = $request->has('is_active');
 
+        $before = $user->toArray();
         $user->update($validated);
+        $after = $user->fresh()->toArray();
+
+        LogHelper::log('UPDATE_USER', "Mengubah user {$user->name} ({$user->email})", $user, [
+            'before' => $before,
+            'after' => $after,
+        ]);
 
         return redirect()->route('users.index')
             ->with('success', 'User berhasil diupdate');
@@ -83,7 +93,12 @@ class UserController extends Controller
                 ->with('error', 'Tidak dapat menghapus akun sendiri');
         }
 
+        $deletedData = $user->toArray();
         $user->delete();
+
+        LogHelper::log('DELETE_USER', "Menghapus user {$deletedData['name']} ({$deletedData['email']})", null, [
+            'deleted' => $deletedData,
+        ]);
 
         return redirect()->route('users.index')
             ->with('success', 'User berhasil dihapus');
@@ -102,6 +117,8 @@ class UserController extends Controller
         ]);
 
         $status = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
+
+        LogHelper::log('TOGGLE_USER_STATUS', "{$status} user {$user->name} ({$user->email})", $user);
 
         return redirect()->route('users.index')
             ->with('success', "User berhasil {$status}");
