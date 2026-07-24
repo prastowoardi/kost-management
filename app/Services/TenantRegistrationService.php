@@ -6,7 +6,6 @@ use App\Models\Payment;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 
 class TenantRegistrationService
 {

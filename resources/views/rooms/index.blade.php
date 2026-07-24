@@ -25,6 +25,16 @@
             </div>
             @endif
 
+            <form method="GET" action="{{ route('rooms.index') }}" class="mb-6">
+                <x-filter-panel reset="{{ route('rooms.index') }}">
+                    <x-filter-input name="search" label="Cari Kamar" placeholder="No kamar..." />
+                    <x-filter-select name="type" label="Tipe" :options="['singlenoac' => 'Single No AC', 'singleac' => 'Single AC', 'shared' => 'Shared Room']" />
+                    <x-filter-select name="status" label="Status" :options="['available' => 'Available', 'occupied' => 'Occupied', 'maintenance' => 'Maintenance']" />
+                    <x-filter-input name="price_min" label="Harga Min" placeholder="Rp 0" />
+                    <x-filter-input name="price_max" label="Harga Max" placeholder="Rp 999.999" />
+                </x-filter-panel>
+            </form>
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
                     <div class="overflow-x-auto">

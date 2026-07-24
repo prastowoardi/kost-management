@@ -20,7 +20,7 @@ class ReportController extends Controller
             ->whereBetween('payment_date', [$startDate, $endDate])
             ->orderBy('payment_date', 'desc')
             ->get();
-        
+
         $totalPaid = Payment::where('status', 'paid')
             ->whereBetween('payment_date', [$startDate, $endDate])
             ->sum('total');
@@ -37,7 +37,7 @@ class ReportController extends Controller
             'totalPending'
         ));
     }
-    
+
     public function finances(Request $request)
     {
         // Redirect to existing finance report

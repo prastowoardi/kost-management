@@ -8,46 +8,29 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6 no-print">
-                <div class="p-6">
-                    <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Bulan</label>
-                            <select name="month" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                @for($m = 1; $m <= 12; $m++)
-                                <option value="{{ $m }}" {{ (int)$month == $m ? 'selected' : '' }}>
-                                    {{ \Carbon\Carbon::createFromDate(null, $m, 1)->format('F') }}
-                                </option>
-                                @endfor
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Tahun</label>
-                            <select name="year" onchange="this.form.submit()" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="">Semua</option>
-                                @for($y = now()->year + 1; $y >= 2023; $y--)
-                                    <option value="{{ $y }}" {{ request('year', now()->year) == $y ? 'selected' : '' }}>
-                                        {{ $y }}
-                                    </option>
-                                @endfor
-                            </select>
-                        </div>
-                        <div class="flex items-end gap-2">
-                            <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                                Tampilkan
-                            </button>
+            @php
+                $monthOptions = [];
+                for ($m = 1; $m <= 12; $m++) {
+                    $monthOptions[$m] = \Carbon\Carbon::createFromDate(null, $m, 1)->format('F');
+                }
+                $yearOptions = ['' => 'Semua'];
+                for ($y = now()->year + 1; $y >= 2023; $y--) { $yearOptions[$y] = $y; }
+            @endphp
+
+            <div class="no-print">
+                <form method="GET">
+                    <x-filter-panel reset="{{ route('finances.report') }}">
+                        <x-filter-select name="month" label="Bulan" :options="$monthOptions" />
+                        <x-filter-select name="year" label="Tahun" :options="$yearOptions" />
+                        <x-slot:extra>
                             <a href="{{ route('finances.report', array_merge(request()->all(), ['download' => 'pdf'])) }}" 
-                                class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
-                                📄 PDF
+                                class="px-4 py-2 text-xs font-bold rounded-lg bg-red-500 text-white hover:bg-red-600 transition flex items-center gap-1.5 shadow-sm">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                                Export PDF
                             </a>
-                        </div>
-                        <div class="flex items-end">
-                            <button type="button" onclick="window.print()" class="w-full px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
-                                🖨️ Print
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                        </x-slot:extra>
+                    </x-filter-panel>
+                </form>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">

@@ -26,18 +26,20 @@ class PaymentController extends Controller
         $query = Payment::with(['tenant', 'room'])
             ->orderBy('created_at', 'desc');
 
-        if ($request->filled('period')) {
-            $period = Carbon::createFromFormat('Y-m', $request->period);
-            $query->whereMonth('period_month', $period->month)
-                ->whereYear('period_month', $period->year);
+        if ($request->filled('filter_month')) {
+            $query->whereMonth('payment_date', $request->filter_month);
+        }
+
+        if ($request->filled('filter_year')) {
+            $query->whereYear('period_month', $request->filter_year);
         }
 
         if ($request->filled('tenant_id')) {
             $query->where('tenant_id', $request->tenant_id);
         }
 
-        if ($request->filled('filter_year')) {
-            $query->whereYear('period_month', $request->filter_year);
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
         }
 
         if ($request->filled('invoice_number')) {

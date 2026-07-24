@@ -24,82 +24,28 @@
             </div>
             @endif
 
-            {{-- FILTER FORM START --}}
-            <div class="mb-6 bg-white shadow-md rounded-lg p-4">
-                <form method="GET" action="{{ route('payments.index') }}" class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-4 items-end">
-                    
-                    @php
-                        $currentMonth = request('filter_month', date('n'));
-                        $currentYear = request('filter_year', date('Y'));
-                        
-                        $months = [
-                            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-                            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
-                        ];
-                        $startYear = date('Y') - 3;
-                        $endYear = date('Y') + 1;
-                    @endphp
+            @php
+                $months = [
+                    1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                    5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                    9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                ];
+                $monthOptions = ['' => 'Semua'] + $months;
+                $yearOptions = ['' => 'Semua'];
+                for ($y = date('Y') + 1; $y >= date('Y') - 3; $y--) { $yearOptions[$y] = $y; }
+                $tenantOptions = ['' => 'Semua Penghuni'];
+                foreach ($tenants as $t) { $tenantOptions[$t->id] = $t->name; }
+            @endphp
 
-                    <div>
-                        <label for="filter_month" class="block text-sm font-medium text-gray-700">Bulan</label>
-                        <select name="filter_month" onchange="this.form.submit()" id="filter_month"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">Semua</option>
-                            @foreach($months as $num => $name)
-                                <option value="{{ $num }}" {{ (string)request('filter_month', $currentMonth) == (string)$num ? 'selected' : '' }}>
-                                    {{ $name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div>
-                        <label for="filter_year" class="block text-sm font-medium text-gray-700">Tahun</label>
-                        <select name="filter_year" onchange="this.form.submit()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">Semua</option>
-                            @for($year = $endYear; $year >= $startYear; $year--)
-                                <option value="{{ $year }}" {{ request('filter_year', $currentYear) == $year ? 'selected' : '' }}>
-                                    {{ $year }}
-                                </option>
-                            @endfor
-                        </select>
-                    </div>
-
-                    <div>
-                        <label for="tenant_id" class="block text-sm font-medium text-gray-700">Penghuni</label>
-                        <select name="tenant_id" onchange="this.form.submit()" id="tenant_id"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">Semua Penghuni</option>
-                            @foreach($tenants as $tenant)
-                                <option value="{{ $tenant->id }}" 
-                                    {{ request('tenant_id') == $tenant->id ? 'selected' : '' }}>
-                                    {{ $tenant->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label for="invoice_number" class="block text-sm font-medium text-gray-700">Nomor Invoice</label>
-                        <input type="text" name="invoice_number" id="invoice_number"
-                                value="{{ request('invoice_number') }}"
-                                placeholder="Cari No. Invoice..."
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    </div>
-
-                    <div class="flex space-x-2 lg:col-span-1">
-                        <button type="submit"
-                                class="w-full px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700">
-                            Filter
-                        </button>
-                        <a href="{{ route('payments.index') }}"
-                            class="w-full px-4 py-2 bg-gray-300 text-gray-700 font-semibold rounded-md hover:bg-gray-400 text-center">
-                            Reset
-                        </a>
-                    </div>
-                </form>
-            </div>
+            <form method="GET" action="{{ route('payments.index') }}">
+                <x-filter-panel reset="{{ route('payments.index') }}">
+                    <x-filter-select name="filter_month" label="Bulan" :options="$monthOptions" />
+                    <x-filter-select name="filter_year" label="Tahun" :options="$yearOptions" />
+                    <x-filter-select name="tenant_id" label="Penghuni" :options="$tenantOptions" />
+                    <x-filter-input name="invoice_number" label="Invoice" placeholder="Cari No. Invoice..." />
+                    <x-filter-select name="status" label="Status" :options="['paid' => 'Lunas', 'pending' => 'Pending', 'overdue' => 'Overdue', 'cancelled' => 'Batal']" />
+                </x-filter-panel>
+            </form>
 
             <div class="bg-white shadow-sm rounded-lg overflow-hidden">
                 <div class="p-4 sm:p-6">

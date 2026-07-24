@@ -22,6 +22,14 @@
             </div>
             @endif
 
+            <form method="GET" action="{{ route('facilities.index') }}" class="mb-6">
+                <x-filter-panel reset="{{ route('facilities.index') }}">
+                    <x-filter-input name="search" label="Cari Fasilitas" placeholder="Nama fasilitas..." />
+                    <x-filter-select name="type" label="Tipe" :options="['room' => 'Fasilitas Kamar', 'common' => 'Fasilitas Umum']" />
+                    <x-filter-select name="condition" label="Kondisi" :options="['good' => 'Baik', 'fair' => 'Sedang', 'poor' => 'Rusak']" />
+                </x-filter-panel>
+            </form>
+
             <div class="bg-white shadow-sm rounded-lg">
                 <div class="p-4 sm:p-6">
 

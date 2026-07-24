@@ -16,9 +16,13 @@ class ComplaintController extends Controller
         private PushNotificationService $pushNotification,
     ) {}
 
-    public function index()
+    public function index(Request $request)
     {
         $complaints = Complaint::with(['tenant', 'room'])
+            ->when($request->search, fn ($q) => $q->where('title', 'like', '%'.$request->search.'%'))
+            ->when($request->category, fn ($q) => $q->where('category', $request->category))
+            ->when($request->priority, fn ($q) => $q->where('priority', $request->priority))
+            ->when($request->status, fn ($q) => $q->where('status', $request->status))
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 

@@ -20,6 +20,15 @@
             </div>
             @endif
 
+            <form method="GET" action="{{ route('complaints.index') }}" class="mb-6">
+                <x-filter-panel reset="{{ route('complaints.index') }}">
+                    <x-filter-input name="search" label="Cari Keluhan" placeholder="Judul keluhan..." />
+                    <x-filter-select name="category" label="Kategori" :options="['facility' => 'Fasilitas', 'cleanliness' => 'Kebersihan', 'security' => 'Keamanan', 'other' => 'Lainnya']" />
+                    <x-filter-select name="priority" label="Prioritas" :options="['low' => 'Rendah', 'medium' => 'Sedang', 'high' => 'Tinggi']" />
+                    <x-filter-select name="status" label="Status" :options="['open' => 'Open', 'in_progress' => 'In Progress', 'resolved' => 'Resolved', 'closed' => 'Closed']" />
+                </x-filter-panel>
+            </form>
+
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-6 lg:p-8">
                     <h3 class="text-lg font-bold text-gray-700 mb-4">Data Keluhan</h3>

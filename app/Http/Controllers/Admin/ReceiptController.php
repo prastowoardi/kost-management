@@ -73,9 +73,17 @@ class ReceiptController extends Controller
         return view('admin.receipt.manual_print', compact('payment'));
     }
 
-    public function manualHistory()
+    public function manualHistory(Request $request)
     {
-        $receipts = \App\Models\ManualReceipt::orderBy('created_at', 'desc')->get();
+        $receipts = \App\Models\ManualReceipt::when($request->search, fn ($q) => $q->where(function ($q) use ($request) {
+            $q->where('tenant_name', 'like', '%'.$request->search.'%')
+                ->orWhere('invoice_number', 'like', '%'.$request->search.'%');
+        }))
+            ->when($request->period, fn ($q) => $q->where('period', $request->period))
+            ->when($request->amount_min, fn ($q) => $q->where('total_amount', '>=', $request->amount_min))
+            ->when($request->amount_max, fn ($q) => $q->where('total_amount', '<=', $request->amount_max))
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
 
         return view('admin.receipt.manual_history', compact('receipts'));
     }

@@ -145,11 +145,9 @@ jQuery(function() {
                 </div>
             </div>
 
-            {{-- Filters --}}
-            <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-100 p-3 sm:p-4">
-                <div class="space-y-3">
-                    {{-- Row 1: Aksi --}}
-                    <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+            <x-filter-panel>
+                <div class="lg:col-span-4">
+                    <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center mb-3">
                         <div class="flex-1 min-w-0">
                             <select class="select2-action">
                                 <option value="">Semua Aksi</option>
@@ -159,7 +157,6 @@ jQuery(function() {
                             </select>
                         </div>
                     </div>
-                    {{-- Row 2: Tipe log + Sumber + Reset --}}
                     <div class="flex flex-wrap items-center gap-2">
                         <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mr-1">Status</span>
                         <a href="{{ route('admin.logs', array_merge(request()->query(), ['action' => null])) }}" class="px-3 py-1.5 text-xs font-bold rounded-lg transition {{ !request('action') ? 'bg-slate-800 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">Semua</a>
@@ -178,7 +175,7 @@ jQuery(function() {
                         @endif
                     </div>
                 </div>
-            </div>
+            </x-filter-panel>
 
             {{-- Timeline --}}
             <div class="space-y-2 sm:space-y-2">

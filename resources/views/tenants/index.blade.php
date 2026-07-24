@@ -22,6 +22,14 @@
             </div>
             @endif
 
+            <form method="GET" action="{{ route('tenants.index') }}" class="mb-6">
+                <x-filter-panel reset="{{ route('tenants.index') }}">
+                    <x-filter-input name="search" label="Cari Penghuni" placeholder="Nama atau telepon..." />
+                    <x-filter-select name="status" label="Status" :options="['active' => 'Aktif', 'inactive' => 'Tidak Aktif']" />
+                    <x-filter-select name="room_id" label="Kamar" :options="$rooms->pluck('room_number', 'id')->toArray()" placeholder="Semua Kamar" />
+                </x-filter-panel>
+            </form>
+
             <div class="bg-white shadow-sm rounded-lg">
                 <div class="p-4 sm:p-6">
                     

@@ -18,13 +18,21 @@ class TenantController extends Controller
         private TenantRegistrationService $registration,
     ) {}
 
-    public function index()
+    public function index(Request $request)
     {
         $tenants = Tenant::with('room')
+            ->when($request->search, fn ($q) => $q->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('phone', 'like', '%'.$request->search.'%');
+            }))
+            ->when($request->status, fn ($q) => $q->where('status', $request->status))
+            ->when($request->room_id, fn ($q) => $q->where('room_id', $request->room_id))
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return view('tenants.index', compact('tenants'));
+        $rooms = Room::orderBy('room_number')->get();
+
+        return view('tenants.index', compact('tenants', 'rooms'));
     }
 
     public function create()

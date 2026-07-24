@@ -11,9 +11,14 @@ use Throwable;
 
 class RoomController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $rooms = Room::with(['activeTenant', 'facilities'])
+            ->when($request->search, fn ($q) => $q->where('room_number', 'like', '%'.$request->search.'%'))
+            ->when($request->type, fn ($q) => $q->where('type', $request->type))
+            ->when($request->status, fn ($q) => $q->where('status', $request->status))
+            ->when($request->price_min, fn ($q) => $q->where('price', '>=', $request->price_min))
+            ->when($request->price_max, fn ($q) => $q->where('price', '<=', $request->price_max))
             ->orderBy('room_number')
             ->paginate(10);
 
