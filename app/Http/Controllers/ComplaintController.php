@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\LogHelper;
+use App\Helpers\NotificationHelper;
 use App\Models\Complaint;
 use App\Models\Tenant;
 use App\Services\PushNotificationService;
@@ -61,6 +62,13 @@ class ComplaintController extends Controller
             }
 
             Complaint::create($validated);
+
+            NotificationHelper::create(
+                'keluhan_baru',
+                'Keluhan Baru: '.$validated['title'],
+                'Dari '.$tenant->name.' (Kamar '.$tenant->room->room_number.')',
+                route('complaints.index')
+            );
 
             return redirect()->route('complaints.index')
                 ->with('success', 'Keluhan berhasil ditambahkan');

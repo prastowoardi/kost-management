@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ComplaintImage extends Model
 {
-    use HasFactory, SoftDeletes, \App\Models\Concerns\HasUuidColumn;
+    use \App\Models\Concerns\HasUuidColumn, HasFactory, SoftDeletes;
 
     protected $fillable = ['complaint_id', 'path'];
 

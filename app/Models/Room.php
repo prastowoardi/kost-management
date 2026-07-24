@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Room extends Model
 {
-    use HasFactory, SoftDeletes, \App\Models\Concerns\HasUuidColumn;
+    use \App\Models\Concerns\HasUuidColumn, HasFactory, SoftDeletes;
 
     protected $table = 'rooms';
 

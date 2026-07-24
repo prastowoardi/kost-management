@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class BroadcastLog extends Model
 {
-    use HasFactory, SoftDeletes, \App\Models\Concerns\HasUuidColumn;
+    use \App\Models\Concerns\HasUuidColumn, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'broadcast_id',

@@ -118,6 +118,102 @@
                 </div>
             </div>
 
+            <!-- Notifikasi Bell -->
+            <div class="hidden sm:flex sm:items-center sm:ml-4" 
+                x-data="{ 
+                    open: false, 
+                    items: [], 
+                    unread: 0,
+                    async fetchNotif() {
+                        const r = await fetch('{{ route('notifications.index') }}');
+                        const d = await r.json();
+                        this.items = d.items;
+                        this.unread = d.unread_count;
+                    },
+                    async markRead(id) {
+                        await fetch('{{ url('notifications') }}/' + id + '/read', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } });
+                        this.unread = Math.max(0, this.unread - 1);
+                        this.items = this.items.map(n => n.id === id ? { ...n, is_read: true } : n);
+                    },
+                    async markAll() {
+                        await fetch('{{ route('notifications.readAll') }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } });
+                        this.unread = 0;
+                        this.items = this.items.map(n => ({ ...n, is_read: true }));
+                    }
+                }"
+                x-init="fetchNotif(); setInterval(() => fetchNotif(), 30000)">
+                <div class="relative">
+                    <button @click="open = !open; if(open) fetchNotif()" class="relative p-2 text-gray-500 hover:text-gray-700 transition rounded-lg hover:bg-gray-100 focus:outline-none">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                        <template x-if="unread > 0">
+                            <span class="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white bg-red-500 rounded-full min-w-[18px] min-h-[18px]" x-text="unread"></span>
+                        </template>
+                    </button>
+
+                    <div x-show="open" @click.away="open = false" x-cloak
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0 scale-95"
+                        x-transition:enter-end="opacity-100 scale-100"
+                        x-transition:leave="transition ease-in duration-75"
+                        x-transition:leave-start="opacity-100 scale-100"
+                        x-transition:leave-end="opacity-0 scale-95"
+                        class="absolute right-0 mt-2 w-80 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50 border border-slate-100"
+                        style="display: none;">
+                        
+                        <div class="p-3 border-b border-slate-100 flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">Notifikasi</span>
+                            <template x-if="unread > 0">
+                                <button @click="markAll()" class="text-[10px] font-bold text-blue-600 hover:text-blue-800">Tandai Dibaca</button>
+                            </template>
+                        </div>
+
+                        <div class="max-h-80 overflow-y-auto">
+                            <template x-if="items.length === 0">
+                                <div class="p-6 text-center text-sm text-slate-400">Belum ada notifikasi</div>
+                            </template>
+                            <template x-for="n in items" :key="n.id">
+                                <a :href="n.link || '#'" @click="markRead(n.id); open = false"
+                                    class="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 border-b border-slate-50 transition"
+                                    :class="{ 'bg-blue-50/40': !n.is_read }">
+                                    <div class="shrink-0 mt-0.5">
+                                        <template x-if="n.type === 'keluhan_baru'">
+                                            <span class="flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-600">!</span>
+                                        </template>
+                                        <template x-if="n.type === 'bayar_masuk'">
+                                            <span class="flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600">$</span>
+                                        </template>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-semibold text-slate-800 truncate" x-text="n.title"></p>
+                                        <p class="text-xs text-slate-500 truncate" x-text="n.message"></p>
+                                        <p class="text-[10px] text-slate-400 mt-0.5" x-text="n.time"></p>
+                                    </div>
+                                    <template x-if="!n.is_read">
+                                        <span class="shrink-0 w-2 h-2 mt-2 bg-blue-500 rounded-full"></span>
+                                    </template>
+                                </a>
+                            </template>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            {{-- Notif mobile --}}
+            <div class="sm:hidden" 
+                x-data="{ unreadM: 0 }"
+                x-init="
+                    fetch('{{ route('notifications.index') }}').then(r => r.json()).then(d => unreadM = d.unread_count);
+                    setInterval(() => fetch('{{ route('notifications.index') }}').then(r => r.json()).then(d => unreadM = d.unread_count), 30000);
+                ">
+                <div class="flex items-center gap-2 pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600">
+                    <span>🔔 Notifikasi</span>
+                    <template x-if="unreadM > 0">
+                        <span class="px-1.5 py-0.5 text-[10px] font-bold text-white bg-red-500 rounded-full" x-text="unreadM"></span>
+                    </template>
+                </div>
+            </div>
+
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ml-6">
                 <x-dropdown align="right" width="48">

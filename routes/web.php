@@ -87,6 +87,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Logs
         Route::get('/logs', [LogController::class, 'index'])->name('admin.logs');
 
+        // Notifications
+        Route::prefix('notifications')->name('notifications.')->group(function () {
+            Route::get('/', [NotificationController::class, 'index'])->name('index');
+            Route::post('/{notification}/read', [NotificationController::class, 'markRead'])->name('read');
+            Route::post('/read-all', [NotificationController::class, 'markAllRead'])->name('readAll');
+        });
+
         // Reports
         Route::prefix('reports')->name('reports.')->group(function () {
             Route::get('/payments', [ReportController::class, 'payments'])->name('payments');

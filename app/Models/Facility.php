@@ -8,14 +8,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Facility extends Model
 {
-    use HasFactory, SoftDeletes, \App\Models\Concerns\HasUuidColumn;
+    use \App\Models\Concerns\HasUuidColumn, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'name',
         'description',
         'type',
         'quantity',
-        'condition'
+        'condition',
     ];
 
     protected $hidden = ['id'];

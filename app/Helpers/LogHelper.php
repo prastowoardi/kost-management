@@ -49,7 +49,7 @@ class LogHelper
 
         if ($exception) {
             $data['error_message'] = $exception->getMessage();
-            $data['error_file'] = $exception->getFile() . ':' . $exception->getLine();
+            $data['error_file'] = $exception->getFile().':'.$exception->getLine();
             $data['error_trace'] = $exception->getTraceAsString();
         } else {
             $data['error_message'] = $description;

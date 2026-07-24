@@ -37,7 +37,7 @@ class AdminRoomController extends Controller
             $room = Room::where('uuid', $uuid)->firstOrFail();
 
             $validated = $request->validate([
-                'room_number' => 'required|unique:rooms,room_number,' . $room->id,
+                'room_number' => 'required|unique:rooms,room_number,'.$room->id,
                 'type' => 'required|in:singlenoac,singleac,shared',
                 'price' => 'required|numeric|min:0',
                 'capacity' => 'required|integer|min:1',

@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Room;
 use App\Models\Facility;
+use App\Models\Room;
+use Illuminate\Database\Seeder;
 
 class RoomSeeder extends Seeder
 {
@@ -23,15 +23,15 @@ class RoomSeeder extends Seeder
         foreach ($rooms as $roomData) {
             $room = Room::updateOrCreate(
                 ['room_number' => $roomData['room_number']],
-                $roomData                                  
+                $roomData
             );
             $count++;
-        
-            if (!empty($roomFacilities)) {
+
+            if (! empty($roomFacilities)) {
                 $room->facilities()->sync($roomFacilities);
             }
         }
 
-        echo "✅ " . $count . " kamar berhasil di-sync (dibuat/diupdate)!\n";
+        echo '✅ '.$count." kamar berhasil di-sync (dibuat/diupdate)!\n";
     }
 }
