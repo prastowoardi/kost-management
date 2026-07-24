@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\LogHelper;
 use App\Models\Room;
 use App\Models\Tenant;
 use App\Services\TenantRegistrationService;
@@ -62,6 +63,8 @@ class TenantController extends Controller
 
         $tenant = $this->registration->registerWithUser($validated);
 
+        LogHelper::log('CREATE_TENANT', "Menambah penghuni {$tenant->name}", $tenant);
+
         $message = $this->whatsapp->getWelcomeMessage($tenant->name);
         $waUrl = 'https://wa.me/'.$tenant->phone.'?text='.urlencode($message);
 
@@ -114,6 +117,7 @@ class TenantController extends Controller
         ]);
 
         $oldRoomId = $tenant->room_id;
+        $before = $tenant->toArray();
 
         if ($request->hasFile('photo')) {
             if ($tenant->photo) {
@@ -123,6 +127,7 @@ class TenantController extends Controller
         }
 
         $tenant->update($validated);
+        $after = $tenant->fresh()->toArray();
 
         if ($tenant->status == 'inactive') {
             Room::where('id', $tenant->room_id)->update(['status' => 'available']);
@@ -133,12 +138,19 @@ class TenantController extends Controller
             Room::where('id', $validated['room_id'])->update(['status' => 'occupied']);
         }
 
+        LogHelper::log('UPDATE_TENANT', "Mengubah data penghuni {$tenant->name}", $tenant, [
+            'before' => $before,
+            'after' => $after,
+        ]);
+
         return redirect()->route('tenants.index')
             ->with('success', 'Data penghuni berhasil diupdate');
     }
 
     public function destroy(Tenant $tenant)
     {
+        $deletedData = $tenant->toArray();
+
         if ($tenant->photo) {
             Storage::disk('public')->delete($tenant->photo);
         }
@@ -146,6 +158,10 @@ class TenantController extends Controller
         Room::find($tenant->room_id)->update(['status' => 'available']);
 
         $tenant->delete();
+
+        LogHelper::log('DELETE_TENANT', "Menghapus penghuni {$deletedData['name']}", null, [
+            'deleted' => $deletedData,
+        ]);
 
         return redirect()->route('tenants.index')
             ->with('success', 'Penghuni berhasil dihapus');
@@ -158,7 +174,14 @@ class TenantController extends Controller
             'exit_date' => 'required_if:status,inactive|nullable|date',
         ]);
 
+        $before = $tenant->toArray();
         $tenant->update($validated);
+        $after = $tenant->fresh()->toArray();
+
+        LogHelper::log('UPDATE_TENANT_STATUS', "Mengubah status penghuni {$tenant->name} dari {$before['status']} ke {$after['status']}", $tenant, [
+            'before' => $before,
+            'after' => $after,
+        ]);
 
         if ($validated['status'] == 'inactive') {
             Room::find($tenant->room_id)->update(['status' => 'available']);

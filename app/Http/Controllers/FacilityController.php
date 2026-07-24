@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\LogHelper;
 use App\Models\Facility;
 use Illuminate\Http\Request;
 
@@ -32,7 +33,9 @@ class FacilityController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        Facility::create($validated);
+        $facility = Facility::create($validated);
+
+        LogHelper::log('CREATE_FACILITY', "Menambah fasilitas {$facility->name}", $facility);
 
         return redirect()->route('facilities.index')
             ->with('success', 'Fasilitas berhasil ditambahkan');
@@ -53,7 +56,14 @@ class FacilityController extends Controller
             'description' => 'nullable|string',
         ]);
 
+        $before = $facility->toArray();
         $facility->update($validated);
+        $after = $facility->fresh()->toArray();
+
+        LogHelper::log('UPDATE_FACILITY', "Mengubah fasilitas {$facility->name}", $facility, [
+            'before' => $before,
+            'after' => $after,
+        ]);
 
         return redirect()->route('facilities.index')
             ->with('success', 'Fasilitas berhasil diupdate');
@@ -61,7 +71,12 @@ class FacilityController extends Controller
 
     public function destroy(Facility $facility)
     {
+        $deletedData = $facility->toArray();
         $facility->delete();
+
+        LogHelper::log('DELETE_FACILITY', "Menghapus fasilitas {$deletedData['name']}", null, [
+            'deleted' => $deletedData,
+        ]);
 
         return redirect()->route('facilities.index')
             ->with('success', 'Fasilitas berhasil dihapus');

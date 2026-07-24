@@ -74,7 +74,7 @@ class AdminTenantController extends Controller
 
                 LogHelper::log(
                     'CREATE_TENANT',
-                    'Admin '.$request->user()->name." mendaftarkan tenant: {$request->name} di Kamar ".$room->room_number,
+                    "Mendaftarkan tenant: {$request->name} di Kamar ".$room->room_number,
                     $tenant->user
                 );
 
@@ -128,7 +128,9 @@ class AdminTenantController extends Controller
 
             LogHelper::log(
                 'DELETE_TENANT',
-                "Admin menghapus tenant: {$name}"
+                "Menghapus tenant: {$name}",
+                null,
+                ['deleted' => $tenant->toArray()]
             );
 
             return response()->json([
@@ -188,7 +190,7 @@ class AdminTenantController extends Controller
 
             LogHelper::log(
                 'UPDATE_TENANT',
-                'Admin '.$request->user()->name." mengupdate tenant: {$validated['name']}",
+                "Mengupdate tenant: {$validated['name']}",
                 $tenant->user
             );
 

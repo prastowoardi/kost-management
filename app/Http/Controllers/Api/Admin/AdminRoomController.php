@@ -50,7 +50,8 @@ class AdminRoomController extends Controller
 
             LogHelper::log(
                 'UPDATE_ROOM_API',
-                "Admin mengupdate kamar {$room->room_number}"
+                "Mengupdate kamar {$room->room_number} via API",
+                $room
             );
 
             return response()->json([
@@ -77,7 +78,14 @@ class AdminRoomController extends Controller
                 'status' => 'required|in:available,occupied,maintenance',
             ]);
 
+            $before = $room->toArray();
             $room->update($validated);
+            $after = $room->fresh()->toArray();
+
+            LogHelper::log('UPDATE_ROOM_STATUS', "Mengubah status kamar {$room->room_number} dari {$before['status']} ke {$after['status']}", $room, [
+                'before' => $before,
+                'after' => $after,
+            ]);
 
             return response()->json([
                 'status' => 'success',
@@ -85,6 +93,8 @@ class AdminRoomController extends Controller
                 'data' => $room->fresh(),
             ]);
         } catch (Throwable $e) {
+            LogHelper::logError('UPDATE_ROOM_STATUS_FAILED', 'Gagal update status kamar via API', $e);
+
             return response()->json([
                 'status' => 'error',
                 'message' => 'Gagal mengupdate status kamar',

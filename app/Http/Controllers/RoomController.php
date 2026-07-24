@@ -62,6 +62,8 @@ class RoomController extends Controller
                 $room->facilities()->attach($request->facilities);
             }
 
+            LogHelper::log('CREATE_ROOM', "Menambah kamar {$room->room_number}", $room);
+
             return redirect()->route('rooms.index')
                 ->with('success', 'Kamar berhasil ditambahkan');
         } catch (Throwable $e) {
@@ -143,7 +145,9 @@ class RoomController extends Controller
         unset($validated['keep_images']);
         unset($validated['new_images']);
 
+        $before = $room->toArray();
         $room->update($validated);
+        $after = $room->fresh()->toArray();
 
         // Sync facilities
         if ($request->has('facilities')) {
@@ -152,16 +156,10 @@ class RoomController extends Controller
             $room->facilities()->detach();
         }
 
-        $oldPrice = $room->price;
-        $room->update($validated);
-
-        if ($oldPrice != $request->price) {
-            LogHelper::log(
-                'CHANGE_ROOM_PRICE',
-                "Admin mengubah harga kamar {$room->room_number} dari {$oldPrice} ke {$request->price}",
-                $room
-            );
-        }
+        LogHelper::log('UPDATE_ROOM', "Mengubah kamar {$room->room_number}", $room, [
+            'before' => $before,
+            'after' => $after,
+        ]);
 
         return redirect()->route('rooms.show', $room)
             ->with('success', 'Kamar berhasil diupdate!');
@@ -192,7 +190,12 @@ class RoomController extends Controller
                 }
             }
 
+            $deletedData = $room->toArray();
             $room->delete();
+
+            LogHelper::log('DELETE_ROOM', "Menghapus kamar {$deletedData['room_number']}", null, [
+                'deleted' => $deletedData,
+            ]);
 
             return redirect()->route('rooms.index')
                 ->with('success', 'Kamar berhasil dihapus');
@@ -213,7 +216,14 @@ class RoomController extends Controller
             'status' => 'required|in:available,occupied,maintenance',
         ]);
 
+        $before = $room->toArray();
         $room->update($validated);
+        $after = $room->fresh()->toArray();
+
+        LogHelper::log('UPDATE_ROOM_STATUS', "Mengubah status kamar {$room->room_number} dari {$before['status']} ke {$after['status']}", $room, [
+            'before' => $before,
+            'after' => $after,
+        ]);
 
         return redirect()->back()
             ->with('success', 'Status kamar berhasil diupdate');

@@ -70,7 +70,7 @@ class MobilePaymentController extends Controller
         if (! $tenant) {
             LogHelper::logError(
                 'UPLOAD_RECEIPT_FAILED',
-                "User {$user->email} gagal upload bukti bayar: tenant tidak ditemukan"
+                "Gagal upload bukti bayar: tenant tidak ditemukan"
             );
 
             return response()->json(['message' => 'Data tenant tidak ditemukan'], 404);
@@ -96,7 +96,7 @@ class MobilePaymentController extends Controller
 
             LogHelper::log(
                 'UPLOAD_RECEIPT',
-                "Tenant {$user->name} mengunggah bukti bayar untuk tagihan bulan ".now()->format('F'),
+                "Mengunggah bukti bayar untuk tagihan bulan ".now()->format('F'),
                 $payment
             );
 
@@ -108,7 +108,7 @@ class MobilePaymentController extends Controller
         } catch (Throwable $e) {
             LogHelper::logError(
                 'UPLOAD_RECEIPT_FAILED',
-                "User {$user->email} gagal upload bukti bayar",
+                "Gagal upload bukti bayar",
                 $e
             );
 
@@ -139,7 +139,7 @@ class MobilePaymentController extends Controller
 
             LogHelper::log(
                 'VERIFY_PAYMENT',
-                "Admin {$request->user()->name} {$logAction} pembayaran #{$payment->invoice_number}",
+                "{$logAction} pembayaran #{$payment->invoice_number}",
                 $payment,
                 ['amount' => $payment->total, 'status' => $newStatus]
             );
@@ -171,7 +171,7 @@ class MobilePaymentController extends Controller
         } catch (Throwable $e) {
             LogHelper::logError(
                 'VERIFY_PAYMENT_FAILED',
-                "Admin {$request->user()->name} gagal verifikasi pembayaran #{$payment->invoice_number}",
+                "Gagal verifikasi pembayaran #{$payment->invoice_number}",
                 $e,
                 ['payment_id' => $payment->id, 'request_status' => $request->status]
             );
