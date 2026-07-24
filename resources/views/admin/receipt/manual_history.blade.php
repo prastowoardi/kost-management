@@ -4,7 +4,7 @@
             <h2 class="font-semibold text-xl text-slate-800 leading-tight">
                 {{ __('History Manual Kwitansi') }}
             </h2>
-            <a href="{{ route('admin.receipt.create') }}" class="px-4 py-2 bg-teal-600 text-white font-bold text-sm rounded-xl shadow-md hover:bg-teal-700 transition">
+            <a href="{{ route('admin.receipt.create') }}" target="_blank" class="px-4 py-2 bg-teal-600 text-white font-bold text-sm rounded-xl shadow-md hover:bg-teal-700 transition">
                 + Buat Baru
             </a>
         </div>
@@ -19,6 +19,15 @@
                     <span class="block sm:inline">{{ session('success') }}</span>
                 </div>
             @endif
+
+            <form method="GET" action="{{ route('admin.receipt.history') }}" class="mb-6">
+                <x-filter-panel reset="{{ route('admin.receipt.history') }}">
+                    <x-filter-input name="search" label="Cari" placeholder="Nama penyewa atau invoice..." />
+                    <x-filter-date name="period" label="Periode" />
+                    <x-filter-input name="amount_min" label="Nominal Min" placeholder="Rp 0" />
+                    <x-filter-input name="amount_max" label="Nominal Max" placeholder="Rp 9.999.999" />
+                </x-filter-panel>
+            </form>
 
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-[2rem] border border-teal-50">
                 <div class="p-6 text-gray-900">
@@ -35,7 +44,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($receipts ?? [] as $receipt)
+                                @forelse($receipts as $receipt)
                                     <tr class="bg-white border-b border-slate-100 hover:bg-slate-50/80 transition">
                                         <td class="px-6 py-4 font-bold text-slate-800">{{ $receipt->invoice_number ?? '-' }}</td>
                                         <td class="px-6 py-4 font-medium text-slate-700">{{ $receipt->tenant_name ?? '-' }}</td>
@@ -76,9 +85,7 @@
                     </div>
 
                     <div class="mt-4">
-                        @if(method_exists($receipts ?? [], 'links'))
-                            {{ $receipts->links() }}
-                        @endif
+                        {{ $receipts->links() }}
                     </div>
                 </div>
             </div>

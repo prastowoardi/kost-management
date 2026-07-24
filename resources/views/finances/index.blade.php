@@ -85,98 +85,39 @@
                 </div>
             </div>
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6">
-                    <form method="GET" class="space-y-4">
-                        <div x-data="dateRangePicker()" class="border-t pt-4">
-                            <p class="text-sm font-medium text-gray-700 mb-2">Rentang Tanggal</p>
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-600 mb-1">Dari</label>
-                                    <div class="relative">
-                                        <input type="date" name="start_date" value="{{ $startDate }}"
-                                            @change="endDate = null" x-model="startDate"
-                                            class="w-full px-3 py-2 pl-9 border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-sm">
-                                        <svg class="absolute left-2.5 top-2.5 w-4 h-4 text-gray-400 pointer-events-none"
-                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
-                                            </path>
-                                        </svg>
-                                    </div>
-                                    <template x-if="startDate">
-                                        <p class="text-xs text-green-600 mt-1" x-text="formatDate(startDate)"></p>
-                                    </template>
-                                </div>
-
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-600 mb-1">Sampai</label>
-                                    <div class="relative">
-                                        <input type="date" name="end_date" value="{{ $endDate }}"
-                                            x-model="endDate" :min="startDate" :disabled="!startDate"
-                                            :class="!startDate && 'opacity-50 cursor-not-allowed'"
-                                            class="w-full px-3 py-2 pl-9 border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-sm">
-                                        <svg class="absolute left-2.5 top-2.5 w-4 h-4 text-gray-400 pointer-events-none"
-                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
-                                            </path>
-                                        </svg>
-                                    </div>
-                                    <template x-if="endDate && startDate">
-                                        <p class="text-xs text-green-600 mt-1" x-text="getDaysCount() + ' hari'"></p>
-                                    </template>
-                                </div>
-
-                                <div class="col-span-1 md:col-span-2">
-                                    <label class="block text-xs font-medium text-gray-600 mb-1">Quick Date
-                                        Range</label>
-                                    <div class="flex gap-2 flex-wrap">
-                                        <button @click.prevent="setRange(0, 6)" type="button"
-                                            class="px-2 py-1.5 text-xs bg-white border border-gray-300 rounded hover:bg-blue-50 whitespace-nowrap">7
-                                            hari</button>
-                                        <button @click.prevent="setRange(0, 29)" type="button"
-                                            class="px-2 py-1.5 text-xs bg-white border border-gray-300 rounded hover:bg-blue-50 whitespace-nowrap">30
-                                            hari</button>
-                                        <button @click.prevent="setRangeMonth()" type="button"
-                                            class="px-2 py-1.5 text-xs bg-white border border-gray-300 rounded hover:bg-blue-50 whitespace-nowrap">Bulan
-                                            ini</button>
-                                        <button @click.prevent="setRangeMonth(-1)" type="button"
-                                            class="px-2 py-1.5 text-xs bg-white border border-gray-300 rounded hover:bg-blue-50 whitespace-nowrap">Bulan
-                                            lalu</button>
-                                    </div>
+            <form method="GET">
+                <x-filter-panel reset="{{ route('finances.index') }}">
+                    <div class="lg:col-span-4" x-data="dateRangePicker()">
+                        <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Rentang Tanggal</div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                            <div>
+                                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Dari</label>
+                                <input type="date" name="start_date" value="{{ $startDate }}"
+                                    @change="endDate = null" x-model="startDate"
+                                    class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-300 focus:border-slate-400 outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Sampai</label>
+                                <input type="date" name="end_date" value="{{ $endDate }}"
+                                    x-model="endDate" :min="startDate" :disabled="!startDate"
+                                    :class="!startDate && 'opacity-50'"
+                                    class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-300 focus:border-slate-400 outline-none transition">
+                            </div>
+                            <div class="lg:col-span-2">
+                                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Quick</div>
+                                <div class="flex gap-1.5 flex-wrap">
+                                    <button @click.prevent="setRange(0, 6)" type="button" class="px-3 py-1.5 text-xs font-medium bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition">7 hari</button>
+                                    <button @click.prevent="setRange(0, 29)" type="button" class="px-3 py-1.5 text-xs font-medium bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition">30 hari</button>
+                                    <button @click.prevent="setRangeMonth()" type="button" class="px-3 py-1.5 text-xs font-medium bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition">Bulan ini</button>
+                                    <button @click.prevent="setRangeMonth(-1)" type="button" class="px-3 py-1.5 text-xs font-medium bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition">Bulan lalu</button>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Tipe</label>
-                                <select name="type"
-                                    class="w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
-                                    <option value="">Semua</option>
-                                    <option value="income" {{ request('type') == 'income' ? 'selected' : '' }}>
-                                        Pemasukan</option>
-                                    <option value="expense" {{ request('type') == 'expense' ? 'selected' : '' }}>
-                                        Pengeluaran</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-                                <input type="text" name="category" value="{{ request('category') }}"
-                                    class="w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
-                                    placeholder="Nama kategori">
-                            </div>
-
-                            <div class="flex items-end">
-                                <button type="submit"
-                                    class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium">Filter</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
+                    </div>
+                    <x-filter-select name="type" label="Tipe" :options="['' => 'Semua', 'income' => 'Pemasukan', 'expense' => 'Pengeluaran']" />
+                    <x-filter-input name="category" label="Kategori" placeholder="Nama kategori" />
+                </x-filter-panel>
+            </form>
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">

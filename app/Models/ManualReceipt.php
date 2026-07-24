@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ManualReceipt extends Model
 {
-    use SoftDeletes, \App\Models\Concerns\HasUuidColumn;
+    use \App\Models\Concerns\HasUuidColumn, SoftDeletes;
+
     protected $fillable = [
         'tenant_name',
         'room_number',

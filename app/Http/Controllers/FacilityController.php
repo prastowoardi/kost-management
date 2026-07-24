@@ -7,9 +7,12 @@ use Illuminate\Http\Request;
 
 class FacilityController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $facilities = Facility::orderBy('type')->orderBy('name')->paginate(15);
+        $facilities = Facility::when($request->search, fn ($q) => $q->where('name', 'like', '%'.$request->search.'%'))
+            ->when($request->type, fn ($q) => $q->where('type', $request->type))
+            ->when($request->condition, fn ($q) => $q->where('condition', $request->condition))
+            ->orderBy('type')->orderBy('name')->paginate(15);
 
         return view('facilities.index', compact('facilities'));
     }

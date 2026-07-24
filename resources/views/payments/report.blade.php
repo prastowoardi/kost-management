@@ -8,42 +8,13 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
-            <!-- Filter Section -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6">
-                    <form method="GET" action="{{ route('reports.payments') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Mulai</label>
-                            <input type="date" name="start_date" value="{{ request('start_date') }}" 
-                                onclick="this.showPicker()"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 cursor-pointer">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Akhir</label>
-                            <input type="date" name="end_date" value="{{ request('end_date') }}" 
-                                onclick="this.showPicker()"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 cursor-pointer">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                            <select name="status" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="">Semua Status</option>
-                                <option value="paid" {{ request('status') == 'paid' ? 'selected' : '' }}>Paid</option>
-                                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                                <option value="overdue" {{ request('status') == 'overdue' ? 'selected' : '' }}>Overdue</option>
-                            </select>
-                        </div>
-                        <div class="flex items-end gap-2">
-                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex-1">
-                                Filter
-                            </button>
-                            <a href="{{ route('payments.index') }}" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
-                                Reset
-                            </a>
-                        </div>
-                    </form>
-                </div>
-            </div>
+            <form method="GET" action="{{ route('reports.payments') }}">
+                <x-filter-panel reset="{{ route('reports.payments') }}">
+                    <x-filter-date name="start_date" label="Tanggal Mulai" />
+                    <x-filter-date name="end_date" label="Tanggal Akhir" />
+                    <x-filter-select name="status" label="Status" :options="['' => 'Semua Status', 'paid' => 'Lunas', 'pending' => 'Pending', 'overdue' => 'Overdue']" />
+                </x-filter-panel>
+            </form>
 
             <!-- Summary Cards -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
