@@ -178,6 +178,15 @@
             }
         </script>
 
+        <script>
+            if (!('ontouchstart' in window)) {
+                document.addEventListener('click', function(e) {
+                    const input = e.target.closest('input[type="date"], input[type="month"]');
+                    if (input) input.showPicker();
+                });
+            }
+        </script>
+
         <style>
             .swal2-popup {
                 font-family: inherit;

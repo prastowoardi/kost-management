@@ -23,7 +23,7 @@
             <form method="GET" action="{{ route('admin.receipt.history') }}" class="mb-6">
                 <x-filter-panel reset="{{ route('admin.receipt.history') }}">
                     <x-filter-input name="search" label="Cari" placeholder="Nama penyewa atau invoice..." />
-                    <x-filter-date name="period" label="Periode" />
+                    <x-filter-date name="period" label="Periode" type="month" />
                     <x-filter-input name="amount_min" label="Nominal Min" placeholder="Rp 0" />
                     <x-filter-input name="amount_max" label="Nominal Max" placeholder="Rp 9.999.999" />
                 </x-filter-panel>
