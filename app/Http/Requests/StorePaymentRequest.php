@@ -28,7 +28,7 @@ class StorePaymentRequest extends FormRequest
     public function rules()
     {
         return [
-            'amount' => 'required|integer|min:1', 
+            'amount' => 'required|integer|min:1',
             'late_fee' => 'nullable|integer|min:0',
         ];
     }

@@ -11,8 +11,9 @@ class CheckActive
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->user() && !$request->user()->is_active) {
+        if ($request->user() && ! $request->user()->is_active) {
             Auth::logout();
+
             return redirect()->route('login')
                 ->with('error', 'Your account has been deactivated. Please contact administrator.');
         }

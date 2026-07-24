@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Facility;
+use Illuminate\Database\Seeder;
 
 class FacilitySeeder extends Seeder
 {
@@ -21,7 +21,7 @@ class FacilitySeeder extends Seeder
             ['name' => 'Kursi', 'type' => 'room', 'quantity' => 1, 'condition' => 'good', 'description' => 'kursi'],
             ['name' => 'Kamar Mandi Dalam', 'type' => 'room', 'quantity' => 1, 'condition' => 'good', 'description' => 'Kamar mandi pribadi'],
             ['name' => 'Wi-Fi', 'type' => 'room', 'quantity' => 1, 'condition' => 'good', 'description' => 'Internet wireless'],
-            
+
             // Common facilities
             ['name' => 'Parkir Motor', 'type' => 'common', 'quantity' => 20, 'condition' => 'good', 'description' => 'Area parkir motor'],
             ['name' => 'Dapur Bersama', 'type' => 'common', 'quantity' => 1, 'condition' => 'good', 'description' => 'Dapur untuk memasak'],
@@ -37,6 +37,6 @@ class FacilitySeeder extends Seeder
             $count++;
         }
 
-        echo "✅ " . $count . " fasilitas berhasil di-sync (dibuat/diupdate)!\n";
+        echo '✅ '.$count." fasilitas berhasil di-sync (dibuat/diupdate)!\n";
     }
 }

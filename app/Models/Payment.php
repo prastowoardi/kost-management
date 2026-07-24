@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Payment extends Model
 {
-    use HasFactory, SoftDeletes, \App\Models\Concerns\HasUuidColumn;
+    use \App\Models\Concerns\HasUuidColumn, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'tenant_id',
@@ -22,7 +22,7 @@ class Payment extends Model
         'status',
         'payment_method',
         'notes',
-        'receipt_file'
+        'receipt_file',
     ];
 
     protected $hidden = ['id'];
@@ -52,16 +52,16 @@ class Payment extends Model
         parent::boot();
 
         static::creating(function ($payment) {
-            if (!$payment->invoice_number) {
-                $payment->invoice_number = 'INV-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -6));
+            if (! $payment->invoice_number) {
+                $payment->invoice_number = 'INV-'.date('Ymd').'-'.strtoupper(substr(uniqid(), -6));
             }
         });
     }
 
     public function isDue()
     {
-        $dueDate = $this->created_at->addMonth(); 
-        
+        $dueDate = $this->created_at->addMonth();
+
         return now()->greaterThanOrEqualTo($dueDate);
     }
 }

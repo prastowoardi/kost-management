@@ -13,7 +13,7 @@ class DatabaseSeeder extends Seeder
             FacilitySeeder::class,
             RoomSeeder::class,
             CategorySeeder::class,
-            FinanceSeeder::class
+            FinanceSeeder::class,
         ]);
     }
 }

@@ -13,7 +13,7 @@ class LogController extends Controller
         $query = ActivityLog::with('user:id,name');
 
         if ($request->filled('action')) {
-            $query->where('action', 'like', '%' . $request->action . '%');
+            $query->where('action', 'like', '%'.$request->action.'%');
         }
 
         if ($request->filled('source')) {
@@ -62,7 +62,7 @@ class LogController extends Controller
     {
         $log = ActivityLog::with('user:id,name')->find($id);
 
-        if (!$log) {
+        if (! $log) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Log tidak ditemukan',

@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers;
 
+<<<<<<< HEAD
+use App\Helpers\NotificationHelper;
+=======
 use App\Helpers\LogHelper;
+>>>>>>> e837138107049f3e819dc56b70fbcd06a47021ab
 use App\Models\Payment;
 use App\Models\Tenant;
 use App\Services\PaymentService;
@@ -87,6 +91,13 @@ class PaymentController extends Controller
 
         $payment = Payment::create($validated);
         $payment->load(['room', 'tenant']);
+
+        NotificationHelper::create(
+            'bayar_masuk',
+            'Pembayaran Masuk: '.$payment->invoice_number,
+            $payment->tenant->name.' — Rp '.number_format($payment->total, 0, ',', '.'),
+            route('payments.index')
+        );
 
         $this->paymentService->createFinanceRecord($payment);
         $this->sendWhatsAppReceipt($payment);

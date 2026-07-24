@@ -188,6 +188,7 @@
         </script>
 
         <style>
+            [x-cloak] { display: none !important; }
             .swal2-popup {
                 font-family: inherit;
             }
