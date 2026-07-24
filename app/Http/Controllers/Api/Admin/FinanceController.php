@@ -47,6 +47,8 @@ class FinanceController extends Controller
         try {
             $finance = Finance::create($validated);
 
+            LogHelper::log('CREATE_FINANCE', 'Menambah transaksi keuangan via API: '.$finance->category.' Rp'.number_format($finance->amount, 0, ',', '.'), $finance);
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Transaksi berhasil disimpan',
@@ -69,7 +71,13 @@ class FinanceController extends Controller
     public function destroy($id)
     {
         try {
-            Finance::where('uuid', $id)->firstOrFail()->delete();
+            $finance = Finance::where('uuid', $id)->firstOrFail();
+            $deletedData = $finance->toArray();
+            $finance->delete();
+
+            LogHelper::log('DELETE_FINANCE', 'Menghapus transaksi keuangan via API: #'.$deletedData['id'], null, [
+                'deleted' => $deletedData,
+            ]);
 
             return response()->json(['message' => 'Transaksi berhasil dihapus']);
         } catch (Throwable $e) {

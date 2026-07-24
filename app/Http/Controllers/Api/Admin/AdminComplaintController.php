@@ -42,9 +42,16 @@ class AdminComplaintController extends Controller
             ]);
 
             $complaint = Complaint::where('uuid', $id)->firstOrFail();
+            $before = $complaint->toArray();
             $complaint->update([
                 'status' => $request->status,
                 'response' => $request->response,
+            ]);
+            $after = $complaint->fresh()->toArray();
+
+            LogHelper::log('UPDATE_COMPLAINT_STATUS', "Mengubah status laporan #{$complaint->id}: {$complaint->title}", $complaint, [
+                'before' => $before,
+                'after' => $after,
             ]);
 
             return response()->json([
@@ -72,9 +79,16 @@ class AdminComplaintController extends Controller
             ]);
 
             $complaint = Complaint::with('tenant.user')->where('uuid', $id)->firstOrFail();
+            $before = $complaint->toArray();
             $complaint->update([
                 'status' => $request->status,
                 'response' => $request->response,
+            ]);
+            $after = $complaint->fresh()->toArray();
+
+            LogHelper::log('RESPOND_COMPLAINT', "Merespon laporan #{$complaint->id}: {$complaint->title}", $complaint, [
+                'before' => $before,
+                'after' => $after,
             ]);
 
             $user = $complaint->tenant->user;

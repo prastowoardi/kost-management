@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\LogHelper;
 use App\Models\Complaint;
 use App\Models\Finance;
 use App\Models\Payment;
@@ -115,7 +116,9 @@ class DashboardController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Gagal terhubung ke WhatsApp Gateway.'], 500);
 
         } catch (\Exception $e) {
-            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+            LogHelper::logError('SEND_REMINDER_FAILED', 'Gagal kirim reminder tagihan', $e);
+
+            return response()->json(['status' => 'error', 'message' => 'Gagal mengirim reminder'], 500);
         }
     }
 }
