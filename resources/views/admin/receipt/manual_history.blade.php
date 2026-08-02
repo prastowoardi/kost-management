@@ -10,7 +10,7 @@
         </div>
     </x-slot>
 
-    <div class="py-12" x-data="{ openDetail: false, selectedReceipt: {} }">
+    <div class="pt-4 sm:pt-5 pb-8 sm:pb-10" x-data="{ openDetail: false, selectedReceipt: {} }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             
             @if (session('success'))

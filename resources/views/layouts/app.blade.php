@@ -9,22 +9,25 @@
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
+        <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700,800&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @stack('styles')
     </head>
     <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100">
+        <div class="min-h-screen bg-stone-100" x-data="{ menuOpen: false }"
+            x-effect="document.body.classList.toggle('overflow-hidden', menuOpen)">
             @if(!isset($hideNavigation))
                 @include('layouts.navigation')
             @endif
 
             <!-- Page Heading -->
             @isset($header)
-                <header class="bg-white shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                <header class="relative overflow-hidden border-b border-stone-200/70 bg-gradient-to-br from-white via-brand-50/60 to-stone-50">
+                    <div class="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-brand-100/50 blur-3xl"></div>
+                    <div class="page-container relative py-4 sm:py-5">
                         {{ $header }}
                     </div>
                 </header>

@@ -1,4 +1,9 @@
 <x-guest-layout>
+    <div class="mb-6">
+        <h2 class="text-2xl font-extrabold tracking-tight text-stone-900">Reset Password</h2>
+        <p class="mt-1 text-sm text-stone-500">Buat password baru untuk akun Anda.</p>
+    </div>
+
     <form method="POST" action="{{ route('password.store') }}">
         @csrf
 

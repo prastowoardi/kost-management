@@ -1,4 +1,9 @@
 <x-guest-layout>
+    <div class="mb-6">
+        <h2 class="text-2xl font-extrabold tracking-tight text-stone-900">Buat Akun</h2>
+        <p class="mt-1 text-sm text-stone-500">Daftar untuk mengelola kost Anda.</p>
+    </div>
+
     <form method="POST" action="{{ route('register') }}">
         @csrf
 
@@ -40,8 +45,8 @@
         </div>
 
         <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
-                {{ __('Already registered?') }}
+            <a class="text-sm font-semibold text-brand-600 underline-offset-4 rounded-md hover:text-brand-700 hover:underline focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2" href="{{ route('login') }}">
+                {{ __('Sudah punya akun? Masuk') }}
             </a>
 
             <x-primary-button class="ms-4">

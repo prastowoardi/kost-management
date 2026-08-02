@@ -1,176 +1,198 @@
     <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between gap-4">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight whitespace-nowrap">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="page-title whitespace-nowrap">
                 {{ __('Dashboard Keuangan') }}
             </h2>
             <div class="flex flex-wrap justify-end gap-2">
-                    <a href="{{ route('finances.report') }}" class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition">
-                    📄 Laporan
+                <a href="{{ route('finances.report') }}" class="btn-success btn-sm">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Laporan
                 </a>
-                <a href="{{ route('finances.index') }}" class="inline-flex items-center px-3 py-1.5 bg-gray-200 text-gray-700 text-sm rounded-md hover:bg-gray-300 transition">
-                    ← Pencatatan
+                <a href="{{ route('finances.index') }}" class="btn-secondary btn-sm">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                    Pencatatan
                 </a>
             </div>
         </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            
-            <!-- Current Month Stats -->
-            <div>
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Bulan Ini ({{ now()->format('F Y') }})</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-6">
-                            <div class="flex items-center justify-between mb-4">
-                                <h4 class="text-gray-600 font-medium">Pemasukan</h4>
-                                <div class="bg-green-100 p-2 rounded-lg">
-                                    <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"/>
-                                    </svg>
-                                </div>
-                            </div>
-                            <p class="text-3xl font-bold text-green-600">Rp {{ number_format($monthlyIncome, 0, ',', '.') }}</p>
+    <div class="page-container space-y-6 pt-4 sm:pt-5 pb-8 sm:pb-10">
+
+        <!-- Current Month Stats -->
+        <div>
+            <h3 class="section-title mb-4">Bulan Ini ({{ now()->format('F Y') }})</h3>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div class="card p-5 sm:p-6">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="text-sm font-medium text-stone-500">Pemasukan</p>
+                            <p class="mt-1 text-2xl font-extrabold text-emerald-600 tabular">Rp {{ number_format($monthlyIncome, 0, ',', '.') }}</p>
+                        </div>
+                        <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"/>
+                            </svg>
                         </div>
                     </div>
+                </div>
 
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-6">
-                            <div class="flex items-center justify-between mb-4">
-                                <h4 class="text-gray-600 font-medium">Pengeluaran</h4>
-                                <div class="bg-red-100 p-2 rounded-lg">
-                                    <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6"/>
-                                    </svg>
-                                </div>
-                            </div>
-                            <p class="text-3xl font-bold text-red-600">Rp {{ number_format($monthlyExpense, 0, ',', '.') }}</p>
+                <div class="card p-5 sm:p-6">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="text-sm font-medium text-stone-500">Pengeluaran</p>
+                            <p class="mt-1 text-2xl font-extrabold text-red-600 tabular">Rp {{ number_format($monthlyExpense, 0, ',', '.') }}</p>
+                        </div>
+                        <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6"/>
+                            </svg>
                         </div>
                     </div>
+                </div>
 
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-6">
-                            <div class="flex items-center justify-between mb-4">
-                                <h4 class="text-gray-600 font-medium">Saldo Bulan Ini</h4>
-                                <div class="{{ $monthlyBalance >= 0 ? 'bg-blue-100' : 'bg-orange-100' }} p-2 rounded-lg">
-                                    <svg class="h-6 w-6 {{ $monthlyBalance >= 0 ? 'text-blue-600' : 'text-orange-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                </div>
-                            </div>
-                            <p class="text-3xl font-bold {{ $monthlyBalance >= 0 ? 'text-blue-600' : 'text-orange-600' }}">
+                <div class="card p-5 sm:p-6">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="text-sm font-medium text-stone-500">Saldo Bulan Ini</p>
+                            <p class="mt-1 text-2xl font-extrabold tabular {{ $monthlyBalance >= 0 ? 'text-brand-600' : 'text-orange-600' }}">
                                 Rp {{ number_format($monthlyBalance, 0, ',', '.') }}
                             </p>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Year to Date Stats -->
-            <div>
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Tahun Ini ({{ now()->year }})</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-gradient-to-br from-green-500 to-green-600 overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-6 text-white">
-                            <p class="text-sm opacity-90">Total Pemasukan</p>
-                            <p class="text-2xl font-bold mt-2">Rp {{ number_format($ytdIncome, 0, ',', '.') }}</p>
-                        </div>
-                    </div>
-
-                    <div class="bg-gradient-to-br from-red-500 to-red-600 overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-6 text-white">
-                            <p class="text-sm opacity-90">Total Pengeluaran</p>
-                            <p class="text-2xl font-bold mt-2">Rp {{ number_format($ytdExpense, 0, ',', '.') }}</p>
-                        </div>
-                    </div>
-
-                    <div class="bg-gradient-to-br {{ $ytdBalance >= 0 ? 'from-blue-500 to-blue-600' : 'from-orange-500 to-orange-600' }} overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-6 text-white">
-                            <p class="text-sm opacity-90">Saldo Tahun Ini</p>
-                            <p class="text-2xl font-bold mt-2">Rp {{ number_format($ytdBalance, 0, ',', '.') }}</p>
+                        <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl {{ $monthlyBalance >= 0 ? 'bg-brand-100 text-brand-600' : 'bg-orange-100 text-orange-600' }}">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Chart & Recent Transactions -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                
-                <!-- Anually Trend Chart -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Ringkasan Setahun Terakhir</h3>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full">
-                                <thead>
-                                    <tr class="border-b">
-                                        <th class="text-left py-2 text-sm font-medium text-gray-600">Bulan</th>
-                                        <th class="text-right py-2 text-sm font-medium text-gray-600">Pemasukan</th>
-                                        <th class="text-right py-2 text-sm font-medium text-gray-600">Pengeluaran</th>
-                                        <th class="text-right py-2 text-sm font-medium text-gray-600">Saldo</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($monthlyTrend as $trend)
-                                    <tr class="border-b">
-                                        <td class="py-3 text-sm text-gray-900">{{ $trend['month'] }}</td>
-                                        <td class="py-3 text-sm text-right text-green-600 font-semibold">
-                                            {{ number_format($trend['income'], 0, ',', '.') }}
-                                        </td>
-                                        <td class="py-3 text-sm text-right text-red-600 font-semibold">
-                                            {{ number_format($trend['expense'], 0, ',', '.') }}
-                                        </td>
-                                        <td class="py-3 text-sm text-right font-semibold {{ $trend['balance'] >= 0 ? 'text-blue-600' : 'text-orange-600' }}">
-                                            {{ number_format($trend['balance'], 0, ',', '.') }}
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+        <!-- Year to Date Stats -->
+        <div>
+            <h3 class="section-title mb-4">Tahun Ini ({{ now()->year }})</h3>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div class="card p-5 sm:p-6">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="text-sm font-medium text-stone-500">Total Pemasukan</p>
+                            <p class="mt-1 text-2xl font-extrabold text-emerald-600 tabular">Rp {{ number_format($ytdIncome, 0, ',', '.') }}</p>
+                        </div>
+                        <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
                         </div>
                     </div>
                 </div>
 
-                <!-- Recent Transactions -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Transaksi Terbaru</h3>
-                        <div class="space-y-3">
-                            @forelse($recentTransactions as $transaction)
-                            <div class="flex items-center justify-between border-b pb-3">
-                                <div class="flex items-start space-x-3">
-                                    <div class="mt-1">
-                                        <div class="w-10 h-10 rounded-full flex items-center justify-center 
-                                            {{ $transaction->type == 'income' ? 'bg-green-100' : 'bg-red-100' }}">
-                                            <span class="text-lg">{{ $transaction->type == 'income' ? '💰' : '💸' }}</span>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <p class="font-medium text-gray-900">{{ $transaction->description }}</p>
-                                        <p class="text-sm text-gray-500">{{ $transaction->category }} • {{ $transaction->transaction_date->format('d M Y') }}</p>
-                                    </div>
+                <div class="card p-5 sm:p-6">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="text-sm font-medium text-stone-500">Total Pengeluaran</p>
+                            <p class="mt-1 text-2xl font-extrabold text-red-600 tabular">Rp {{ number_format($ytdExpense, 0, ',', '.') }}</p>
+                        </div>
+                        <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card p-5 sm:p-6">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="text-sm font-medium text-stone-500">Saldo Tahun Ini</p>
+                            <p class="mt-1 text-2xl font-extrabold tabular {{ $ytdBalance >= 0 ? 'text-brand-600' : 'text-orange-600' }}">
+                                Rp {{ number_format($ytdBalance, 0, ',', '.') }}
+                            </p>
+                        </div>
+                        <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl {{ $ytdBalance >= 0 ? 'bg-brand-100 text-brand-600' : 'bg-orange-100 text-orange-600' }}">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart & Recent Transactions -->
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+
+            <!-- Anually Trend Chart -->
+            <div class="card overflow-hidden">
+                <div class="border-b border-stone-100 px-5 py-4">
+                    <h3 class="section-title">Ringkasan Setahun Terakhir</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-max w-full">
+                        <thead>
+                            <tr>
+                                <th>Bulan</th>
+                                <th class="text-right">Pemasukan</th>
+                                <th class="text-right">Pengeluaran</th>
+                                <th class="text-right">Saldo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($monthlyTrend as $trend)
+                            <tr>
+                                <td class="font-medium text-stone-900">{{ $trend['month'] }}</td>
+                                <td class="text-right font-semibold text-emerald-600 tabular">
+                                    {{ number_format($trend['income'], 0, ',', '.') }}
+                                </td>
+                                <td class="text-right font-semibold text-red-600 tabular">
+                                    {{ number_format($trend['expense'], 0, ',', '.') }}
+                                </td>
+                                <td class="text-right font-bold tabular {{ $trend['balance'] >= 0 ? 'text-brand-600' : 'text-orange-600' }}">
+                                    {{ number_format($trend['balance'], 0, ',', '.') }}
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="card overflow-hidden">
+                <div class="border-b border-stone-100 px-5 py-4">
+                    <h3 class="section-title">Transaksi Terbaru</h3>
+                </div>
+                <div class="p-5">
+                    <div class="space-y-3">
+                        @forelse($recentTransactions as $transaction)
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="flex min-w-0 items-center gap-3">
+                                <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full {{ $transaction->type == 'income' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600' }}">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $transaction->type == 'income' ? 'M7 11l5-5m0 0l5 5m-5-5v12' : 'M17 13l-5 5m0 0l-5-5m5 5V6' }}"/>
+                                    </svg>
                                 </div>
-                                <div class="text-right">
-                                    <p class="font-semibold {{ $transaction->type == 'income' ? 'text-green-600' : 'text-red-600' }}">
-                                        {{ $transaction->type == 'income' ? '+' : '-' }} Rp {{ number_format($transaction->amount, 0, ',', '.') }}
-                                    </p>
+                                <div class="min-w-0">
+                                    <p class="truncate text-sm font-medium text-stone-900">{{ $transaction->description }}</p>
+                                    <p class="text-xs text-stone-500">{{ $transaction->category }} • {{ $transaction->transaction_date->format('d M Y') }}</p>
                                 </div>
                             </div>
-                            @empty
-                            <p class="text-gray-500 text-center py-8">Belum ada transaksi</p>
-                            @endforelse
+                            <p class="flex-shrink-0 text-sm font-semibold tabular {{ $transaction->type == 'income' ? 'text-emerald-600' : 'text-red-600' }}">
+                                {{ $transaction->type == 'income' ? '+' : '-' }} Rp {{ number_format($transaction->amount, 0, ',', '.') }}
+                            </p>
                         </div>
-                        <div class="mt-4">
-                            <a href="{{ route('finances.index') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                                Lihat Semua Transaksi →
-                            </a>
-                        </div>
+                        @empty
+                        <p class="py-8 text-center text-sm text-stone-500">Belum ada transaksi</p>
+                        @endforelse
+                    </div>
+                    <div class="mt-4">
+                        <a href="{{ route('finances.index') }}" class="text-sm font-medium text-brand-600 transition hover:text-brand-700">
+                            Lihat Semua Transaksi →
+                        </a>
                     </div>
                 </div>
             </div>
-
         </div>
+
     </div>
 </x-app-layout>
