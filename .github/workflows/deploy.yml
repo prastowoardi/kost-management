@@ -27,6 +27,9 @@ jobs:
 
             cd ${{ secrets.VPS_PATH }}
 
+            # Pastikan maintenance mode SELALU dimatikan meskipun ada step yang gagal di tengah jalan
+            trap 'echo "🔺 Disable maintenance mode (trap)"; php artisan up || true' EXIT
+
             echo "🔻 Enable maintenance mode"
             php artisan down || true
 
@@ -46,7 +49,6 @@ jobs:
             php artisan migrate --force
 
             # echo "⚠️ Run Seeders"
-            # # Menjalankan SEMUA seeder yang terdaftar di DatabaseSeeder.php
             # php artisan db:seed --force || true
 
             echo "🧹 Rebuild cache & Optimization"
@@ -63,9 +65,8 @@ jobs:
             sudo chmod -R 775 storage bootstrap/cache public/storage
 
             echo "🔁 Restart services"
-            # Pastikan versi php-fpm sesuai dengan yang terinstal di server (8.2)
             sudo systemctl restart php8.2-fpm
-            sudo systemctl reload nginx
+            sudo nginx -t && sudo systemctl reload nginx
 
             # echo "📦 Update WhatsApp Gateway"
             # cd whatsapp-gateway
@@ -81,21 +82,18 @@ jobs:
             # echo "💾 Save PM2 process list"
             # pm2 save
 
-            echo "🔺 Disable maintenance mode"
-            php artisan up
-
             echo "🏥 Running Health Check..."
-            # Menunggu agar PHP-FPM siap
             sleep 2
-            # Mengecek apakah website mengembalikan HTTP 200
             STATUS=$(curl -Lo /dev/null -s -w "%{http_code}" -H "Host: serrata.xyz" http://127.0.0.1)
-            
+
             if [[ "$STATUS" =~ ^(200|301|302)$ ]]; then
               echo "✅ Deploy finished successfully (HTTP $STATUS)"
             else
               echo "❌ Health Check FAILED with status: $STATUS"
               echo "Showing last 20 lines of Nginx error log:"
               sudo tail -n 20 /var/log/nginx/error.log
+              echo "Showing last 30 lines of Laravel log:"
+              sudo tail -n 30 storage/logs/laravel.log
               exit 1
             fi
           EOF
