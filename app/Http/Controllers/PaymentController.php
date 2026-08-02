@@ -92,7 +92,7 @@ class PaymentController extends Controller
             'bayar_masuk',
             'Pembayaran Masuk: '.$payment->invoice_number,
             $payment->tenant->name.' — Rp '.number_format($payment->total, 0, ',', '.'),
-            route('payments.index')
+            route('payments.show', $payment)
         );
 
         $this->paymentService->createFinanceRecord($payment);

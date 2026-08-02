@@ -69,7 +69,7 @@ class ComplaintController extends Controller
                 'keluhan_baru',
                 'Keluhan Baru: '.$validated['title'],
                 'Dari '.$tenant->name.' (Kamar '.$tenant->room->room_number.')',
-                route('complaints.index')
+                route('complaints.show', $complaint)
             );
 
             return redirect()->route('complaints.index')

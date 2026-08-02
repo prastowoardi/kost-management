@@ -184,13 +184,19 @@
                                         </template>
                                     </div>
                                     <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-semibold text-slate-800 truncate" x-text="n.title"></p>
+                                        <p class="text-sm truncate" x-text="n.title"
+                                            :class="{ 'font-bold text-slate-900': !n.is_read, 'font-medium text-slate-500': n.is_read }"></p>
                                         <p class="text-xs text-slate-500 truncate" x-text="n.message"></p>
                                         <p class="text-[10px] text-slate-400 mt-0.5" x-text="n.time"></p>
                                     </div>
-                                    <template x-if="!n.is_read">
-                                        <span class="shrink-0 w-2 h-2 mt-2 bg-blue-500 rounded-full"></span>
-                                    </template>
+                                    <div class="shrink-0 flex flex-col items-end gap-1">
+                                        <template x-if="!n.is_read">
+                                            <span class="text-[9px] font-bold text-white bg-blue-500 px-1.5 py-0.5 rounded-full uppercase leading-tight">Baru</span>
+                                        </template>
+                                        <template x-if="n.is_read">
+                                            <span class="text-[9px] font-medium text-slate-400 px-1.5 py-0.5 uppercase leading-tight">Dibaca</span>
+                                        </template>
+                                    </div>
                                 </a>
                             </template>
                         </div>
