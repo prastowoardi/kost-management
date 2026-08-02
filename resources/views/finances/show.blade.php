@@ -105,7 +105,7 @@
                             class="px-4 py-2 text-white bg-indigo-600 rounded-md hover:bg-indigo-700">
                             Edit Transaksi
                         </a>
-                        <form onsubmit="confirmDelete('delete-finance-{{ $finance->id }}', 'Transaksi ini')" 
+                        <form onsubmit="confirmDelete(event, 'delete-finance-{{ $finance->id }}', 'Transaksi ini')" 
                                 id="delete-finance-{{ $finance->id }}" 
                                 action="{{ route('finances.destroy', $finance) }}" method="POST" class="inline">
                             @csrf

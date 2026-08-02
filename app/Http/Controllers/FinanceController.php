@@ -340,7 +340,7 @@ class FinanceController extends Controller
             $deletedData = $finance->toArray();
             $finance->delete();
 
-            LogHelper::log('DELETE_FINANCE', 'Menghapus transaksi keuangan #'.$deletedData['id'], null, [
+            LogHelper::log('DELETE_FINANCE', 'Menghapus transaksi keuangan #'.$finance->id, null, [
                 'deleted' => $deletedData,
             ]);
 
