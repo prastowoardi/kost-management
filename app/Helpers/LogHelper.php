@@ -33,15 +33,9 @@ class LogHelper
             : $context;
 
         ActivityLog::create([
-<<<<<<< HEAD
-            'user_id' => $currentUserId,
-            'action' => $action,
-            'description' => $description,
-=======
             'user_id'    => $currentUserId,
             'action'     => $action,
             'description'=> "[$userName] $description",
->>>>>>> 4c91f8b711ef89c9bf482d8f4a41035ab2c33a8b
             'model_type' => $model ? get_class($model) : 'App\Models\User',
             'model_id' => $model ? ($model->id ?? null) : $currentUserId,
             'payload' => $mergedPayload,
