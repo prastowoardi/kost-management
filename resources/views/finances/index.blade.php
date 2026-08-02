@@ -1,295 +1,288 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="page-title">
                 {{ __('Pencatatan Keuangan') }}
             </h2>
-            <div class="flex flex-wrap gap-2 w-full md:w-auto">
+            <div class="flex flex-wrap gap-2 w-full sm:w-auto">
                 <a href="{{ route('finances.dashboard') }}"
-                    class="flex-1 md:flex-none justify-center inline-flex items-center px-3 py-2 bg-purple-600 text-white text-sm rounded-md hover:bg-purple-700">
-                    📊 <span class="ml-1 hidden sm:inline">Dashboard</span>
+                    class="btn-secondary btn-sm flex-1 sm:flex-none">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    <span class="hidden sm:inline">Dashboard</span>
                 </a>
                 <a href="{{ route('finances.report') }}"
-                    class="flex-1 md:flex-none justify-center inline-flex items-center px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700">
-                    📄 <span class="ml-1 hidden sm:inline">Laporan</span>
+                    class="btn-success btn-sm flex-1 sm:flex-none">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <span class="hidden sm:inline">Laporan</span>
                 </a>
                 <a href="{{ route('finances.create') }}"
-                    class="flex-1 md:flex-none justify-center inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 font-bold">
-                    + <span class="ml-1">Tambah</span>
+                    class="btn-primary btn-sm flex-1 sm:flex-none">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    <span>Tambah</span>
                 </a>
             </div>
         </div>
     </x-slot>
 
-    <div class="py-12" x-data="{ openDetail: false, selectedReceipt: {} }">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="page-container pt-4 sm:pt-5 pb-8 sm:pb-10" x-data="{ openDetail: false, selectedReceipt: {} }">
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
-                                <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 4v16m8-8H4" />
-                                </svg>
-                            </div>
-                            <div class="ml-5">
-                                <p class="text-gray-500 text-sm">Total Pemasukan</p>
-                                <p class="text-2xl font-bold text-green-600">Rp
-                                    {{ number_format($totalIncome, 0, ',', '.') }}</p>
-                            </div>
-                        </div>
+        <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div class="card p-5">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <p class="text-sm font-medium text-stone-500">Total Pemasukan</p>
+                        <p class="mt-1 text-2xl font-extrabold text-emerald-600 tabular">Rp
+                            {{ number_format($totalIncome, 0, ',', '.') }}</p>
                     </div>
-                </div>
-
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0 bg-red-500 rounded-md p-3">
-                                <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M20 12H4" />
-                                </svg>
-                            </div>
-                            <div class="ml-5">
-                                <p class="text-gray-500 text-sm">Total Pengeluaran</p>
-                                <p class="text-2xl font-bold text-red-600">Rp
-                                    {{ number_format($totalExpense, 0, ',', '.') }}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <div class="flex items-center">
-                            <div
-                                class="flex-shrink-0 {{ $balance >= 0 ? 'bg-blue-500' : 'bg-orange-500' }} rounded-md p-3">
-                                <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </div>
-                            <div class="ml-5">
-                                <p class="text-gray-500 text-sm">Saldo</p>
-                                <p class="text-2xl font-bold {{ $balance >= 0 ? 'text-blue-600' : 'text-orange-600' }}">
-                                    Rp {{ number_format($balance, 0, ',', '.') }}
-                                </p>
-                            </div>
-                        </div>
+                    <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 4v16m8-8H4" />
+                        </svg>
                     </div>
                 </div>
             </div>
 
-            <form method="GET">
-                <x-filter-panel reset="{{ route('finances.index') }}">
-                    <div class="lg:col-span-4" x-data="dateRangePicker()">
-                        <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Rentang Tanggal</div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                            <div>
-                                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Dari</label>
-                                <input type="date" name="start_date" value="{{ $startDate }}"
-                                    @change="endDate = null" x-model="startDate"
-                                    class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-300 focus:border-slate-400 outline-none transition">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Sampai</label>
-                                <input type="date" name="end_date" value="{{ $endDate }}"
-                                    x-model="endDate" :min="startDate" :disabled="!startDate"
-                                    :class="!startDate && 'opacity-50'"
-                                    class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-300 focus:border-slate-400 outline-none transition">
-                            </div>
-                            <div class="lg:col-span-2">
-                                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Quick</div>
-                                <div class="flex gap-1.5 flex-wrap">
-                                    <button @click.prevent="setRange(0, 6)" type="button" class="px-3 py-1.5 text-xs font-medium bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition">7 hari</button>
-                                    <button @click.prevent="setRange(0, 29)" type="button" class="px-3 py-1.5 text-xs font-medium bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition">30 hari</button>
-                                    <button @click.prevent="setRangeMonth()" type="button" class="px-3 py-1.5 text-xs font-medium bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition">Bulan ini</button>
-                                    <button @click.prevent="setRangeMonth(-1)" type="button" class="px-3 py-1.5 text-xs font-medium bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition">Bulan lalu</button>
-                                </div>
+            <div class="card p-5">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <p class="text-sm font-medium text-stone-500">Total Pengeluaran</p>
+                        <p class="mt-1 text-2xl font-extrabold text-red-600 tabular">Rp
+                            {{ number_format($totalExpense, 0, ',', '.') }}</p>
+                    </div>
+                    <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20 12H4" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-5">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <p class="text-sm font-medium text-stone-500">Saldo</p>
+                        <p class="mt-1 text-2xl font-extrabold tabular {{ $balance >= 0 ? 'text-brand-600' : 'text-orange-600' }}">
+                            Rp {{ number_format($balance, 0, ',', '.') }}
+                        </p>
+                    </div>
+                    <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl {{ $balance >= 0 ? 'bg-brand-100 text-brand-600' : 'bg-orange-100 text-orange-600' }}">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form method="GET">
+            <x-filter-panel reset="{{ route('finances.index') }}">
+                <div class="lg:col-span-4" x-data="dateRangePicker()">
+                    <div class="mb-2 text-[11px] font-bold uppercase tracking-wider text-stone-400">Rentang Tanggal</div>
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        <div>
+                            <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-stone-400">Dari</label>
+                            <input type="date" name="start_date" value="{{ $startDate }}"
+                                @change="endDate = null" x-model="startDate"
+                                class="w-full rounded-xl border-stone-200 bg-white px-3 py-2 text-sm shadow-sm transition focus:border-brand-500 focus:ring-brand-500">
+                        </div>
+                        <div>
+                            <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-stone-400">Sampai</label>
+                            <input type="date" name="end_date" value="{{ $endDate }}"
+                                x-model="endDate" :min="startDate" :disabled="!startDate"
+                                :class="!startDate && 'opacity-50'"
+                                class="w-full rounded-xl border-stone-200 bg-white px-3 py-2 text-sm shadow-sm transition focus:border-brand-500 focus:ring-brand-500">
+                        </div>
+                        <div class="lg:col-span-2">
+                            <div class="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-stone-400">Quick</div>
+                            <div class="flex flex-wrap gap-1.5">
+                                <button @click.prevent="setRange(0, 6)" type="button" class="rounded-lg bg-stone-100 px-3 py-1.5 text-xs font-medium text-stone-600 transition hover:bg-stone-200">7 hari</button>
+                                <button @click.prevent="setRange(0, 29)" type="button" class="rounded-lg bg-stone-100 px-3 py-1.5 text-xs font-medium text-stone-600 transition hover:bg-stone-200">30 hari</button>
+                                <button @click.prevent="setRangeMonth()" type="button" class="rounded-lg bg-stone-100 px-3 py-1.5 text-xs font-medium text-stone-600 transition hover:bg-stone-200">Bulan ini</button>
+                                <button @click.prevent="setRangeMonth(-1)" type="button" class="rounded-lg bg-stone-100 px-3 py-1.5 text-xs font-medium text-stone-600 transition hover:bg-stone-200">Bulan lalu</button>
                             </div>
                         </div>
                     </div>
-                    <x-filter-select name="type" label="Tipe" :options="['' => 'Semua', 'income' => 'Pemasukan', 'expense' => 'Pengeluaran']" />
-                    <x-filter-input name="category" label="Kategori" placeholder="Nama kategori" />
-                </x-filter-panel>
-            </form>
+                </div>
+                <x-filter-select name="type" label="Tipe" :options="['' => 'Semua', 'income' => 'Pemasukan', 'expense' => 'Pengeluaran']" />
+                <x-filter-input name="category" label="Kategori" placeholder="Nama kategori" />
+            </x-filter-panel>
+        </form>
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+        <div class="card overflow-hidden">
+            <div class="p-5 sm:p-6">
+                <div class="overflow-x-auto">
+                    <table class="min-w-max w-full">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Tipe</th>
+                                <th>Kategori</th>
+                                <th>Deskripsi</th>
+                                <th>Jumlah</th>
+                                <th class="text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($finances as $finance)
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipe
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                        Kategori</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                        Deskripsi</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jumlah
-                                    </th>
-                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @forelse($finances as $finance)
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{ $finance->transaction_date->format('d M Y') }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span
-                                                class="px-2 py-1 text-xs font-semibold rounded-full {{ $finance->type == 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                                {{ $finance->type == 'income' ? 'Pemasukan' : 'Pengeluaran' }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {{ $finance->category }}</td>
-                                        <td class="px-6 py-4 text-sm text-gray-900">
-                                            {{ Str::limit($finance->description, 50) }}</td>
-                                        <td
-                                            class="px-6 py-4 whitespace-nowrap text-sm font-semibold {{ $finance->type == 'income' ? 'text-green-600' : 'text-red-600' }}">
-                                            {{ $finance->type == 'income' ? '+' : '-' }} Rp
-                                            {{ number_format($finance->amount, 0, ',', '.') }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-center">
-                                            <div class="flex items-center justify-center space-x-2">
+                                    <td>
+                                        {{ $finance->transaction_date->format('d M Y') }}
+                                    </td>
+                                    <td>
+                                        <span class="badge {{ $finance->type == 'income' ? 'badge-success' : 'badge-danger' }}">
+                                            {{ $finance->type == 'income' ? 'Pemasukan' : 'Pengeluaran' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="font-medium text-stone-900">{{ $finance->category }}</span>
+                                    </td>
+                                    <td class="max-w-xs whitespace-normal">
+                                        {{ Str::limit($finance->description, 50) }}
+                                    </td>
+                                    <td class="font-semibold tabular {{ $finance->type == 'income' ? 'text-emerald-600' : 'text-red-600' }}">
+                                        {{ $finance->type == 'income' ? '+' : '-' }} Rp
+                                        {{ number_format($finance->amount, 0, ',', '.') }}
+                                    </td>
+                                    <td>
+                                        <div class="flex items-center justify-center gap-1">
 
-                                                @if ($finance->type == 'income' && $finance->payment && $finance->payment->receipt_file)
-                                                    <button type="button"
-                                                        @click="
-                                                            selectedReceipt = {
-                                                                invoice_number: '{{ $finance->payment->invoice_number ?? 'INV-' . date('Ymd') . '-' . $finance->id }}',
-                                                                file_url: '{{ asset('storage/' . $finance->payment->receipt_file) }}'
-                                                            };
-                                                            openDetail = true;
-                                                        "
-                                                        class="text-teal-600 hover:text-teal-900 p-1 hover:bg-teal-50 rounded transition"
-                                                        title="Lihat Berkas Kwitansi">
-                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                                            viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                        </svg>
-                                                    </button>
-                                                @endif
-
-                                                <a href="{{ route('finances.show', $finance) }}"
-                                                    class="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition"
-                                                    title="Detail Transaksi">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                    </svg>
-                                                </a>
-
-                                                <a href="{{ route('finances.edit', $finance) }}"
-                                                    class="text-indigo-600 hover:text-indigo-900 p-1 hover:bg-indigo-50 rounded transition"
-                                                    title="Edit Transaksi">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                            @if ($finance->type == 'income' && $finance->payment && $finance->payment->receipt_file)
+                                                <button type="button"
+                                                    @click="
+                                                        selectedReceipt = {
+                                                            invoice_number: '{{ $finance->payment->invoice_number ?? 'INV-' . date('Ymd') . '-' . $finance->id }}',
+                                                            file_url: '{{ asset('storage/' . $finance->payment->receipt_file) }}'
+                                                        };
+                                                        openDetail = true;
+                                                    "
+                                                    class="rounded-lg p-1.5 text-stone-400 transition hover:bg-brand-50 hover:text-brand-600"
+                                                    title="Lihat Berkas Kwitansi">
+                                                    <svg class="h-5 w-5" fill="none" stroke="currentColor"
                                                         viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
                                                             stroke-width="2"
-                                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                    </svg>
-                                                </a>
-
-                                                <form id="delete-finance-{{ $finance->id }}"
-                                                    action="{{ route('finances.destroy', $finance) }}" method="POST"
-                                                    class="inline">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                </form>
-                                                <button
-                                                    onclick="confirmDelete(event, 'delete-finance-{{ $finance->id }}', 'Transaksi ini')"
-                                                    class="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition"
-                                                    title="Hapus Transaksi">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                     </svg>
                                                 </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="6" class="px-6 py-8 text-center text-gray-500">Belum ada
-                                            transaksi keuangan</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+                                            @endif
 
-                    <div class="mt-4">
-                        {{ $finances->links() }}
-                    </div>
+                                            <a href="{{ route('finances.show', $finance) }}"
+                                                class="rounded-lg p-1.5 text-stone-400 transition hover:bg-brand-50 hover:text-brand-600"
+                                                title="Detail Transaksi">
+                                                <svg class="h-5 w-5" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </svg>
+                                            </a>
+
+                                            <a href="{{ route('finances.edit', $finance) }}"
+                                                class="rounded-lg p-1.5 text-stone-400 transition hover:bg-brand-50 hover:text-brand-600"
+                                                title="Edit Transaksi">
+                                                <svg class="h-5 w-5" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
+                                            </a>
+
+                                            <form id="delete-finance-{{ $finance->id }}"
+                                                action="{{ route('finances.destroy', $finance) }}" method="POST"
+                                                class="inline">
+                                                @csrf
+                                                @method('DELETE')
+                                            </form>
+                                            <button
+                                                onclick="confirmDelete(event, 'delete-finance-{{ $finance->id }}', 'Transaksi ini')"
+                                                class="rounded-lg p-1.5 text-stone-400 transition hover:bg-red-50 hover:text-red-600"
+                                                title="Hapus Transaksi">
+                                                <svg class="h-5 w-5" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="px-6 py-10">
+                                        <div class="empty-state">
+                                            <svg class="h-10 w-10 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                            <p class="mt-3 text-sm font-semibold text-stone-500">Belum ada transaksi keuangan</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-4">
+                    {{ $finances->links() }}
                 </div>
             </div>
-
-            <div class="fixed inset-0 z-50 overflow-y-auto" x-show="openDetail"
-                x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
-                x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
-                x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" style="display: none;">
-                <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
-                    @click="openDetail = false"></div>
-                <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                    <div class="relative transform overflow-hidden rounded-[2.5rem] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-xl border border-slate-100"
-                        @click.away="openDetail = false">
-                        <div class="bg-slate-50 px-6 py-4 flex justify-between items-center border-b border-slate-100">
-                            <div>
-                                <span
-                                    class="text-[10px] bg-teal-100 text-teal-800 font-black px-2 py-0.5 rounded-md uppercase tracking-wider">Serrata
-                                    Kost</span>
-                                <h3 class="text-sm font-black text-slate-800 mt-0.5 flex items-center gap-2">
-                                    <span>Detail Kwitansi</span>
-                                    <span
-                                        class="font-mono bg-slate-200/60 px-2 py-0.5 rounded-md text-slate-600 text-xs tracking-wider border border-slate-300/60 shadow-inner"
-                                        x-text="selectedReceipt.invoice_number"></span>
-                                </h3>
-                            </div>
-                            <button type="button" @click="openDetail = false"
-                                class="text-slate-400 hover:text-slate-600 text-2xl font-bold">&times;</button>
-                        </div>
-                        <div class="bg-white p-6">
-                            <div
-                                class="w-full rounded-2xl bg-slate-50 border border-dashed border-slate-300 p-2 overflow-hidden shadow-inner">
-                                <div
-                                    class="w-full h-96 flex items-center justify-center overflow-auto bg-white rounded-xl">
-                                    <img :src="selectedReceipt.file_url"
-                                        class="max-w-full max-h-full object-contain mx-auto" />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-slate-50 px-6 py-4 flex justify-between items-center border-t border-slate-100">
-                            <a :href="selectedReceipt.file_url" download
-                                class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl shadow transition flex items-center gap-1.5">
-                                Download Kwitansi
-                            </a>
-                            <button type="button" @click="openDetail = false"
-                                class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-xl transition">Tutup</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
         </div>
+
+        <div class="fixed inset-0 z-50 overflow-y-auto" x-show="openDetail"
+            x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" style="display: none;">
+            <div class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm transition-opacity"
+                @click="openDetail = false"></div>
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <div class="relative w-full transform overflow-hidden rounded-3xl border border-stone-100 bg-white text-left shadow-2xl transition-all sm:my-8 sm:max-w-xl"
+                    @click.away="openDetail = false">
+                    <div class="flex items-center justify-between border-b border-stone-100 bg-stone-50 px-6 py-4">
+                        <div>
+                            <span
+                                class="rounded-md bg-brand-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-brand-800">Serrata
+                                Kost</span>
+                            <h3 class="mt-0.5 flex items-center gap-2 text-sm font-black text-stone-800">
+                                <span>Detail Kwitansi</span>
+                                <span
+                                    class="rounded-md border border-stone-300/60 bg-stone-200/60 px-2 py-0.5 font-mono text-xs tracking-wider text-stone-600 shadow-inner"
+                                    x-text="selectedReceipt.invoice_number"></span>
+                            </h3>
+                        </div>
+                        <button type="button" @click="openDetail = false"
+                            class="text-2xl font-bold text-stone-400 hover:text-stone-600">&times;</button>
+                    </div>
+                    <div class="bg-white p-6">
+                        <div
+                            class="w-full overflow-hidden rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-2 shadow-inner">
+                            <div
+                                class="flex h-96 w-full items-center justify-center overflow-auto rounded-xl bg-white">
+                                <img :src="selectedReceipt.file_url"
+                                    class="mx-auto max-h-full max-w-full object-contain" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between border-t border-stone-100 bg-stone-50 px-6 py-4">
+                        <a :href="selectedReceipt.file_url" download
+                            class="btn-primary btn-sm">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            Download Kwitansi
+                        </a>
+                        <button type="button" @click="openDetail = false"
+                            class="btn-secondary btn-sm">Tutup</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </x-app-layout>
 

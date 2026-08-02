@@ -2,7 +2,7 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
 <style>
 .select2-container--default .select2-selection--single {
-    border: 1px solid #e2e8f0 !important;
+    border: 1px solid #e7e5e4 !important;
     border-radius: 0.75rem !important;
     height: 42px !important;
     padding: 0 12px;
@@ -11,17 +11,17 @@
 .select2-container--default .select2-selection--single .select2-selection__rendered {
     line-height: 40px !important;
     font-size: 14px;
-    color: #334155 !important;
+    color: #44403c !important;
 }
 .select2-container--default .select2-selection--single .select2-selection__arrow {
     height: 40px !important;
     right: 8px !important;
 }
 .select2-container--default .select2-selection--single .select2-selection__placeholder {
-    color: #94a3b8 !important;
+    color: #a8a29e !important;
 }
 .select2-dropdown {
-    border: 1px solid #e2e8f0 !important;
+    border: 1px solid #e7e5e4 !important;
     border-radius: 0.75rem !important;
     overflow: hidden;
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
@@ -31,7 +31,7 @@
 }
 .select2-search__field {
     border-radius: 0.5rem !important;
-    border: 1px solid #e2e8f0 !important;
+    border: 1px solid #e7e5e4 !important;
     padding: 6px 10px !important;
     font-size: 13px !important;
 }
@@ -40,8 +40,8 @@
     font-size: 13px;
 }
 .select2-results__option--highlighted {
-    background-color: #f1f5f9 !important;
-    color: #1e293b !important;
+    background-color: #f5f5f4 !important;
+    color: #292524 !important;
 }
 .select2-container--default .select2-results__option--selected {
     background-color: #f0fdf4 !important;
@@ -56,7 +56,7 @@
     line-height: 1;
     height: auto;
     margin: 0;
-    color: #94a3b8;
+    color: #a8a29e;
 }
 .select2-container--default .select2-selection--single .select2-selection__clear:hover {
     color: #ef4444;
@@ -97,11 +97,11 @@ jQuery(function() {
 
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-slate-800 leading-tight">Log Aktivitas</h2>
+        <h2 class="page-title">Log Aktivitas</h2>
     </x-slot>
 
     <div class="py-4 sm:py-6" x-data="{ selectedLog: null }">
-        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-4 sm:space-y-5">
+        <div class="page-container space-y-4 sm:space-y-5">
 
             {{-- Stats --}}
             @php
@@ -110,14 +110,14 @@ jQuery(function() {
                 $today = $todayLogs ?? $logs->filter(fn($l) => $l->created_at->isToday())->count();
             @endphp
             <div class="grid grid-cols-3 gap-2 sm:gap-4">
-                <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-100 p-3 sm:p-5">
+                <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-stone-100 p-3 sm:p-5">
                     <div class="flex items-center gap-2 sm:gap-3">
                         <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
                             <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                         </div>
                         <div class="min-w-0">
-                            <div class="text-lg sm:text-2xl font-black text-slate-800">{{ $total }}</div>
-                            <div class="text-[10px] sm:text-xs font-medium text-slate-400 truncate">Total Log</div>
+                            <div class="text-lg sm:text-2xl font-black text-stone-800">{{ $total }}</div>
+                            <div class="text-[10px] sm:text-xs font-medium text-stone-400 truncate">Total Log</div>
                         </div>
                     </div>
                 </div>
@@ -132,14 +132,14 @@ jQuery(function() {
                         </div>
                     </div>
                 </div>
-                <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-100 p-3 sm:p-5">
+                <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-stone-100 p-3 sm:p-5">
                     <div class="flex items-center gap-2 sm:gap-3">
-                        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-blue-50 flex items-center justify-center text-blue-500">
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-brand-50 flex items-center justify-center text-brand-500">
                             <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         </div>
                         <div class="min-w-0">
-                            <div class="text-lg sm:text-2xl font-black text-blue-600">{{ $today }}</div>
-                            <div class="text-[10px] sm:text-xs font-medium text-slate-400 truncate">Hari Ini</div>
+                            <div class="text-lg sm:text-2xl font-black text-brand-600">{{ $today }}</div>
+                            <div class="text-[10px] sm:text-xs font-medium text-stone-400 truncate">Hari Ini</div>
                         </div>
                     </div>
                 </div>
@@ -158,16 +158,16 @@ jQuery(function() {
                         </div>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
-                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mr-1">Status</span>
-                        <a href="{{ route('admin.logs', array_merge(request()->query(), ['action' => null])) }}" class="px-3 py-1.5 text-xs font-bold rounded-lg transition {{ !request('action') ? 'bg-slate-800 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">Semua</a>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-stone-400 mr-1">Status</span>
+                        <a href="{{ route('admin.logs', array_merge(request()->query(), ['action' => null])) }}" class="px-3 py-1.5 text-xs font-bold rounded-lg transition {{ !request('action') ? 'bg-stone-800 text-white shadow' : 'bg-stone-100 text-stone-600 hover:bg-stone-200' }}">Semua</a>
                         <a href="{{ route('admin.logs', array_merge(request()->query(), ['action' => 'FAILED'])) }}" class="px-3 py-1.5 text-xs font-bold rounded-lg transition {{ request('action') == 'FAILED' ? 'bg-red-600 text-white shadow' : 'bg-red-50 text-red-600 hover:bg-red-100' }}">Error</a>
-                        <span class="w-px h-5 bg-slate-200 mx-1"></span>
-                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mr-1">Sumber</span>
-                        <a href="{{ route('admin.logs', array_merge(request()->query(), ['source' => null])) }}" class="px-3 py-1.5 text-xs font-bold rounded-lg transition {{ !request('source') ? 'bg-slate-800 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">Semua</a>
-                        <a href="{{ route('admin.logs', array_merge(request()->query(), ['source' => 'web'])) }}" class="px-3 py-1.5 text-xs font-bold rounded-lg transition {{ request('source') == 'web' ? 'bg-blue-600 text-white shadow' : 'bg-blue-50 text-blue-600 hover:bg-blue-100' }}">Web</a>
+                        <span class="w-px h-5 bg-stone-200 mx-1"></span>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-stone-400 mr-1">Sumber</span>
+                        <a href="{{ route('admin.logs', array_merge(request()->query(), ['source' => null])) }}" class="px-3 py-1.5 text-xs font-bold rounded-lg transition {{ !request('source') ? 'bg-stone-800 text-white shadow' : 'bg-stone-100 text-stone-600 hover:bg-stone-200' }}">Semua</a>
+                        <a href="{{ route('admin.logs', array_merge(request()->query(), ['source' => 'web'])) }}" class="px-3 py-1.5 text-xs font-bold rounded-lg transition {{ request('source') == 'web' ? 'bg-brand-600 text-white shadow' : 'bg-brand-50 text-brand-600 hover:bg-brand-100' }}">Web</a>
                         <a href="{{ route('admin.logs', array_merge(request()->query(), ['source' => 'api'])) }}" class="px-3 py-1.5 text-xs font-bold rounded-lg transition {{ request('source') == 'api' ? 'bg-emerald-600 text-white shadow' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' }}">API</a>
                         @if(request('action') || request('source'))
-                            <span class="w-px h-5 bg-slate-200 mx-1"></span>
+                            <span class="w-px h-5 bg-stone-200 mx-1"></span>
                             <a href="{{ route('admin.logs') }}" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-red-50 text-red-600 border border-red-200 hover:bg-red-600 hover:text-white hover:border-red-600 transition flex items-center gap-1.5 shadow-sm">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                                 Reset
@@ -181,7 +181,7 @@ jQuery(function() {
             <div class="space-y-2 sm:space-y-2">
                 @forelse($logs as $log)
                     @php $isError = str_contains($log->action, 'FAILED'); @endphp
-                    <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm border {{ $isError ? 'border-red-200' : 'border-slate-100' }} overflow-hidden transition hover:shadow-md">
+                    <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm border {{ $isError ? 'border-red-200' : 'border-stone-100' }} overflow-hidden transition hover:shadow-md">
                         {{-- Baris utama --}}
                         <div class="flex items-start sm:items-center gap-2 sm:gap-4 px-3 sm:px-5 py-3 sm:py-4 cursor-pointer select-none" @click="selectedLog = selectedLog === {{ $log->id }} ? null : {{ $log->id }}">
                             {{-- Icon --}}
@@ -198,57 +198,57 @@ jQuery(function() {
                                         {{ $log->action }}
                                     </span>
                                     {{-- User --}}
-                                    <span class="text-[11px] sm:text-sm text-slate-400">{{ $log->user->name ?? 'Guest' }}</span>
+                                    <span class="text-[11px] sm:text-sm text-stone-400">{{ $log->user->name ?? 'Guest' }}</span>
                                 </div>
                                 {{-- Deskripsi --}}
-                                <div class="text-xs sm:text-sm text-slate-700 mt-0.5 line-clamp-2 sm:line-clamp-1">{{ $log->description }}</div>
+                                <div class="text-xs sm:text-sm text-stone-700 mt-0.5 line-clamp-2 sm:line-clamp-1">{{ $log->description }}</div>
                             </div>
                             {{-- Waktu + Expand --}}
                             <div class="shrink-0 text-right">
-                                <div class="text-[10px] sm:text-xs font-mono font-bold {{ $isError ? 'text-red-500' : 'text-slate-400' }}">{{ $log->created_at->format('H:i') }}</div>
-                                <div class="text-[9px] sm:text-[10px] text-slate-400">{{ $log->created_at->format('d/m') }}</div>
-                                <div class="mt-1 text-slate-300 transition" :class="{ 'rotate-180': selectedLog === {{ $log->id }} }">
+                                <div class="text-[10px] sm:text-xs font-mono font-bold {{ $isError ? 'text-red-500' : 'text-stone-400' }}">{{ $log->created_at->format('H:i') }}</div>
+                                <div class="text-[9px] sm:text-[10px] text-stone-400">{{ $log->created_at->format('d/m') }}</div>
+                                <div class="mt-1 text-stone-300 transition" :class="{ 'rotate-180': selectedLog === {{ $log->id }} }">
                                     <svg class="w-3 h-3 sm:w-4 sm:h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                                 </div>
                             </div>
                         </div>
                         {{-- Detail --}}
                         <div x-show="selectedLog === {{ $log->id }}" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0">
-                            <div class="mx-3 sm:mx-5 mb-3 sm:mb-4 p-3 sm:p-4 rounded-xl {{ $isError ? 'bg-red-50/50 border border-red-100' : 'bg-slate-50 border border-slate-100' }}">
+                            <div class="mx-3 sm:mx-5 mb-3 sm:mb-4 p-3 sm:p-4 rounded-xl {{ $isError ? 'bg-red-50/50 border border-red-100' : 'bg-stone-50 border border-stone-100' }}">
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-xs">
                                     {{-- Device --}}
                                     <div>
-                                        <div class="font-bold text-slate-400 uppercase tracking-wider text-[10px] mb-1">Device</div>
+                                        <div class="font-bold text-stone-400 uppercase tracking-wider text-[10px] mb-1">Device</div>
                                         @if($log->payload && !empty($log->payload['device']))
                                             <div class="space-y-0.5">
                                                 <div class="flex items-center gap-1.5">
-                                                    <span class="w-14 sm:w-16 text-slate-400 shrink-0">Browser</span>
-                                                    <span class="font-medium text-slate-700">{{ $log->payload['browser'] ?? '-' }}</span>
+                                                    <span class="w-14 sm:w-16 text-stone-400 shrink-0">Browser</span>
+                                                    <span class="font-medium text-stone-700">{{ $log->payload['browser'] ?? '-' }}</span>
                                                 </div>
                                                 <div class="flex items-center gap-1.5">
-                                                    <span class="w-14 sm:w-16 text-slate-400 shrink-0">OS</span>
-                                                    <span class="font-medium text-slate-700">{{ $log->payload['os'] ?? '-' }}</span>
+                                                    <span class="w-14 sm:w-16 text-stone-400 shrink-0">OS</span>
+                                                    <span class="font-medium text-stone-700">{{ $log->payload['os'] ?? '-' }}</span>
                                                 </div>
                                                 <div class="flex items-center gap-1.5">
-                                                    <span class="w-14 sm:w-16 text-slate-400 shrink-0">Tipe</span>
-                                                    <span class="font-medium text-slate-700">{{ $log->payload['device'] ?? '-' }}</span>
+                                                    <span class="w-14 sm:w-16 text-stone-400 shrink-0">Tipe</span>
+                                                    <span class="font-medium text-stone-700">{{ $log->payload['device'] ?? '-' }}</span>
                                                 </div>
                                                 <div class="flex items-center gap-1.5">
-                                                    <span class="w-14 sm:w-16 text-slate-400 shrink-0">IP</span>
-                                                    <span class="font-medium text-slate-700">{{ $log->payload['ip'] ?? $log->ip_address ?? '-' }}</span>
+                                                    <span class="w-14 sm:w-16 text-stone-400 shrink-0">IP</span>
+                                                    <span class="font-medium text-stone-700">{{ $log->payload['ip'] ?? $log->ip_address ?? '-' }}</span>
                                                 </div>
                                             </div>
                                         @else
-                                            <span class="text-slate-400">-</span>
+                                            <span class="text-stone-400">-</span>
                                         @endif
                                     </div>
                                     {{-- Error --}}
                                     <div>
-                                        <div class="font-bold text-slate-400 uppercase tracking-wider text-[10px] mb-1">Error</div>
+                                        <div class="font-bold text-stone-400 uppercase tracking-wider text-[10px] mb-1">Error</div>
                                         @if(!empty($log->payload['error_message']))
                                             <div class="text-red-600 font-medium text-xs sm:text-sm">{{ $log->payload['error_message'] }}</div>
                                             @if(!empty($log->payload['error_file']) && $log->payload['error_file'] !== 'N/A')
-                                                <div class="text-slate-400 mt-1 font-mono text-[10px] break-all">{{ $log->payload['error_file'] }}</div>
+                                                <div class="text-stone-400 mt-1 font-mono text-[10px] break-all">{{ $log->payload['error_file'] }}</div>
                                             @endif
                                             @if(!empty($log->payload['error_trace']))
                                                 <div x-data="{ showTrace: false }" class="mt-1">
@@ -260,12 +260,12 @@ jQuery(function() {
                                                 </div>
                                             @endif
                                         @else
-                                            <span class="text-slate-400">-</span>
+                                            <span class="text-stone-400">-</span>
                                         @endif
                                     </div>
                                     {{-- Payload --}}
                                     <div>
-                                        <div class="font-bold text-slate-400 uppercase tracking-wider text-[10px] mb-1">Data Tambahan</div>
+                                        <div class="font-bold text-stone-400 uppercase tracking-wider text-[10px] mb-1">Data Tambahan</div>
                                         @php
                                             $extra = collect($log->payload ?? [])->except(['browser','os','device','ip','error_message','error_file','error_trace'])->toArray();
                                         @endphp
@@ -276,37 +276,37 @@ jQuery(function() {
                                                         $label = str_replace('_', ' ', ucfirst($k));
                                                     @endphp
                                                     <div class="flex items-start gap-1">
-                                                        <span class="shrink-0 text-slate-400 text-[10px] capitalize">{{ $label }}:</span>
-                                                        <span class="text-slate-700 break-all text-[10px]">{{ is_array($v) ? json_encode($v) : $v }}</span>
+                                                        <span class="shrink-0 text-stone-400 text-[10px] capitalize">{{ $label }}:</span>
+                                                        <span class="text-stone-700 break-all text-[10px]">{{ is_array($v) ? json_encode($v) : $v }}</span>
                                                     </div>
                                                 @endforeach
                                             </div>
                                         @else
-                                            <span class="text-slate-400">-</span>
+                                            <span class="text-stone-400">-</span>
                                         @endif
                                     </div>
                                 </div>
                                 @if($log->user_agent)
-                                    <div class="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t {{ $isError ? 'border-red-200' : 'border-slate-200' }}">
-                                        <div class="font-bold text-slate-400 uppercase tracking-wider text-[10px] mb-1">User Agent</div>
-                                        <div class="text-[9px] sm:text-[10px] text-slate-400 font-mono break-all">{{ $log->user_agent }}</div>
+                                    <div class="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t {{ $isError ? 'border-red-200' : 'border-stone-200' }}">
+                                        <div class="font-bold text-stone-400 uppercase tracking-wider text-[10px] mb-1">User Agent</div>
+                                        <div class="text-[9px] sm:text-[10px] text-stone-400 font-mono break-all">{{ $log->user_agent }}</div>
                                     </div>
                                 @endif
                             </div>
                         </div>
                     </div>
                 @empty
-                    <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-100 p-8 sm:p-12 text-center">
-                        <div class="w-12 h-12 sm:w-16 sm:h-16 mx-auto rounded-xl sm:rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 mb-3 sm:mb-4">
+                    <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-stone-100 p-8 sm:p-12 text-center">
+                        <div class="w-12 h-12 sm:w-16 sm:h-16 mx-auto rounded-xl sm:rounded-2xl bg-stone-50 flex items-center justify-center text-stone-300 mb-3 sm:mb-4">
                             <svg class="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                         </div>
-                        <div class="text-sm sm:text-base text-slate-400 font-medium">Belum ada log aktivitas</div>
+                        <div class="text-sm sm:text-base text-stone-400 font-medium">Belum ada log aktivitas</div>
                     </div>
                 @endforelse
             </div>
 
             {{-- Pagination --}}
-            <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-100 px-3 sm:px-5 py-3 sm:py-4">
+            <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-stone-100 px-3 sm:px-5 py-3 sm:py-4">
                 {{ $logs->appends(request()->query())->links() }}
             </div>
 

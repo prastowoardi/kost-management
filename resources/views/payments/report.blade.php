@@ -1,122 +1,152 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="page-title">
             {{ __('Laporan Pembayaran') }}
         </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            
-            <form method="GET" action="{{ route('reports.payments') }}">
-                <x-filter-panel reset="{{ route('reports.payments') }}">
-                    <x-filter-date name="start_date" label="Tanggal Mulai" />
-                    <x-filter-date name="end_date" label="Tanggal Akhir" />
-                    <x-filter-select name="status" label="Status" :options="['' => 'Semua Status', 'paid' => 'Lunas', 'pending' => 'Pending', 'overdue' => 'Overdue']" />
-                </x-filter-panel>
-            </form>
+    <div class="page-container pt-4 sm:pt-5 pb-8 sm:pb-10">
 
-            <!-- Summary Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                    <p class="text-gray-500 text-sm">Total Pembayaran</p>
-                    <p class="text-2xl font-bold text-gray-800">{{ $payments->count() }}</p>
-                </div>
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                    <p class="text-gray-500 text-sm">Total Pendapatan</p>
-                    <p class="text-2xl font-bold text-green-600">Rp {{ number_format($totalAmount, 0, ',', '.') }}</p>
-                </div>
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                    <p class="text-gray-500 text-sm">Lunas</p>
-                    <p class="text-2xl font-bold text-green-600">{{ $payments->where('status', 'paid')->count() }}</p>
-                </div>
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                    <p class="text-gray-500 text-sm">Pending/Overdue</p>
-                    <p class="text-2xl font-bold text-red-600">{{ $payments->where('status', '!=', 'paid')->count() }}</p>
-                </div>
-            </div>
+        <form method="GET" action="{{ route('reports.payments') }}">
+            <x-filter-panel reset="{{ route('reports.payments') }}">
+                <x-filter-date name="start_date" label="Tanggal Mulai" />
+                <x-filter-date name="end_date" label="Tanggal Akhir" />
+                <x-filter-select name="status" label="Status" :options="['' => 'Semua Status', 'paid' => 'Lunas', 'pending' => 'Pending', 'overdue' => 'Overdue']" />
+            </x-filter-panel>
+        </form>
 
-            <!-- Actions -->
-            <div class="mb-4 flex justify-between items-center">
-                <h3 class="text-lg font-semibold text-gray-800">Detail Laporan</h3>
-                <div class="flex gap-2">
-                    <a href="{{ route('reports.payments', array_merge(request()->all(), ['download' => 'pdf'])) }}" 
-                        class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 inline-flex items-center">
-                        📄 Download PDF
-                    </a>
-                    <button onclick="window.print()" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
-                        🖨️ Print
-                    </button>
-                </div>
-            </div>
-
-            <!-- Table -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Invoice</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Penghuni</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kamar</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Periode</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jumlah</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @forelse($payments as $index => $payment)
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $index + 1 }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $payment->payment_date->format('d/m/Y') }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        {{ $payment->invoice_number }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ $payment->tenant->name }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $payment->room->room_number }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $payment->period_month->format('M Y') }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                        Rp {{ number_format($payment->total, 0, ',', '.') }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                            @if($payment->status == 'paid') bg-green-100 text-green-800
-                                            @elseif($payment->status == 'pending') bg-yellow-100 text-yellow-800
-                                            @else bg-red-100 text-red-800 @endif">
-                                            {{ ucfirst($payment->status) }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="8" class="px-6 py-4 text-center text-gray-500">
-                                        Tidak ada data pembayaran
-                                    </td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                            <tfoot class="bg-gray-50">
-                                <tr>
-                                    <td colspan="6" class="px-6 py-4 text-right font-bold text-gray-900">TOTAL:</td>
-                                    <td colspan="2" class="px-6 py-4 font-bold text-xl text-green-600">
-                                        Rp {{ number_format($totalAmount, 0, ',', '.') }}
-                                    </td>
-                                </tr>
-                            </tfoot>
-                        </table>
+        <!-- Summary Cards -->
+        <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="card p-5">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <p class="text-sm font-medium text-stone-500">Total Pembayaran</p>
+                        <p class="mt-1 text-2xl font-extrabold text-stone-900 tabular">{{ $payments->count() }}</p>
+                    </div>
+                    <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-brand-100 text-brand-600">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     </div>
                 </div>
+            </div>
+            <div class="card p-5">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <p class="text-sm font-medium text-stone-500">Total Pendapatan</p>
+                        <p class="mt-1 text-2xl font-extrabold text-emerald-600 tabular">Rp {{ number_format($totalAmount, 0, ',', '.') }}</p>
+                    </div>
+                    <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </div>
+                </div>
+            </div>
+            <div class="card p-5">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <p class="text-sm font-medium text-stone-500">Lunas</p>
+                        <p class="mt-1 text-2xl font-extrabold text-emerald-600 tabular">{{ $payments->where('status', 'paid')->count() }}</p>
+                    </div>
+                    <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                </div>
+            </div>
+            <div class="card p-5">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <p class="text-sm font-medium text-stone-500">Pending / Overdue</p>
+                        <p class="mt-1 text-2xl font-extrabold text-amber-600 tabular">{{ $payments->where('status', '!=', 'paid')->count() }}</p>
+                    </div>
+                    <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <h3 class="section-title">Detail Laporan</h3>
+            <div class="flex flex-wrap gap-2">
+                <a href="{{ route('reports.payments', array_merge(request()->all(), ['download' => 'pdf'])) }}"
+                    class="btn-danger btn-sm">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19h6m-6-4h6"/></svg>
+                    Download PDF
+                </a>
+                <button onclick="window.print()" class="btn-secondary btn-sm">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                    Print
+                </button>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="card overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-max w-full">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Tanggal</th>
+                            <th>Invoice</th>
+                            <th>Penghuni</th>
+                            <th>Kamar</th>
+                            <th>Periode</th>
+                            <th>Jumlah</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($payments as $index => $payment)
+                        <tr>
+                            <td class="text-stone-500">{{ $index + 1 }}</td>
+                            <td>
+                                {{ $payment->payment_date->format('d/m/Y') }}
+                            </td>
+                            <td class="font-medium text-stone-900 tabular">
+                                {{ $payment->invoice_number }}
+                            </td>
+                            <td>
+                                <span class="font-medium text-stone-900">{{ $payment->tenant->name }}</span>
+                            </td>
+                            <td>
+                                {{ $payment->room->room_number }}
+                            </td>
+                            <td>
+                                {{ $payment->period_month->format('M Y') }}
+                            </td>
+                            <td class="font-semibold text-stone-900 tabular">
+                                Rp {{ number_format($payment->total, 0, ',', '.') }}
+                            </td>
+                            <td>
+                                <span class="badge
+                                    @if($payment->status == 'paid') badge-success
+                                    @elseif($payment->status == 'pending') badge-warning
+                                    @elseif($payment->status == 'overdue') badge-danger
+                                    @else badge-neutral @endif">
+                                    {{ ucfirst($payment->status) }}
+                                </span>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="8" class="px-6 py-10">
+                                <div class="empty-state">
+                                    <svg class="h-10 w-10 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                    <p class="mt-3 text-sm font-semibold text-stone-500">Tidak ada data pembayaran</p>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="6" class="text-right font-bold text-stone-900">TOTAL:</td>
+                            <td colspan="2" class="text-lg font-extrabold text-emerald-600 tabular">
+                                Rp {{ number_format($totalAmount, 0, ',', '.') }}
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
         </div>
     </div>

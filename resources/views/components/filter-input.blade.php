@@ -2,7 +2,7 @@
 
 <div {{ $attributes->only('class') }}>
     @if($label)
-        <label for="{{ $name }}" class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">{{ $label }}</label>
+        <label for="{{ $name }}" class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-stone-400">{{ $label }}</label>
     @endif
     <input
         type="text"
@@ -10,6 +10,6 @@
         name="{{ $name }}"
         value="{{ request($name) }}"
         placeholder="{{ $placeholder }}"
-        class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-300 focus:border-slate-400 outline-none transition placeholder:text-slate-300"
+        class="w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-800 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500 placeholder:text-stone-300"
     >
 </div>
