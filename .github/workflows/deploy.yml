@@ -27,8 +27,8 @@ jobs:
 
             cd ${{ secrets.VPS_PATH }}
 
-            # Pastikan maintenance mode SELALU dimatikan meskipun ada step yang gagal di tengah jalan
-            trap 'echo "🔺 Disable maintenance mode (trap)"; php artisan up || true' EXIT
+            # Agar tidak nyangkut di maintenance mode jika terjadi error
+            trap 'echo "🔺 Disable maintenance mode (trap safety net)"; php artisan up || true' EXIT
 
             echo "🔻 Enable maintenance mode"
             php artisan down || true
@@ -81,6 +81,9 @@ jobs:
 
             # echo "💾 Save PM2 process list"
             # pm2 save
+
+            echo "🔺 Disable maintenance mode"
+            php artisan up
 
             echo "🏥 Running Health Check..."
             sleep 2
