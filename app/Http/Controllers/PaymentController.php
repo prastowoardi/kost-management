@@ -1,12 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
-
-<<<<<<< HEAD
 use App\Helpers\NotificationHelper;
-=======
 use App\Helpers\LogHelper;
->>>>>>> e837138107049f3e819dc56b70fbcd06a47021ab
 use App\Models\Payment;
 use App\Models\Tenant;
 use App\Services\PaymentService;
