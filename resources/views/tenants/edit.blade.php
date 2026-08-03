@@ -76,7 +76,6 @@
                             <div class="form-group">
                                 <label for="entry_date" class="form-label">Tanggal Masuk</label>
                                 <input type="date" id="entry_date" name="entry_date" value="{{ old('entry_date', $tenant->entry_date->format('Y-m-d')) }}" required
-                                    onclick="this.showPicker()"
                                     class="cursor-pointer rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
                                 @error('entry_date')
                                 <p class="text-sm text-red-600">{{ $message }}</p>
@@ -86,7 +85,6 @@
                             <div class="form-group">
                                 <label for="exit_date" class="form-label">Tanggal Keluar (Optional)</label>
                                 <input type="date" id="exit_date" name="exit_date" value="{{ old('exit_date', $tenant->exit_date?->format('Y-m-d')) }}"
-                                    onclick="this.showPicker()"
                                     class="cursor-pointer rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
                                 @error('exit_date')
                                 <p class="text-sm text-red-600">{{ $message }}</p>

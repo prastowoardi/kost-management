@@ -93,7 +93,6 @@
                                 <div class="form-group">
                                     <label class="form-label" for="transaction_date">Tanggal Transaksi</label>
                                     <input type="date" name="transaction_date" id="transaction_date" value="{{ old('transaction_date', date('Y-m-d')) }}" required
-                                        onclick="this.showPicker()"
                                         class="mt-1 block w-full cursor-pointer rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
                                     @error('transaction_date')
                                     <p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p>
@@ -101,25 +100,9 @@
                                 </div>
                             </div>
 
-                            <div x-data="{
-                                amountDisplay: '{{ number_format(old('amount', 0), 0, ',', '.') }}',
-                                amountClean: '{{ old('amount', 0) }}',
-                                formatNumber() {
-                                    let rawValue = this.amountDisplay.replace(/[^0-9]/g, '');
-
-                                    this.amountClean = rawValue;
-
-                                    if (rawValue !== '') {
-                                        this.amountDisplay = Number(rawValue).toLocaleString('id-ID', {
-                                            minimumFractionDigits: 0,
-                                            maximumFractionDigits: 0
-                                        });
-                                    } else {
-                                        this.amountDisplay = '';
-                                    }
-                                }
-                            }"
-                            x-init="formatNumber()">
+                            <div x-data="financeAmount"
+                                data-amount-display="{{ number_format(old('amount', 0), 0, ',', '.') }}"
+                                data-amount-clean="{{ old('amount', 0) }}">
 
                                 <div class="form-group">
                                     <label class="form-label" for="amount_display">Jumlah (Rp)</label>

@@ -75,7 +75,6 @@
                             <div class="md:col-span-2 form-group">
                                 <label for="entry_date" class="form-label">Tanggal Masuk</label>
                                 <input type="date" id="entry_date" name="entry_date" value="{{ old('entry_date', date('Y-m-d')) }}" required
-                                    onclick="this.showPicker()"
                                     class="cursor-pointer rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
                                 @error('entry_date')
                                 <p class="text-sm text-red-600">{{ $message }}</p>

@@ -19,7 +19,7 @@
                 <form action="{{ route('public.register.store') }}"
                     method="POST"
                     enctype="multipart/form-data"
-                    onsubmit="showLoading('Sedang memproses pendaftaran...')">
+                    class="register-form">
                     @csrf
 
                     <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
@@ -77,7 +77,6 @@
                         <div>
                             <label class="form-label">Rencana Tanggal Masuk</label>
                             <input type="date" name="entry_date" value="{{ old('entry_date', date('Y-m-d')) }}" required
-                                onclick="this.showPicker()"
                                 class="mt-1.5 block w-full cursor-pointer">
                             @error('entry_date')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -134,12 +133,12 @@
 
                         <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                             <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-stone-200 bg-white p-3.5 shadow-sm transition hover:border-brand-300 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50/50 has-[:checked]:ring-1 has-[:checked]:ring-brand-500">
-                                <input type="radio" name="payment_method" value="transfer" onclick="toggleTransferDetails(true)" class="h-4 w-4 text-brand-600 focus:ring-brand-500" required {{ old('payment_method') == 'transfer' ? 'checked' : '' }}>
+                                <input type="radio" name="payment_method" value="transfer" class="h-4 w-4 text-brand-600 focus:ring-brand-500" required {{ old('payment_method') == 'transfer' ? 'checked' : '' }}>
                                 <span class="text-sm font-semibold text-stone-800">Transfer Bank</span>
                             </label>
 
                             <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-stone-200 bg-white p-3.5 shadow-sm transition hover:border-brand-300 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50/50 has-[:checked]:ring-1 has-[:checked]:ring-brand-500">
-                                <input type="radio" name="payment_method" value="cash" onclick="toggleTransferDetails(false)" class="h-4 w-4 text-brand-600 focus:ring-brand-500" required {{ old('payment_method') == 'cash' ? 'checked' : '' }}>
+                                <input type="radio" name="payment_method" value="cash" class="h-4 w-4 text-brand-600 focus:ring-brand-500" required {{ old('payment_method') == 'cash' ? 'checked' : '' }}>
                                 <span class="text-sm font-semibold text-stone-800">Bayar Tunai</span>
                             </label>
                         </div>
@@ -153,7 +152,7 @@
                                     </div>
                                     <div class="flex items-center justify-between gap-2">
                                         <p id="acc_mandiri" class="tabular text-lg font-black text-brand-600 leading-none">1360014406059</p>
-                                        <button type="button" onclick="copyText('acc_mandiri')" class="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-brand-100 bg-brand-50 px-2.5 py-1.5 text-xs font-semibold text-brand-700 transition hover:bg-brand-100 active:scale-95">
+                                        <button type="button" data-copy="acc_mandiri" class="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-brand-100 bg-brand-50 px-2.5 py-1.5 text-xs font-semibold text-brand-700 transition hover:bg-brand-100 active:scale-95">
                                             <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
                                             Salin
                                         </button>
@@ -168,7 +167,7 @@
                                     </div>
                                     <div class="flex items-center justify-between gap-2">
                                         <p id="acc_jago" class="tabular text-lg font-black text-orange-500 leading-none">109781903718</p>
-                                        <button type="button" onclick="copyText('acc_jago')" class="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-orange-100 bg-orange-50 px-2.5 py-1.5 text-xs font-semibold text-orange-600 transition hover:bg-orange-100 active:scale-95">
+                                        <button type="button" data-copy="acc_jago" class="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-orange-100 bg-orange-50 px-2.5 py-1.5 text-xs font-semibold text-orange-600 transition hover:bg-orange-100 active:scale-95">
                                             <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
                                             Salin
                                         </button>
@@ -201,38 +200,8 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+        @vite('resources/js/pages/public-register.js')
+    @endpush
 </x-app-layout>
-
-<script>
-    function toggleTransferDetails(isTransfer) {
-        const container = document.getElementById('transfer-details-container');
-        const inputField = document.getElementById('receipt_input');
-
-        if(isTransfer) {
-            container.classList.remove('hidden');
-            inputField.setAttribute('required', 'required');
-        } else {
-            container.classList.add('hidden');
-            inputField.removeAttribute('required');
-            inputField.value = "";
-        }
-    }
-
-    function copyText(elementId) {
-        const textToCopy = document.getElementById(elementId).innerText;
-
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil disalin!',
-                text: textToCopy + ' telah siap ditempel.',
-                showConfirmButton: false,
-                timer: 1200,
-                toast: true,
-                position: 'top-end'
-            });
-        }).catch(err => {
-            console.error('Gagal menyalin: ', err);
-        });
-    }
-</script>

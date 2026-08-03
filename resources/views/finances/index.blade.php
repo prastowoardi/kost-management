@@ -82,7 +82,7 @@
 
         <form method="GET">
             <x-filter-panel reset="{{ route('finances.index') }}">
-                <div class="lg:col-span-4" x-data="dateRangePicker()">
+                <div class="lg:col-span-4" x-data="dateRangePicker" data-start-date="{{ $startDate }}" data-end-date="{{ $endDate }}">
                     <div class="mb-2 text-[11px] font-bold uppercase tracking-wider text-stone-400">Rentang Tanggal</div>
                     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                         <div>
@@ -203,7 +203,8 @@
                                                 @method('DELETE')
                                             </form>
                                             <button
-                                                onclick="confirmDelete(event, 'delete-finance-{{ $finance->id }}', 'Transaksi ini')"
+                                                data-confirm-delete="delete-finance-{{ $finance->id }}"
+                                                data-item-name="Transaksi ini"
                                                 class="rounded-lg p-1.5 text-stone-400 transition hover:bg-red-50 hover:text-red-600"
                                                 title="Hapus Transaksi">
                                                 <svg class="h-5 w-5" fill="none" stroke="currentColor"
@@ -286,43 +287,3 @@
     </div>
 </x-app-layout>
 
-<script>
-    function dateRangePicker() {
-        return {
-            startDate: '{{ $startDate }}',
-            endDate: '{{ $endDate }}',
-
-            formatDate(date) {
-                return new Date(date).toLocaleDateString('id-ID', {
-                    day: '2-digit',
-                    month: 'long',
-                    year: 'numeric'
-                });
-            },
-
-            getDaysCount() {
-                if (!this.startDate || !this.endDate) return 0;
-                const start = new Date(this.startDate);
-                const end = new Date(this.endDate);
-                return Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
-            },
-
-            setRange(daysStart, daysEnd) {
-                const today = new Date();
-                const start = new Date(today);
-                start.setDate(today.getDate() - daysEnd);
-                this.startDate = start.toISOString().split('T')[0];
-                this.endDate = today.toISOString().split('T')[0];
-            },
-
-            setRangeMonth(offset = 0) {
-                const today = new Date();
-                const year = today.getFullYear();
-                const month = today.getMonth() + offset;
-
-                this.startDate = new Date(year, month, 1).toISOString().split('T')[0];
-                this.endDate = new Date(year, month + 1, 0).toISOString().split('T')[0];
-            }
-        }
-    }
-</script>

@@ -67,32 +67,7 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script>
-function buildUrl(params) {
-    var base = '{{ route('admin.logs') }}';
-    var qs = Object.keys(params).filter(function(k) { return params[k] != null && params[k] !== ''; }).map(function(k) { return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]); }).join('&');
-    return qs ? base + '?' + qs : base;
-}
-
-jQuery(function() {
-    var currentParams = {!! json_encode(request()->query()) !!};
-
-    jQuery('.select2-action').select2({
-        placeholder: 'Cari aksi...',
-        allowClear: true,
-        width: '100%'
-    }).on('change', function() {
-        var val = jQuery(this).val();
-        var params = Object.assign({}, currentParams);
-        if (val) {
-            params.action = val;
-        } else {
-            delete params.action;
-        }
-        window.location.href = buildUrl(params);
-    });
-});
-</script>
+@vite('resources/js/pages/admin-logs.js')
 @endpush
 
 <x-app-layout>
@@ -149,7 +124,9 @@ jQuery(function() {
                 <div class="lg:col-span-4">
                     <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center mb-3">
                         <div class="flex-1 min-w-0">
-                            <select class="select2-action">
+                            <select class="select2-action"
+                                    data-logs-url="{{ route('admin.logs') }}"
+                                    data-logs-params="{{ e(json_encode(request()->query())) }}">
                                 <option value="">Semua Aksi</option>
                                 @foreach($actions as $a)
                                     <option value="{{ $a }}" {{ request('action') == $a ? 'selected' : '' }}>{{ $a }}</option>

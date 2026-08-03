@@ -97,7 +97,7 @@
                         <a href="{{ route('finances.edit', $finance) }}" class="btn-primary">
                             Edit Transaksi
                         </a>
-                        <form onsubmit="confirmDelete(event, 'delete-finance-{{ $finance->id }}', 'Transaksi ini')"
+                        <form data-confirm-delete-form="Transaksi ini"
                                 id="delete-finance-{{ $finance->id }}"
                                 action="{{ route('finances.destroy', $finance) }}" method="POST" class="inline">
                             @csrf

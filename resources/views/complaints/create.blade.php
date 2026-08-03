@@ -83,8 +83,7 @@
                                                id="images"
                                                accept="image/*"
                                                multiple
-                                               class="hidden"
-                                               onchange="previewImages(event)">
+                                               class="hidden">
                                         <label for="images" class="cursor-pointer">
                                             <div class="text-stone-600">
                                                 <svg class="mx-auto h-12 w-12 text-stone-300" stroke="currentColor" fill="none" viewBox="0 0 48 48">
@@ -122,44 +121,7 @@
         </div>
     </div>
 
-    <script>
-        function previewImages(event) {
-            const files = event.target.files;
-            const previewContainer = document.getElementById('preview-container');
-            
-            // Clear previous previews
-            previewContainer.innerHTML = '';
-            
-            // Check max files
-            if (files.length > 5) {
-                alert('Maksimal 5 foto!');
-                event.target.value = '';
-                return;
-            }
-            
-            if (files.length > 0) {
-                previewContainer.classList.remove('hidden');
-            }
-            
-            // Preview each image
-            Array.from(files).forEach((file, index) => {
-                if (file.size > 2048000) { // 2MB
-                    alert(`File ${file.name} terlalu besar! Max 2MB per file.`);
-                    return;
-                }
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const div = document.createElement('div');
-                    div.className = 'relative';
-                    div.innerHTML = `
-                        <img src="${e.target.result}" class="w-full h-24 object-cover rounded-lg border border-gray-300">
-                        <span class="absolute top-1 right-1 bg-blue-600 text-white text-xs px-2 py-1 rounded">${index + 1}</span>
-                    `;
-                    previewContainer.appendChild(div);
-                }
-                reader.readAsDataURL(file);
-            });
-        }
-    </script>
+    @push('scripts')
+        @vite('resources/js/pages/complaints-form.js')
+    @endpush
 </x-app-layout>

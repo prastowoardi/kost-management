@@ -232,7 +232,7 @@
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault(); this.closest('form').submit();">
+                                    data-submit-closest-form>
                                 <span class="flex items-center gap-2 text-red-600"><span>↪</span> {{ __('Log Out') }}</span>
                             </x-dropdown-link>
                         </form>
@@ -369,7 +369,7 @@
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <x-responsive-nav-link :href="route('logout')"
-                        onclick="event.preventDefault(); this.closest('form').submit();">
+                        data-submit-closest-form>
                     <span class="text-red-600">↪ {{ __('Log Out') }}</span>
                 </x-responsive-nav-link>
             </form>

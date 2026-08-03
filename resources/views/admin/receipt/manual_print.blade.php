@@ -155,44 +155,15 @@
     </div>
 
     @if(!request()->has('hide_buttons'))
-        <div class="action-container">
+        <div class="action-container" data-filename="Kwitansi-{{ $payment->invoice_number }}">
             <div class="btn-group">
-                <button onclick="downloadPDF()" class="btn btn-pdf">📄 PDF</button>
-                <button onclick="downloadImage()" class="btn btn-image">🖼️ Image</button>
+                <button type="button" data-download-pdf class="btn btn-pdf">📄 PDF</button>
+                <button type="button" data-download-image class="btn btn-image">🖼️ Image</button>
             </div>
             <a href="{{ route('admin.receipt.create') }}" style="color: #0d9488; text-decoration: none; font-size: 13px; font-weight: 600;">← Buat Baru</a>
         </div>
     @endif
 
-    <script>
-        const element = document.querySelector('.card');
-        const filename = "Kwitansi-{{ $payment->invoice_number }}";
-
-        function downloadPDF() {
-            const opt = {
-                margin: 0,
-                filename: filename + '.pdf',
-                image: { type: 'jpeg', quality: 1 },
-                html2canvas: { scale: 3, useCORS: true, backgroundColor: '#ffffff' },
-                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-            };
-            html2pdf().set(opt).from(element).save();
-        }
-
-        function downloadImage() {
-            html2canvas(element, { scale: 4, backgroundColor: '#ffffff', useCORS: true }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = filename + '.jpg';
-                link.href = canvas.toDataURL("image/jpeg", 1.0);
-                link.click();
-            });
-        }
-
-        window.addEventListener('message', function(event) {
-            if (event.data === 'trigger-download-image') {
-                downloadImage();
-            }
-        });
-    </script>
+    @vite('resources/js/admin-receipt.js')
 </body>
 </html>

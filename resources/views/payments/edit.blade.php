@@ -10,7 +10,7 @@
             <div class="card animate-fade-in-up">
                 <div class="card-body">
 
-                    <form action="{{ route('payments.update', $payment->id) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('payments.update', $payment->id) }}" method="POST" enctype="multipart/form-data" class="js-payment-form">
                         @csrf
                         @method('PUT')
 
@@ -46,7 +46,6 @@
                                     <label class="form-label" for="period_month">Periode Bulan</label>
                                     <input type="month" name="period_month" id="period_month"
                                         value="{{ old('period_month', \Carbon\Carbon::parse($payment->period_month)->format('Y-m')) }}" required
-                                        onclick="this.showPicker()"
                                         class="mt-1 block w-full cursor-pointer rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
                                     @error('period_month')
                                     <p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p>
@@ -70,7 +69,7 @@
                             <div>
                                 <div class="form-group">
                                     <label class="form-label" for="amount">Jumlah Bayar (Rp)</label>
-                                    <input type="text" name="amount" id="amount" value="{{ old('amount', $payment->amount) }}" placeholder="0" onkeyup="formatRupiah(this)"
+                                    <input type="text" name="amount" id="amount" value="{{ old('amount', $payment->amount) }}" placeholder="0" data-rupiah
                                         class="mt-1 block w-full rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500 text-stone-800">
                                     @error('amount')
                                     <p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p>
@@ -81,7 +80,7 @@
                             <div>
                                 <div class="form-group">
                                     <label class="form-label" for="late_fee">Denda Keterlambatan (Rp)</label>
-                                    <input type="text" name="late_fee" id="late_fee" value="{{ old('late_fee', $payment->late_fee) }}" placeholder="0" onkeyup="formatRupiah(this)"
+                                    <input type="text" name="late_fee" id="late_fee" value="{{ old('late_fee', $payment->late_fee) }}" placeholder="0" data-rupiah
                                         class="mt-1 block w-full rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500 text-stone-800">
                                     @error('late_fee')
                                     <p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p>
@@ -189,71 +188,8 @@
         </div>
     </div>
 
-    {{-- KODE JAVASCRIPT LENGKAP UNTUK FORMATTING DAN AUTOFIL --}}
-    <script>
-        function formatRupiah(input) {
-            let value = input.value;
-
-            if (value.includes('.')) {
-                value = value.split('.')[0];
-            }
-
-            let number_string = value.replace(/[^0-9]/g, '').toString();
-
-            if (number_string.includes('.')) {
-                number_string = number_string.split('.')[0];
-            }
-
-            let sisa = number_string.length % 3,
-                rupiah = number_string.substr(0, sisa),
-                ribuan = number_string.substr(sisa).match(/\d{3}/gi);
-
-            if (ribuan) {
-                separator = sisa ? '.' : '';
-                rupiah += separator + ribuan.join('.');
-            }
-
-            input.value = rupiah;
-        }
-
-        const paymentForm = document.querySelector('form');
-
-        paymentForm.addEventListener('submit', function() {
-            const amountInput = document.getElementById('amount');
-            const lateFeeInput = document.getElementById('late_fee');
-
-            amountInput.value = amountInput.value.replace(/\./g, '').replace(/,/g, '');
-            lateFeeInput.value = lateFeeInput.value.replace(/\./g, '').replace(/,/g, '');
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const amountInput = document.getElementById('amount');
-            const lateFeeInput = document.getElementById('late_fee');
-
-            if (amountInput && amountInput.value) {
-                formatRupiah(amountInput);
-            }
-            if (lateFeeInput && lateFeeInput.value) {
-                formatRupiah(lateFeeInput);
-            }
-        });
-
-        document.getElementById('tenant_id').addEventListener('change', function() {
-            const amountInput = document.getElementById('amount');
-            const selectedOption = this.options[this.selectedIndex];
-            let price = selectedOption.getAttribute('data-price');
-
-            if (price) {
-                if (price.includes('.')) {
-                    price = price.split('.')[0];
-                }
-
-                amountInput.value = price;
-                formatRupiah(amountInput);
-            } else {
-                amountInput.value = '';
-            }
-        });
-    </script>
+    @push('scripts')
+        @vite('resources/js/pages/payments-form.js')
+    @endpush
 
 </x-app-layout>

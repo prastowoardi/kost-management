@@ -14,7 +14,7 @@
         </div>
     @endif
 
-    <div class="pt-4 sm:pt-5 pb-8 sm:pb-10">
+    <div class="pt-4 sm:pt-5 pb-8 sm:pb-10" id="dashboard-root" data-send-url="{{ route('send.reminder') }}">
         <div class="page-container">
 
             {{-- SECTION JATUH TEMPO --}}
@@ -212,60 +212,8 @@
 
         </div>
     </div>
+
+    @push('scripts')
+        @vite('resources/js/pages/dashboard.js')
+    @endpush
 </x-app-layout>
-
-<script>
-document.querySelectorAll('.send-wa-btn').forEach(button => {
-    button.addEventListener('click', function() {
-        const tenantId = this.getAttribute('data-id');
-        const tenantName = this.getAttribute('data-name');
-        const dueDate = this.getAttribute('data-due');
-
-        Swal.fire({
-            title: 'Kirim Tagihan?',
-            text: `Kirim pesan WhatsApp otomatis ke ${tenantName}?`,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#10b981', // green-500
-            cancelButtonColor: '#6b7280', // gray-500
-            confirmButtonText: 'Ya, Kirim Sekarang!',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Tampilkan Loading
-                Swal.fire({
-                    title: 'Sedang Mengirim...',
-                    text: 'Harap tunggu sebentar',
-                    allowOutsideClick: false,
-                    didOpen: () => { Swal.showLoading() }
-                });
-
-                // Proses AJAX ke Laravel
-                fetch("{{ route('send.reminder') }}", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                    },
-                    body: JSON.stringify({
-                        tenant_id: tenantId,
-                        due_date: dueDate,
-                        days_left: this.getAttribute('data-days')
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        Swal.fire('Berhasil!', data.message, 'success');
-                    } else {
-                        Swal.fire('Gagal!', data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    Swal.fire('Error!', 'Tidak dapat terhubung ke server/gateway.', 'error');
-                });
-            }
-        });
-    });
-});
-</script>
