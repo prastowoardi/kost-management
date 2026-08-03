@@ -16,7 +16,7 @@
                             <div class="md:col-span-2 form-group">
                                 <label for="name" class="form-label">Nama Lengkap</label>
                                 <input type="text" id="name" name="name" value="{{ old('name') }}" required
-                                    class="rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
+                                    class="mt-1 block w-full rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
                                 @error('name')
                                 <p class="text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -25,7 +25,7 @@
                             <div class="md:col-span-2 form-group">
                                 <label for="email" class="form-label">Email</label>
                                 <input type="email" id="email" name="email" value="{{ old('email') }}" required
-                                    class="rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
+                                    class="mt-1 block w-full rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
                                 @error('email')
                                 <p class="text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -33,7 +33,7 @@
 
                             <div class="md:col-span-2 form-group">
                                 <label for="role" class="form-label">Role</label>
-                                <select name="role" id="role" required class="rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
+                                <select name="role" id="role" required class="mt-1 block w-full rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
                                     <option value="">Pilih Role</option>
                                     <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
                                     <option value="staff" {{ old('role') == 'staff' ? 'selected' : '' }}>Staff</option>
@@ -47,7 +47,7 @@
                             <div class="form-group">
                                 <label for="password" class="form-label">Password</label>
                                 <input type="password" id="password" name="password" required
-                                    class="rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
+                                    class="mt-1 block w-full rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
                                 <p class="text-xs text-stone-400">Minimal 8 karakter</p>
                                 @error('password')
                                 <p class="text-sm text-red-600">{{ $message }}</p>
@@ -57,7 +57,7 @@
                             <div class="form-group">
                                 <label for="password_confirmation" class="form-label">Konfirmasi Password</label>
                                 <input type="password" id="password_confirmation" name="password_confirmation" required
-                                    class="rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
+                                    class="mt-1 block w-full rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
                             </div>
 
                             <div class="md:col-span-2">

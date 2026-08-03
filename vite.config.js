@@ -15,6 +15,7 @@ export default defineConfig({
                 'resources/js/pages/complaints-form.js',
                 'resources/js/pages/public-register.js',
                 'resources/js/pages/admin-logs.js',
+                'resources/js/pages/tenants-form.js',
                 'resources/js/welcome.js',
                 'resources/js/admin-receipt.js',
             ],

@@ -17,7 +17,7 @@
                             <div class="md:col-span-2 form-group">
                                 <label for="name" class="form-label">Nama Lengkap</label>
                                 <input type="text" id="name" name="name" value="{{ old('name', $user->name) }}" required
-                                    class="rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
+                                    class="mt-1 block w-full rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
                                 @error('name')
                                 <p class="text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -26,7 +26,7 @@
                             <div class="md:col-span-2 form-group">
                                 <label for="email" class="form-label">Email</label>
                                 <input type="email" id="email" name="email" value="{{ old('email', $user->email) }}" required
-                                    class="rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
+                                    class="mt-1 block w-full rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
                                 @error('email')
                                 <p class="text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -34,7 +34,7 @@
 
                             <div class="md:col-span-2 form-group">
                                 <label for="role" class="form-label">Role</label>
-                                <select name="role" id="role" required class="rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500"
+                                <select name="role" id="role" required class="mt-1 block w-full rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500"
                                     {{ $user->id === auth()->id() ? 'disabled' : '' }}>
                                     <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
                                     <option value="staff" {{ old('role', $user->role) == 'staff' ? 'selected' : '' }}>Staff</option>
@@ -56,7 +56,7 @@
                                     <div class="form-group">
                                         <label for="password" class="form-label">Password Baru</label>
                                         <input type="password" id="password" name="password"
-                                            class="rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
+                                            class="mt-1 block w-full rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
                                         <p class="text-xs text-stone-400">Kosongkan jika tidak ingin mengubah password</p>
                                         @error('password')
                                         <p class="text-sm text-red-600">{{ $message }}</p>
@@ -66,7 +66,7 @@
                                     <div class="form-group">
                                         <label for="password_confirmation" class="form-label">Konfirmasi Password Baru</label>
                                         <input type="password" id="password_confirmation" name="password_confirmation"
-                                            class="rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
+                                            class="mt-1 block w-full rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
                                     </div>
                                 </div>
                             </div>

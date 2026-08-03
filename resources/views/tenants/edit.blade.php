@@ -16,7 +16,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div class="md:col-span-2 form-group">
                                 <label for="room_id" class="form-label">Kamar</label>
-                                <select name="room_id" id="room_id" required class="rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
+                                <select name="room_id" id="room_id" required class="mt-1 block w-full rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
                                     <option value="">Pilih Kamar</option>
                                     @foreach($rooms as $room)
                                     <option value="{{ $room->id }}" {{ old('room_id', $tenant->room_id) == $room->id ? 'selected' : '' }}>
@@ -32,7 +32,7 @@
                             <div class="md:col-span-2 form-group">
                                 <label for="name" class="form-label">Nama Lengkap</label>
                                 <input type="text" id="name" name="name" value="{{ old('name', $tenant->name) }}" required
-                                    class="rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
+                                    class="mt-1 block w-full rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
                                 @error('name')
                                 <p class="text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -41,7 +41,7 @@
                             <div class="form-group">
                                 <label for="email" class="form-label">Email</label>
                                 <input type="email" id="email" name="email" value="{{ old('email', $tenant->email) }}" required
-                                    class="rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
+                                    class="mt-1 block w-full rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
                                 @error('email')
                                 <p class="text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -50,7 +50,7 @@
                             <div class="form-group">
                                 <label for="phone" class="form-label">No. Telepon</label>
                                 <input type="text" id="phone" name="phone" value="{{ old('phone', $tenant->phone) }}" required
-                                    class="rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
+                                    class="mt-1 block w-full rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
                                 @error('phone')
                                 <p class="text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -59,7 +59,7 @@
                             <div class="md:col-span-2 form-group">
                                 <label for="id_card" class="form-label">No. KTP/ID Card</label>
                                 <input type="text" id="id_card" name="id_card" value="{{ old('id_card', $tenant->id_card) }}" required
-                                    class="rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
+                                    class="mt-1 block w-full rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
                                 @error('id_card')
                                 <p class="text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -67,7 +67,7 @@
 
                             <div class="md:col-span-2 form-group">
                                 <label for="address" class="form-label">Alamat Lengkap</label>
-                                <textarea name="address" id="address" rows="3" required class="rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">{{ old('address', $tenant->address) }}</textarea>
+                                <textarea name="address" id="address" rows="3" required class="mt-1 block w-full rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">{{ old('address', $tenant->address) }}</textarea>
                                 @error('address')
                                 <p class="text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -76,7 +76,7 @@
                             <div class="form-group">
                                 <label for="entry_date" class="form-label">Tanggal Masuk</label>
                                 <input type="date" id="entry_date" name="entry_date" value="{{ old('entry_date', $tenant->entry_date->format('Y-m-d')) }}" required
-                                    class="cursor-pointer rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
+                                    class="mt-1 block w-full cursor-pointer rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
                                 @error('entry_date')
                                 <p class="text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -85,7 +85,7 @@
                             <div class="form-group">
                                 <label for="exit_date" class="form-label">Tanggal Keluar (Optional)</label>
                                 <input type="date" id="exit_date" name="exit_date" value="{{ old('exit_date', $tenant->exit_date?->format('Y-m-d')) }}"
-                                    class="cursor-pointer rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
+                                    class="mt-1 block w-full cursor-pointer rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
                                 @error('exit_date')
                                 <p class="text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -93,7 +93,7 @@
 
                             <div class="md:col-span-2 form-group">
                                 <label for="status" class="form-label">Status</label>
-                                <select name="status" id="status" required class="rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
+                                <select name="status" id="status" required class="mt-1 block w-full rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
                                     <option value="active" {{ old('status', $tenant->status) == 'active' ? 'selected' : '' }}>Active</option>
                                     <option value="inactive" {{ old('status', $tenant->status) == 'inactive' ? 'selected' : '' }}>Inactive</option>
                                 </select>
@@ -113,7 +113,7 @@
                                     <label for="emergency_contact_name" class="form-label">Nama Kontak Darurat</label>
                                     <input type="text" id="emergency_contact_name" name="emergency_contact_name"
                                         value="{{ old('emergency_contact_name', $tenant->emergency_contact_name) }}"
-                                        class="rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500"
+                                        class="mt-1 block w-full rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500"
                                         placeholder="Ayah/Ibu">
                                     @error('emergency_contact_name')
                                         <p class="text-sm text-red-600">{{ $message }}</p>
@@ -124,7 +124,7 @@
                                     <label for="emergency_contact_phone" class="form-label">No. HP Darurat</label>
                                     <input type="text" id="emergency_contact_phone" name="emergency_contact_phone"
                                         value="{{ old('emergency_contact_phone', $tenant->emergency_contact_phone) }}"
-                                        class="rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500"
+                                        class="mt-1 block w-full rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500"
                                         placeholder="0812345xxxx">
                                     @error('emergency_contact_phone')
                                         <p class="text-sm text-red-600">{{ $message }}</p>
@@ -162,4 +162,8 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+        @vite('resources/js/pages/tenants-form.js')
+    @endpush
 </x-app-layout>
