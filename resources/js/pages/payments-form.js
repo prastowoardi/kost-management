@@ -1,3 +1,10 @@
+import $ from 'jquery';
+import select2 from 'select2';
+import 'select2/dist/css/select2.min.css';
+
+window.jQuery = window.$ = $;
+select2(window, $);
+
 function formatRupiah(input) {
     let number_string = input.value.replace(/[^0-9]/g, '').toString();
 
@@ -54,6 +61,17 @@ if (form) {
 
     const tenantSelect = document.getElementById('tenant_id');
     if (tenantSelect) {
+        $(tenantSelect).select2({
+            placeholder: 'Pilih Penghuni',
+            allowClear: true,
+            width: '100%',
+            minimumResultsForSearch: 0
+        });
+
+        if (tenantSelect.value && amountInput && !amountInput.value) {
+            tenantSelect.dispatchEvent(new Event('change'));
+        }
+
         tenantSelect.addEventListener('change', function () {
             const selectedOption = this.options[this.selectedIndex];
             let price = selectedOption.getAttribute('data-price');

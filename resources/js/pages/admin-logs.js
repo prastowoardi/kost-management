@@ -30,7 +30,8 @@ if (select) {
         .select2({
             placeholder: 'Cari aksi...',
             allowClear: true,
-            width: '100%'
+            width: '100%',
+            minimumResultsForSearch: 0
         })
         .on('change', function () {
             const val = $(this).val();

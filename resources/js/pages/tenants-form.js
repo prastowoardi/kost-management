@@ -8,15 +8,10 @@ select2(window, $);
 const roomSelect = document.querySelector('#room_id');
 
 if (roomSelect) {
-    const currentValue = roomSelect.value;
-
-    $(roomSelect)
-        .select2({
-            placeholder: 'Pilih Kamar',
-            allowClear: true,
-            width: '100%',
-            minimumResultsForSearch: -1
-        })
-        .val(currentValue)
-        .trigger('change');
+    $(roomSelect).select2({
+        placeholder: 'Pilih Kamar',
+        allowClear: true,
+        width: '100%',
+        minimumResultsForSearch: 0
+    });
 }
