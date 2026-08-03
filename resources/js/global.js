@@ -1,3 +1,8 @@
+import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
+
+window.Swal = Swal;
+
 const csrfMeta = document.querySelector('meta[name="csrf-token"]');
 window.appCsrf = csrfMeta ? csrfMeta.content : '';
 

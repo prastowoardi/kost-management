@@ -1,3 +1,5 @@
+import 'spotlight.js/dist/spotlight.bundle.js';
+
 const navbar = document.getElementById('navbar');
 const bg = document.getElementById('navbar-bg');
 const logo = document.getElementById('logo-text');

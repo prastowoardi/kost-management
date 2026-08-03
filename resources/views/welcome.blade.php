@@ -12,8 +12,6 @@
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700" rel="stylesheet" />
-        
-        <script src="https://cdn.jsdelivr.net/npm/spotlight.js@0.7.8/dist/spotlight.bundle.js"></script>
 
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
             @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -213,6 +211,8 @@
             </a>
         </footer>
 
-        @vite('resources/js/welcome.js')
+        @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+            @vite('resources/js/welcome.js')
+        @endif
     </body>
 </html>

@@ -1,3 +1,6 @@
+import html2canvas from 'html2canvas';
+import html2pdf from 'html2pdf.js';
+
 const element = document.querySelector('.card');
 const container = document.querySelector('.action-container');
 const filename = container ? (container.dataset.filename || 'Kwitansi') : 'Kwitansi';

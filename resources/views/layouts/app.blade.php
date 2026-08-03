@@ -41,25 +41,6 @@
             </main>
         </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-        <style>
-            [x-cloak] { display: none !important; }
-            .swal2-popup {
-                font-family: inherit;
-            }
-            
-            .swal2-styled.swal2-confirm {
-                padding: 10px 24px;
-                font-weight: 600;
-            }
-            
-            .swal2-styled.swal2-cancel {
-                padding: 10px 24px;
-                font-weight: 600;
-            }
-        </style>
-
         @stack('scripts')
     </body>
 </html>

@@ -84,10 +84,4 @@
             <p class="mt-4 text-center text-[10px] uppercase tracking-widest text-stone-400">End-to-end Encrypted Dashboard</p>
         </div>
     </div>
-
-    <style>
-        /* Sembunyikan Scrollbar tapi tetap bisa scroll */
-        .chat-scroll::-webkit-scrollbar { width: 4px; }
-        .chat-scroll::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.1); border-radius: 10px; }
-    </style>
 </x-app-layout>

@@ -1,6 +1,13 @@
+import $ from 'jquery';
+import select2 from 'select2';
+import 'select2/dist/css/select2.min.css';
+
+window.jQuery = window.$ = $;
+select2(window, $);
+
 const select = document.querySelector('.select2-action');
 
-if (select && window.jQuery) {
+if (select) {
     const baseUrl = select.dataset.logsUrl || '';
     let currentParams = {};
 
@@ -19,24 +26,22 @@ if (select && window.jQuery) {
         return qs ? baseUrl + '?' + qs : baseUrl;
     };
 
-    jQuery(function () {
-        jQuery('.select2-action')
-            .select2({
-                placeholder: 'Cari aksi...',
-                allowClear: true,
-                width: '100%'
-            })
-            .on('change', function () {
-                const val = jQuery(this).val();
-                const params = Object.assign({}, currentParams);
+    $(select)
+        .select2({
+            placeholder: 'Cari aksi...',
+            allowClear: true,
+            width: '100%'
+        })
+        .on('change', function () {
+            const val = $(this).val();
+            const params = Object.assign({}, currentParams);
 
-                if (val) {
-                    params.action = val;
-                } else {
-                    delete params.action;
-                }
+            if (val) {
+                params.action = val;
+            } else {
+                delete params.action;
+            }
 
-                window.location.href = window.buildUrl(params);
-            });
-    });
+            window.location.href = window.buildUrl(params);
+        });
 }
