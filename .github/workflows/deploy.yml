@@ -41,7 +41,7 @@ jobs:
             composer install --no-dev --optimize-autoloader --no-interaction
 
             echo "📦 Install & build frontend"
-            [ -d "node_modules" ] || npm install
+            npm install
             npm run build
 
             echo "🗄️ Run migrations"
