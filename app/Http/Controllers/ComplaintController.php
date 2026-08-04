@@ -56,7 +56,7 @@ class ComplaintController extends Controller
             if ($request->hasFile('images')) {
                 $imagePaths = [];
                 foreach ($request->file('images') as $image) {
-                    $imagePaths[] = $image->store('complaints', 'public');
+                    $imagePaths[] = $image->store('complaints');
                 }
                 $validated['images'] = $imagePaths;
             }
@@ -125,7 +125,7 @@ class ComplaintController extends Controller
                 $currentImages = $complaint->images ?? [];
                 foreach ($request->remove_images as $imageToRemove) {
                     if (($key = array_search($imageToRemove, $currentImages)) !== false) {
-                        Storage::disk('public')->delete($imageToRemove);
+                        Storage::delete($imageToRemove);
                         unset($currentImages[$key]);
                     }
                 }
@@ -140,7 +140,7 @@ class ComplaintController extends Controller
                 }
 
                 foreach ($request->file('images') as $image) {
-                    $currentImages[] = $image->store('complaints', 'public');
+                    $currentImages[] = $image->store('complaints');
                 }
                 $validated['images'] = $currentImages;
             }
@@ -178,7 +178,7 @@ class ComplaintController extends Controller
         try {
             if ($complaint->images) {
                 foreach ($complaint->images as $image) {
-                    Storage::disk('public')->delete($image);
+                    Storage::delete($image);
                 }
             }
 

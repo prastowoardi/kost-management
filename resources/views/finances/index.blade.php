@@ -157,7 +157,7 @@
                                                     @click="
                                                         selectedReceipt = {
                                                             invoice_number: '{{ $finance->payment->invoice_number ?? 'INV-' . date('Ymd') . '-' . $finance->id }}',
-                                                            file_url: '{{ asset('storage/' . $finance->payment->receipt_file) }}'
+                                                            file_url: '{{ Storage::url($finance->payment->receipt_file) }}'
                                                         };
                                                         openDetail = true;
                                                     "

@@ -82,7 +82,7 @@ class PaymentController extends Controller
         $validated['status'] = 'paid';
 
         if ($request->hasFile('receipt_file')) {
-            $validated['receipt_file'] = $request->file('receipt_file')->store('receipts', 'public');
+            $validated['receipt_file'] = $request->file('receipt_file')->store('receipts');
         }
 
         $payment = Payment::create($validated);
@@ -189,10 +189,10 @@ class PaymentController extends Controller
 
         if ($request->hasFile('receipt_file')) {
             if ($payment->receipt_file) {
-                Storage::disk('public')->delete($payment->receipt_file);
+                Storage::delete($payment->receipt_file);
             }
             $validated['receipt_file'] = $request->file('receipt_file')
-                ->store('receipts', 'public');
+                ->store('receipts');
         }
 
         $before = $payment->toArray();
@@ -218,7 +218,7 @@ class PaymentController extends Controller
         $this->paymentService->deleteFinanceRecord($payment);
 
         if ($payment->receipt_file) {
-            Storage::disk('public')->delete($payment->receipt_file);
+            Storage::delete($payment->receipt_file);
         }
 
         $payment->delete();
@@ -279,7 +279,7 @@ class PaymentController extends Controller
         if ($request->hasFile('proof')) {
             $file = $request->file('proof');
             $filename = 'proof_'.$id.'_'.time().'.'.$file->getClientOriginalExtension();
-            $file->storeAs('public/proofs', $filename);
+            $file->storeAs('proofs', $filename);
 
             $payment->update([
                 'proof_of_payment' => $filename,

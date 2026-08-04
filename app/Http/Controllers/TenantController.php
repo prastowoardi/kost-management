@@ -58,7 +58,7 @@ class TenantController extends Controller
         ]);
 
         if ($request->hasFile('photo')) {
-            $validated['photo'] = $request->file('photo')->store('tenants', 'public');
+            $validated['photo'] = $request->file('photo')->store('tenants');
         }
 
         $tenant = $this->registration->registerWithUser($validated);
@@ -121,9 +121,9 @@ class TenantController extends Controller
 
         if ($request->hasFile('photo')) {
             if ($tenant->photo) {
-                Storage::disk('public')->delete($tenant->photo);
+                Storage::delete($tenant->photo);
             }
-            $validated['photo'] = $request->file('photo')->store('tenants', 'public');
+            $validated['photo'] = $request->file('photo')->store('tenants');
         }
 
         $tenant->update($validated);
@@ -152,7 +152,7 @@ class TenantController extends Controller
         $deletedData = $tenant->toArray();
 
         if ($tenant->photo) {
-            Storage::disk('public')->delete($tenant->photo);
+            Storage::delete($tenant->photo);
         }
 
         Room::find($tenant->room_id)->update(['status' => 'available']);

@@ -50,7 +50,7 @@ class RoomController extends Controller
             $imagePaths = [];
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $image) {
-                    $imagePaths[] = $image->store('rooms', 'public');
+                    $imagePaths[] = $image->store('rooms');
                 }
             }
 
@@ -122,8 +122,8 @@ class RoomController extends Controller
 
         // Delete removed images from storage
         foreach ($deletedImages as $deletedImage) {
-            if (Storage::disk('public')->exists($deletedImage)) {
-                Storage::disk('public')->delete($deletedImage);
+            if (Storage::exists($deletedImage)) {
+                Storage::delete($deletedImage);
             }
         }
 
@@ -133,7 +133,7 @@ class RoomController extends Controller
         // Upload and add new images
         if ($request->hasFile('new_images')) {
             foreach ($request->file('new_images') as $image) {
-                $path = $image->store('rooms', 'public');
+                $path = $image->store('rooms');
                 $finalImages[] = $path;
             }
         }
@@ -184,8 +184,8 @@ class RoomController extends Controller
 
             if (! empty($images)) {
                 foreach ($images as $image) {
-                    if (Storage::disk('public')->exists($image)) {
-                        Storage::disk('public')->delete($image);
+                    if (Storage::exists($image)) {
+                        Storage::delete($image);
                     }
                 }
             }

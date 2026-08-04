@@ -136,7 +136,7 @@
                                 <label for="photo" class="form-label mb-2">Foto</label>
                                 @if($tenant->photo)
                                 <div class="mb-3">
-                                    <img src="{{ asset('storage/' . $tenant->photo) }}" alt="{{ $tenant->name }}" class="h-32 w-32 rounded-full object-cover border-2 border-brand-100">
+                                    <img src="{{ Storage::url($tenant->photo) }}" alt="{{ $tenant->name }}" class="h-32 w-32 rounded-full object-cover border-2 border-brand-100">
                                     <p class="text-sm text-stone-500 mt-1">Foto saat ini</p>
                                 </div>
                                 @endif

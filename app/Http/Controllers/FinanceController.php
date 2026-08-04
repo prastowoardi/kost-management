@@ -235,7 +235,7 @@ class FinanceController extends Controller
             ]);
 
             if ($request->hasFile('receipt_file')) {
-                $validated['receipt_file'] = $request->file('receipt_file')->store('receipts', 'public');
+                $validated['receipt_file'] = $request->file('receipt_file')->store('receipts');
             }
 
             $finance = Finance::create($validated);
@@ -306,9 +306,9 @@ class FinanceController extends Controller
 
             if ($request->hasFile('receipt_file')) {
                 if ($finance->receipt_file) {
-                    Storage::disk('public')->delete($finance->receipt_file);
+                    Storage::delete($finance->receipt_file);
                 }
-                $validated['receipt_file'] = $request->file('receipt_file')->store('receipts', 'public');
+                $validated['receipt_file'] = $request->file('receipt_file')->store('receipts');
             }
 
             $before = $finance->toArray();

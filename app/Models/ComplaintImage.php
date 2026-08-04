@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class ComplaintImage extends Model
 {
@@ -23,6 +24,6 @@ class ComplaintImage extends Model
 
     public function getFullUrlAttribute()
     {
-        return asset('storage/'.$this->image_path);
+        return Storage::url($this->image_path);
     }
 }

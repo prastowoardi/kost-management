@@ -40,12 +40,12 @@ class PublicRegistrationController extends Controller
         ]);
 
         if ($request->hasFile('photo')) {
-            $validated['photo'] = $request->file('photo')->store('tenants', 'public');
+            $validated['photo'] = $request->file('photo')->store('tenants');
         }
 
         $receiptPath = null;
         if ($request->hasFile('receipt_file')) {
-            $receiptPath = $request->file('receipt_file')->store('receipts', 'public');
+            $receiptPath = $request->file('receipt_file')->store('receipts');
         }
 
         $validated['status'] = 'active';

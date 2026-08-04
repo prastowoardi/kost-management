@@ -143,11 +143,11 @@
                                     <div class="mb-3 rounded-xl border border-dashed border-stone-300 bg-stone-50 p-3">
                                         <p class="mb-2 text-xs font-bold uppercase tracking-wider text-stone-500">File Saat Ini:</p>
                                         @if(Str::endsWith($finance->receipt_file, '.pdf'))
-                                            <a href="{{ asset('storage/' . $finance->receipt_file) }}" target="_blank" class="inline-flex items-center font-medium text-brand-600 hover:text-brand-800">
+                                            <a href="{{ Storage::url($finance->receipt_file) }}" target="_blank" class="inline-flex items-center font-medium text-brand-600 hover:text-brand-800">
                                                 <span class="mr-2 text-xl">📄</span> Lihat PDF
                                             </a>
                                         @else
-                                            <img src="{{ asset('storage/' . $finance->receipt_file) }}" alt="Bukti" class="max-w-xs rounded-xl border border-stone-200 shadow-sm">
+                                            <img src="{{ Storage::url($finance->receipt_file) }}" alt="Bukti" class="max-w-xs rounded-xl border border-stone-200 shadow-sm">
                                         @endif
                                     </div>
                                     @endif

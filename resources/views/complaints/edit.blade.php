@@ -60,10 +60,10 @@
                                 <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-stone-400">Foto Keluhan</p>
                                 <div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
                                     @foreach($complaint->images as $image)
-                                    <img src="{{ asset('storage/' . $image) }}"
+                                    <img src="{{ Storage::url($image) }}"
                                             alt="Foto Keluhan"
                                             class="h-24 w-full cursor-pointer rounded-2xl border border-stone-100 object-cover shadow-sm transition hover:opacity-75"
-                                            data-open-image="{{ asset('storage/' . $image) }}">
+                                            data-open-image="{{ Storage::url($image) }}">
                                     @endforeach
                                 </div>
                             </div>

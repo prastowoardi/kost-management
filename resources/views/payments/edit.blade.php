@@ -142,17 +142,17 @@
 
                                     @if($payment->receipt_file)
                                         <p class="text-sm text-stone-500 mb-2">File saat ini:
-                                            <a href="{{ asset('storage/'.$payment->receipt_file) }}" target="_blank"
+                                            <a href="{{ Storage::url($payment->receipt_file) }}" target="_blank"
                                                 class="font-medium text-brand-600 underline hover:text-brand-700">Lihat / Download</a>
                                         </p>
 
                                         {{-- PREVIEW GAMBAR/FILE --}}
                                         @php
-                                            $mime = Storage::disk('public')->mimeType($payment->receipt_file);
+                                            $mime = Storage::mimeType($payment->receipt_file);
                                         @endphp
 
                                         @if (str_starts_with($mime, 'image'))
-                                            <img src="{{ asset('storage/'.$payment->receipt_file) }}"
+                                            <img src="{{ Storage::url($payment->receipt_file) }}"
                                                 alt="Bukti Pembayaran"
                                                 class="mb-4 max-w-xs rounded-xl border border-stone-200 object-cover shadow-sm">
                                         @elseif ($mime == 'application/pdf')

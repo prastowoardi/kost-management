@@ -91,7 +91,7 @@
                                 <div class="grid grid-cols-3 sm:grid-cols-5 gap-3" id="existing-images-container">
                                     @foreach($existingImages as $index => $image)
                                     <div class="relative group" id="existing-image-{{ $index }}">
-                                        <img src="{{ asset('storage/' . $image) }}"
+                                        <img src="{{ Storage::url($image) }}"
                                                 alt="Foto {{ $index + 1 }}"
                                                 class="w-full h-24 object-cover rounded-xl border border-stone-200">
                                         <button type="button"

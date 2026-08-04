@@ -56,7 +56,7 @@
                                     <td>
                                         <div class="flex items-center gap-3">
                                             @if($tenant->photo)
-                                                <img src="{{ asset('storage/' . $tenant->photo) }}"
+                                                <img src="{{ Storage::url($tenant->photo) }}"
                                                     class="h-10 w-10 rounded-full object-cover">
                                             @else
                                                 <div class="avatar">

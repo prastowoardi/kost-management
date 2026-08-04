@@ -97,7 +97,7 @@
                                     {{-- $imagePath adalah string, bukan object --}}
                                     @foreach($complaint->images as $imagePath)
                                         @php
-                                            $imageUrl = asset('storage/' . $imagePath);
+                                            $imageUrl = Storage::url($imagePath);
                                         @endphp
                                         <a href="{{ $imageUrl }}" target="_blank" class="group relative block overflow-hidden rounded-2xl border border-stone-100 shadow-sm transition duration-200 hover:shadow-lift">
                                             <img src="{{ $imageUrl }}"

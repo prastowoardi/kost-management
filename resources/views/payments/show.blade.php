@@ -52,7 +52,7 @@
                             <h4 class="section-title mb-3">Informasi Penghuni</h4>
                             <div class="flex items-start gap-4">
                                 @if($payment->tenant->photo)
-                                <img src="{{ asset('storage/' . $payment->tenant->photo) }}"
+                                <img src="{{ Storage::url($payment->tenant->photo) }}"
                                         class="h-16 w-16 rounded-full object-cover ring-4 ring-brand-50"
                                         alt="{{ $payment->tenant->name }}">
                                 @else
@@ -139,14 +139,14 @@
                         <h4 class="section-title mb-3">Bukti Pembayaran:</h4>
                         <div class="rounded-xl bg-stone-50 p-4">
                             @if(Str::endsWith($payment->receipt_file, '.pdf'))
-                                <a href="{{ asset('storage/' . $payment->receipt_file) }}"
+                                <a href="{{ Storage::url($payment->receipt_file) }}"
                                     target="_blank"
                                     class="btn-danger btn-sm">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                     Lihat PDF
                                 </a>
                             @else
-                                <img src="{{ asset('storage/' . $payment->receipt_file) }}"
+                                <img src="{{ Storage::url($payment->receipt_file) }}"
                                         alt="Bukti Pembayaran"
                                         class="max-w-md rounded-xl border border-stone-200">
                             @endif

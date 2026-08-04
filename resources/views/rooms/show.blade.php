@@ -26,7 +26,7 @@
                     <!-- Images Gallery -->
                     @php
                         $images = is_string($room->images) ? json_decode($room->images, true) : $room->images;
-                        $firstImage = $images && count($images) > 0 ? asset('storage/' . $images[0]) : null;
+                        $firstImage = $images && count($images) > 0 ? Storage::url($images[0]) : null;
                     @endphp
 
                     @if($images && count($images) > 0)
@@ -49,7 +49,7 @@
                             <!-- Thumbnail Grid -->
                             <div class="grid grid-cols-4 md:grid-cols-5 gap-3">
                                 @foreach($images as $index => $image)
-                                @php $imagePath = asset('storage/' . $image); @endphp
+                                @php $imagePath = Storage::url($image); @endphp
                                 <div class="relative group">
                                     <img src="{{ $imagePath }}"
                                             alt="Foto Kamar {{ $index + 1 }}"
@@ -159,7 +159,7 @@
                             @if($room->activeTenant)
                             <div class="flex items-center gap-3 mb-4">
                                 @if($room->activeTenant->photo)
-                                <img src="{{ asset('storage/' . $room->activeTenant->photo) }}" class="h-12 w-12 rounded-full object-cover ring-2 ring-brand-100" alt="{{ $room->activeTenant->name }}">
+                                <img src="{{ Storage::url($room->activeTenant->photo) }}" class="h-12 w-12 rounded-full object-cover ring-2 ring-brand-100" alt="{{ $room->activeTenant->name }}">
                                 @else
                                 <div class="avatar h-12 w-12 text-base">
                                     <span>{{ substr($room->activeTenant->name, 0, 1) }}</span>

@@ -40,7 +40,7 @@ class FinanceController extends Controller
         ]);
 
         if ($request->hasFile('receipt_file')) {
-            $path = $request->file('receipt_file')->store('receipts', 'public');
+            $path = $request->file('receipt_file')->store('receipts');
             $validated['receipt_file'] = $path;
         }
 
