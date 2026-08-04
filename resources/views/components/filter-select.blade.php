@@ -7,7 +7,7 @@
     <select
         id="{{ $name }}"
         name="{{ $name }}"
-        @if($auto) onchange="this.form.submit()" @endif
+        @if($auto) data-auto-submit @endif
         class="w-full cursor-pointer rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-800 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500"
     >
         <option value="">{{ $placeholder }}</option>

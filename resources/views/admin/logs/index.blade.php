@@ -1,98 +1,5 @@
-@push('styles')
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
-<style>
-.select2-container--default .select2-selection--single {
-    border: 1px solid #e7e5e4 !important;
-    border-radius: 0.75rem !important;
-    height: 42px !important;
-    padding: 0 12px;
-    background: #fff !important;
-}
-.select2-container--default .select2-selection--single .select2-selection__rendered {
-    line-height: 40px !important;
-    font-size: 14px;
-    color: #44403c !important;
-}
-.select2-container--default .select2-selection--single .select2-selection__arrow {
-    height: 40px !important;
-    right: 8px !important;
-}
-.select2-container--default .select2-selection--single .select2-selection__placeholder {
-    color: #a8a29e !important;
-}
-.select2-dropdown {
-    border: 1px solid #e7e5e4 !important;
-    border-radius: 0.75rem !important;
-    overflow: hidden;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-}
-.select2-search--dropdown {
-    padding: 8px;
-}
-.select2-search__field {
-    border-radius: 0.5rem !important;
-    border: 1px solid #e7e5e4 !important;
-    padding: 6px 10px !important;
-    font-size: 13px !important;
-}
-.select2-results__option {
-    padding: 8px 12px !important;
-    font-size: 13px;
-}
-.select2-results__option--highlighted {
-    background-color: #f5f5f4 !important;
-    color: #292524 !important;
-}
-.select2-container--default .select2-results__option--selected {
-    background-color: #f0fdf4 !important;
-    color: #166534 !important;
-}
-.select2-container--default .select2-selection--single .select2-selection__clear {
-    position: absolute;
-    right: 24px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 18px;
-    line-height: 1;
-    height: auto;
-    margin: 0;
-    color: #a8a29e;
-}
-.select2-container--default .select2-selection--single .select2-selection__clear:hover {
-    color: #ef4444;
-}
-</style>
-@endpush
-
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script>
-function buildUrl(params) {
-    var base = '{{ route('admin.logs') }}';
-    var qs = Object.keys(params).filter(function(k) { return params[k] != null && params[k] !== ''; }).map(function(k) { return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]); }).join('&');
-    return qs ? base + '?' + qs : base;
-}
-
-jQuery(function() {
-    var currentParams = {!! json_encode(request()->query()) !!};
-
-    jQuery('.select2-action').select2({
-        placeholder: 'Cari aksi...',
-        allowClear: true,
-        width: '100%'
-    }).on('change', function() {
-        var val = jQuery(this).val();
-        var params = Object.assign({}, currentParams);
-        if (val) {
-            params.action = val;
-        } else {
-            delete params.action;
-        }
-        window.location.href = buildUrl(params);
-    });
-});
-</script>
+@vite('resources/js/pages/admin-logs.js')
 @endpush
 
 <x-app-layout>
@@ -149,7 +56,9 @@ jQuery(function() {
                 <div class="lg:col-span-4">
                     <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center mb-3">
                         <div class="flex-1 min-w-0">
-                            <select class="select2-action">
+                            <select class="select2-action"
+                                    data-logs-url="{{ route('admin.logs') }}"
+                                    data-logs-params="{{ e(json_encode(request()->query())) }}">
                                 <option value="">Semua Aksi</option>
                                 @foreach($actions as $a)
                                     <option value="{{ $a }}" {{ request('action') == $a ? 'selected' : '' }}>{{ $a }}</option>

@@ -37,7 +37,7 @@ class MobileComplaintController extends Controller
 
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $file) {
-                    $path = $file->store('complaints', 'public');
+                    $path = $file->store('complaints');
 
                     $img = new \App\Models\ComplaintImage;
                     $img->complaint_id = $complaint->id;

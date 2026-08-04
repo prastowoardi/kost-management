@@ -91,11 +91,11 @@
                                 <div class="grid grid-cols-3 sm:grid-cols-5 gap-3" id="existing-images-container">
                                     @foreach($existingImages as $index => $image)
                                     <div class="relative group" id="existing-image-{{ $index }}">
-                                        <img src="{{ asset('storage/' . $image) }}"
+                                        <img src="{{ Storage::url($image) }}"
                                                 alt="Foto {{ $index + 1 }}"
                                                 class="w-full h-24 object-cover rounded-xl border border-stone-200">
                                         <button type="button"
-                                                onclick="removeExistingImage({{ $index }}, '{{ $image }}')"
+                                                data-remove-image="{{ $index }}"
                                                 class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition hover:bg-red-600">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -145,7 +145,7 @@
                                 @enderror
 
                                 <!-- New Images Preview -->
-                                <div id="new-images-preview" class="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-4 hidden"></div>
+                                <div id="new-images-preview" data-existing-count="{{ $existingImages ? count($existingImages) : 0 }}" class="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-4 hidden"></div>
                             </div>
                         </div>
 
@@ -163,58 +163,7 @@
         </div>
     </div>
 
-    <script>
-        // Track existing images count
-        let existingImagesCount = {{ $existingImages ? count($existingImages) : 0 }};
-
-        // Remove existing image
-        function removeExistingImage(index, imagePath) {
-            if (confirm('Hapus foto ini?')) {
-                document.getElementById('existing-image-' + index).remove();
-                document.getElementById('keep-image-' + index).remove();
-                existingImagesCount--;
-            }
-        }
-
-        // Preview new images
-        document.getElementById('new-room-images').addEventListener('change', function(event) {
-            const files = event.target.files;
-            const previewContainer = document.getElementById('new-images-preview');
-            const maxTotal = 5;
-
-            previewContainer.innerHTML = '';
-
-            // Check total images limit
-            const totalImages = existingImagesCount + files.length;
-            if (totalImages > maxTotal) {
-                alert(`Total maksimal ${maxTotal} foto! Saat ini ada ${existingImagesCount} foto, Anda bisa upload maksimal ${maxTotal - existingImagesCount} foto lagi.`);
-                event.target.value = '';
-                return;
-            }
-
-            if (files.length > 0) {
-                previewContainer.classList.remove('hidden');
-            }
-
-            Array.from(files).forEach((file, index) => {
-                // Check file size
-                if (file.size > 2048000) {
-                    alert(`File ${file.name} terlalu besar! Max 2MB per file.`);
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const div = document.createElement('div');
-                    div.className = 'relative';
-                    div.innerHTML = `
-                        <img src="${e.target.result}" class="w-full h-24 object-cover rounded-lg border border-gray-300">
-                        <span class="absolute top-1 right-1 bg-green-600 text-white text-xs px-2 py-1 rounded">Baru</span>
-                    `;
-                    previewContainer.appendChild(div);
-                }
-                reader.readAsDataURL(file);
-            });
-        });
-    </script>
+    @push('scripts')
+        @vite('resources/js/pages/rooms-form.js')
+    @endpush
 </x-app-layout>

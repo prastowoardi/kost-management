@@ -235,16 +235,4 @@
         </div>
 
     </div>
-
-    <style>
-        @media print {
-            .no-print {
-                display: none !important;
-            }
-            body {
-                print-color-adjust: exact;
-                -webkit-print-color-adjust: exact;
-            }
-        }
-    </style>
 </x-app-layout>

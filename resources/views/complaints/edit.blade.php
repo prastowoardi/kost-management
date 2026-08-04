@@ -60,10 +60,10 @@
                                 <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-stone-400">Foto Keluhan</p>
                                 <div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
                                     @foreach($complaint->images as $image)
-                                    <img src="{{ asset('storage/' . $image) }}"
+                                    <img src="{{ Storage::url($image) }}"
                                             alt="Foto Keluhan"
                                             class="h-24 w-full cursor-pointer rounded-2xl border border-stone-100 object-cover shadow-sm transition hover:opacity-75"
-                                            onclick="openImageModal('{{ asset('storage/' . $image) }}')">
+                                            data-open-image="{{ Storage::url($image) }}">
                                     @endforeach
                                 </div>
                             </div>
@@ -107,7 +107,6 @@
                                 <div class="form-group">
                                     <label class="form-label">Tanggal Selesai</label>
                                     <input type="date" name="resolved_date" value="{{ old('resolved_date', $complaint->resolved_date?->format('Y-m-d')) }}"
-                                        onclick="this.showPicker()"
                                         class="mt-1 block w-full cursor-pointer">
                                     <p class="form-hint">Isi jika keluhan sudah resolved/closed</p>
                                     @error('resolved_date')
@@ -133,20 +132,13 @@
     </div>
 
     <!-- Image Modal -->
-    <div id="imageModal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4" onclick="closeImageModal()">
+    <div id="imageModal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
         <div class="max-w-4xl max-h-full">
             <img id="modalImage" src="" alt="Full Image" class="max-w-full max-h-[90vh] object-contain rounded-2xl">
         </div>
     </div>
 
-    <script>
-        function openImageModal(imageSrc) {
-            document.getElementById('modalImage').src = imageSrc;
-            document.getElementById('imageModal').classList.remove('hidden');
-        }
-
-        function closeImageModal() {
-            document.getElementById('imageModal').classList.add('hidden');
-        }
-    </script>
+    @push('scripts')
+        @vite('resources/js/pages/complaints-form.js')
+    @endpush
 </x-app-layout>

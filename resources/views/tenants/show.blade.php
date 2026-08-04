@@ -31,7 +31,7 @@
                             <div class="flex items-start justify-between mb-6">
                                 <div class="flex items-center gap-4">
                                     @if($tenant->photo)
-                                    <img src="{{ asset('storage/' . $tenant->photo) }}"
+                                    <img src="{{ Storage::url($tenant->photo) }}"
                                         alt="{{ $tenant->name }}"
                                         class="h-24 w-24 rounded-full object-cover border-4 border-brand-100">
                                     @else

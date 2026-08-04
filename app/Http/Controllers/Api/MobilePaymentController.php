@@ -77,7 +77,7 @@ class MobilePaymentController extends Controller
         }
 
         try {
-            $path = $request->file('proof_image')->store('receipts', 'public');
+            $path = $request->file('proof_image')->store('receipts');
 
             $payment = DB::transaction(function () use ($tenant, $path) {
                 return Payment::create([

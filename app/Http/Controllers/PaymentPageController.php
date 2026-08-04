@@ -32,7 +32,7 @@ class PaymentPageController extends Controller
         ]);
 
         if ($request->hasFile('proof')) {
-            $path = $request->file('proof')->store('public/proofs');
+            $path = $request->file('proof')->store('proofs');
 
             $payment->update([
                 'proof_of_payment' => basename($path),

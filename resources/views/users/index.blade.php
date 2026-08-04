@@ -4,7 +4,7 @@
             <h2 class="page-title">
                 {{ __('User Management') }}
             </h2>
-            <a href="{{ route('users.create') }}" class="btn-primary">
+            <a href="{{ route('users.create') }}" class="btn-primary btn-sm">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 Tambah User
             </a>
@@ -145,7 +145,8 @@
                                                 @csrf
                                                 @method('PUT')
                                                 <button type="button"
-                                                        onclick="confirmStatusUpdate(event, 'toggle-form-{{ $user->id }}', '{{ $user->is_active ? 'inactive' : 'active' }}')"
+                                                        data-confirm-status="toggle-form-{{ $user->id }}"
+                                                        data-status="{{ $user->is_active ? 'inactive' : 'active' }}"
                                                         class="{{ $user->is_active ? 'text-amber-600 hover:text-amber-800' : 'text-emerald-600 hover:text-emerald-700' }} transition"
                                                         title="{{ $user->is_active ? 'Deactivate' : 'Activate' }}">
                                                     @if($user->is_active)
@@ -174,7 +175,8 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="button"
-                                                        onclick="confirmDelete(event, 'delete-form-{{ $user->id }}', '{{ $user->name }}')"
+                                                        data-confirm-delete="delete-form-{{ $user->id }}"
+                                                        data-item-name="{{ $user->name }}"
                                                         class="text-stone-400 transition hover:text-red-600"
                                                         title="Delete">
                                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -5,10 +5,6 @@
                 {{ __('Pembayaran') }}
             </h2>
             <div class="flex flex-wrap items-center gap-2">
-                <a href="{{ route('payments.index') }}" class="btn-success btn-sm flex-1 sm:flex-none">
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    <span>Laporan</span>
-                </a>
                 <a href="{{ route('payments.create') }}" class="btn-primary btn-sm flex-1 sm:flex-none">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     <span>Tambah</span>
@@ -99,7 +95,8 @@
                                         {{-- FITUR WHATSAPP --}}
                                         @if($payment->tenant->phone)
                                             <button type="button"
-                                                    onclick="sendWhatsApp('{{ $payment->uuid }}', '{{ $payment->tenant->name }}')"
+                                                    data-send-wa="{{ $payment->uuid }}"
+                                                    data-tenant-name="{{ $payment->tenant->name }}"
                                                     class="rounded-lg bg-emerald-500 p-2 text-white shadow-soft transition hover:bg-emerald-600">
                                                 <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
                                             </button>
@@ -119,7 +116,10 @@
 
                                         <form id="delete-payment-{{ $payment->id }}" action="{{ route('payments.destroy', $payment) }}" method="POST" class="inline">
                                             @csrf @method('DELETE')
-                                            <button type="button" onclick="confirmDelete(event, 'delete-payment-{{ $payment->id }}', '{{ $payment->invoice_number }}')" class="p-1.5 text-stone-400 transition hover:text-red-600" title="Hapus">
+                                            <button type="button"
+                                                data-confirm-delete="delete-payment-{{ $payment->id }}"
+                                                data-item-name="{{ $payment->invoice_number }}"
+                                                class="p-1.5 text-stone-400 transition hover:text-red-600" title="Hapus">
                                                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                             </button>
                                         </form>
@@ -149,74 +149,16 @@
 
     </div>
 
-    <script>
-        window.confirmDelete = function(event, formId, itemName) {
-            Swal.fire({
-                title: 'Apakah Anda yakin?',
-                text: `Data ${itemName} akan dihapus permanen!`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444', // Warna merah hapus
-                cancelButtonColor: '#64748b',
-                confirmButtonText: 'Ya, Hapus!',
-                cancelButtonText: 'Batal',
-                reverseButtons: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById(formId).submit();
-                }
-            });
-        }
+    @if(session('new_payment_id'))
+        @php
+            $newPayment = \App\Models\Payment::with('tenant')->find(session('new_payment_id'));
+        @endphp
+        @if($newPayment)
+            <div id="new-payment-data" data-uuid="{{ $newPayment->uuid }}" data-name="{{ $newPayment->tenant->name }}" class="hidden"></div>
+        @endif
+    @endif
 
-        function sendWhatsApp(paymentId, tenantName) {
-            Swal.fire({
-                title: 'Kirim Kwitansi?',
-                text: `Kirim kwitansi ke WhatsApp ${tenantName}?`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#22c55e',
-                confirmButtonText: 'Ya, Kirim!',
-                cancelButtonText: 'Batal',
-                showLoaderOnConfirm: true,
-                preConfirm: () => {
-                    return fetch(`/payments/${paymentId}/send-wa`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        }
-                    })
-                    .then(response => {
-                        if (!response.ok) throw new Error('Gagal mengirim pesan');
-                        return response.json();
-                    })
-                    .catch(error => {
-                        Swal.showValidationMessage(`Request failed: ${error}`);
-                    });
-                },
-                allowOutsideClick: () => !Swal.isLoading()
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    Swal.fire({
-                        title: 'Terkirim!',
-                        text: 'Kwitansi telah dikirim oleh sistem.',
-                        icon: 'success'
-                    });
-                }
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', function () {
-            @if(session('new_payment_id'))
-                @php
-                    $newP = \App\Models\Payment::with('tenant')->find(session('new_payment_id'));
-                @endphp
-                @if($newP)
-                    // Langsung panggil fungsi gateway
-                    sendWhatsApp('{{ $newP->uuid }}', '{{ $newP->tenant->name }}');
-                @endif
-            @endif
-        });
-    </script>
+    @push('scripts')
+        @vite('resources/js/pages/payments-index.js')
+    @endpush
 </x-app-layout>

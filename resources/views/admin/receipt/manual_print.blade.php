@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>E-Receipt - {{ $payment->invoice_number }}</title>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
@@ -155,44 +152,15 @@
     </div>
 
     @if(!request()->has('hide_buttons'))
-        <div class="action-container">
+        <div class="action-container" data-filename="Kwitansi-{{ $payment->invoice_number }}">
             <div class="btn-group">
-                <button onclick="downloadPDF()" class="btn btn-pdf">📄 PDF</button>
-                <button onclick="downloadImage()" class="btn btn-image">🖼️ Image</button>
+                <button type="button" data-download-pdf class="btn btn-pdf">📄 PDF</button>
+                <button type="button" data-download-image class="btn btn-image">🖼️ Image</button>
             </div>
             <a href="{{ route('admin.receipt.create') }}" style="color: #0d9488; text-decoration: none; font-size: 13px; font-weight: 600;">← Buat Baru</a>
         </div>
     @endif
 
-    <script>
-        const element = document.querySelector('.card');
-        const filename = "Kwitansi-{{ $payment->invoice_number }}";
-
-        function downloadPDF() {
-            const opt = {
-                margin: 0,
-                filename: filename + '.pdf',
-                image: { type: 'jpeg', quality: 1 },
-                html2canvas: { scale: 3, useCORS: true, backgroundColor: '#ffffff' },
-                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-            };
-            html2pdf().set(opt).from(element).save();
-        }
-
-        function downloadImage() {
-            html2canvas(element, { scale: 4, backgroundColor: '#ffffff', useCORS: true }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = filename + '.jpg';
-                link.href = canvas.toDataURL("image/jpeg", 1.0);
-                link.click();
-            });
-        }
-
-        window.addEventListener('message', function(event) {
-            if (event.data === 'trigger-download-image') {
-                downloadImage();
-            }
-        });
-    </script>
+    @vite('resources/js/admin-receipt.js')
 </body>
 </html>

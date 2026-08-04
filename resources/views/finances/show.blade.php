@@ -69,13 +69,13 @@
                                 {{-- CEK JIKA FILE ADALAH GAMBAR --}}
                                 @if(in_array(pathinfo($finance->payment->receipt_file, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png', 'gif']))
                                     <div class="mb-3 mt-2">
-                                        <img src="{{ asset('storage/' . $finance->payment->receipt_file) }}"
+                                        <img src="{{ Storage::url($finance->payment->receipt_file) }}"
                                             alt="Bukti Transaksi"
                                             class="max-w-xs rounded-xl border border-stone-200 p-1 shadow-md">
                                     </div>
                                 @endif
 
-                                <a href="{{ asset('storage/' . ($finance->receipt_file ?? $finance->payment?->receipt_file)) }}"
+                                <a href="{{ Storage::url($finance->receipt_file ?? $finance->payment?->receipt_file) }}"
                                     target="_blank"
                                     class="btn-secondary btn-sm mt-2 inline-flex">
                                         <svg class="h-4 w-4 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,7 +97,7 @@
                         <a href="{{ route('finances.edit', $finance) }}" class="btn-primary">
                             Edit Transaksi
                         </a>
-                        <form onsubmit="confirmDelete(event, 'delete-finance-{{ $finance->id }}', 'Transaksi ini')"
+                        <form data-confirm-delete-form="Transaksi ini"
                                 id="delete-finance-{{ $finance->id }}"
                                 action="{{ route('finances.destroy', $finance) }}" method="POST" class="inline">
                             @csrf

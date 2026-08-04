@@ -26,7 +26,7 @@
                     <!-- Images Gallery -->
                     @php
                         $images = is_string($room->images) ? json_decode($room->images, true) : $room->images;
-                        $firstImage = $images && count($images) > 0 ? asset('storage/' . $images[0]) : null;
+                        $firstImage = $images && count($images) > 0 ? Storage::url($images[0]) : null;
                     @endphp
 
                     @if($images && count($images) > 0)
@@ -49,7 +49,7 @@
                             <!-- Thumbnail Grid -->
                             <div class="grid grid-cols-4 md:grid-cols-5 gap-3">
                                 @foreach($images as $index => $image)
-                                @php $imagePath = asset('storage/' . $image); @endphp
+                                @php $imagePath = Storage::url($image); @endphp
                                 <div class="relative group">
                                     <img src="{{ $imagePath }}"
                                             alt="Foto Kamar {{ $index + 1 }}"
@@ -159,7 +159,7 @@
                             @if($room->activeTenant)
                             <div class="flex items-center gap-3 mb-4">
                                 @if($room->activeTenant->photo)
-                                <img src="{{ asset('storage/' . $room->activeTenant->photo) }}" class="h-12 w-12 rounded-full object-cover ring-2 ring-brand-100" alt="{{ $room->activeTenant->name }}">
+                                <img src="{{ Storage::url($room->activeTenant->photo) }}" class="h-12 w-12 rounded-full object-cover ring-2 ring-brand-100" alt="{{ $room->activeTenant->name }}">
                                 @else
                                 <div class="avatar h-12 w-12 text-base">
                                     <span>{{ substr($room->activeTenant->name, 0, 1) }}</span>
@@ -246,9 +246,8 @@
 
     <!-- Image Modal (Full Screen View) -->
     <div id="imageModal"
-            class="hidden fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
-            onclick="closeImageModal()">
-        <button onclick="closeImageModal()"
+            class="hidden fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4">
+        <button id="modalCloseBtn"
                 class="absolute top-4 right-4 text-white hover:text-gray-300 transition">
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -258,63 +257,11 @@
             <img id="modalImage"
                     src=""
                     alt="Full Image"
-                    class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
-                    onclick="event.stopPropagation()">
+                    class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl">
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const mainImage = document.getElementById('mainImage');
-            const thumbnails = document.querySelectorAll('[data-full-src]');
-
-            // Click main image to open modal
-            if (mainImage) {
-                mainImage.addEventListener('click', function() {
-                    openImageModal(this.src);
-                });
-            }
-
-            // Click thumbnails to change main image
-            thumbnails.forEach(thumbnail => {
-                if (thumbnail !== mainImage) {
-                    thumbnail.addEventListener('click', function() {
-                        const imageSrc = this.getAttribute('data-full-src');
-                        mainImage.src = imageSrc;
-                        mainImage.setAttribute('data-full-src', imageSrc);
-
-                        // Remove ring from all thumbnails
-                        thumbnails.forEach(t => {
-                            if (t !== mainImage) {
-                                t.classList.remove('ring-2', 'ring-brand-500');
-                            }
-                        });
-
-                        // Add ring to clicked thumbnail
-                        this.classList.add('ring-2', 'ring-brand-500');
-                    });
-                }
-            });
-        });
-
-        // Open image in modal
-        function openImageModal(imageSrc) {
-            document.getElementById('modalImage').src = imageSrc;
-            document.getElementById('imageModal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-
-        // Close modal
-        function closeImageModal() {
-            document.getElementById('imageModal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-
-        // Close modal with ESC key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeImageModal();
-            }
-        });
-    </script>
+    @push('scripts')
+        @vite('resources/js/pages/rooms-show.js')
+    @endpush
 </x-app-layout>

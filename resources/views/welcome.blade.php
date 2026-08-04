@@ -12,8 +12,6 @@
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700" rel="stylesheet" />
-        
-        <script src="https://cdn.jsdelivr.net/npm/spotlight.js@0.7.8/dist/spotlight.bundle.js"></script>
 
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
             @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -213,30 +211,8 @@
             </a>
         </footer>
 
-        <script>
-            window.onscroll = function() {
-                const navbar = document.getElementById('navbar');
-                const bg = document.getElementById('navbar-bg');
-                const logo = document.getElementById('logo-text');
-                const menu = document.getElementById('menu-text');
-                
-                if (window.scrollY > 50) {
-                    navbar.classList.add('pt-6');
-                    bg.classList.add('bg-white/80', 'backdrop-blur-xl', 'shadow-lg', 'border', 'border-white/20');
-                    bg.classList.remove('max-w-6xl');
-                    bg.classList.add('max-w-4xl');
-                    
-                    logo.classList.replace('text-white', 'text-slate-900');
-                    menu.classList.replace('text-white', 'text-slate-900');
-                } else {
-                    navbar.classList.remove('pt-6');
-                    bg.classList.remove('bg-white/80', 'backdrop-blur-xl', 'shadow-lg', 'border', 'border-white/20', 'max-w-4xl');
-                    bg.classList.add('max-w-6xl');
-                    
-                    logo.classList.replace('text-slate-900', 'text-white');
-                    menu.classList.replace('text-slate-900', 'text-white');
-                }
-            };
-        </script>
+        @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+            @vite('resources/js/welcome.js')
+        @endif
     </body>
 </html>
