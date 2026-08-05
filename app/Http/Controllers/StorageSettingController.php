@@ -15,7 +15,7 @@ class StorageSettingController extends Controller
 {
     private const PROGRESS_KEY = 'storage_migration.progress';
 
-    private const BATCH_SIZE = 5;
+    private const BATCH_SIZE = 10;
 
     public function __construct(
         private StorageMigrationService $migration,
