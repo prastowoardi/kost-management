@@ -5,18 +5,18 @@ namespace App\Console\Commands;
 use App\Services\StorageMigrationService;
 use Illuminate\Console\Command;
 
-class MigrateFilesToCloud extends Command
+class MigrateFilesToLocal extends Command
 {
-    protected $signature = 'files:to-cloud
-        {--delete : Hapus file sumber lokal setelah berhasil diunggah}';
+    protected $signature = 'files:to-local
+        {--delete : Hapus file sumber di R2 setelah berhasil disalin}';
 
-    protected $description = 'Salin semua file dari storage/app/public ke Cloudflare R2 (s3)';
+    protected $description = 'Salin semua file dari Cloudflare R2 (s3) ke storage/app/public lokal';
 
     public function handle(StorageMigrationService $service): int
     {
-        $this->info('Disk tujuan = s3 (Cloudflare R2)');
+        $this->info('Disk sumber = s3 (Cloudflare R2), tujuan = public (lokal)');
 
-        $result = $service->migrate('public', 's3', (bool) $this->option('delete'));
+        $result = $service->migrate('s3', 'public', (bool) $this->option('delete'));
 
         if ($result['total'] === 0) {
             $this->info('Tidak ada file untuk dimigrasi.');

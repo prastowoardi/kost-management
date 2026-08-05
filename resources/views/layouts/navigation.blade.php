@@ -86,6 +86,12 @@
                     <x-nav-link :href="route('admin.logs')" :active="request()->routeIs('admin.logs')">
                         {{ __('Logs') }}
                     </x-nav-link>
+
+                    @if(auth()->user()->isAdmin())
+                    <x-nav-link :href="route('settings.storage')" :active="request()->routeIs('settings.*')">
+                        {{ __('Pengaturan') }}
+                    </x-nav-link>
+                    @endif
                     
                     <div class="flex items-center sm:ms-2">
                         <x-dropdown align="right" width="48">
@@ -341,6 +347,11 @@
         </div>
 
         <p class="mt-5 px-1 pb-2 text-[11px] font-bold uppercase tracking-widest text-stone-400">Lainnya</p>
+        @if(auth()->user()->isAdmin())
+        <x-responsive-nav-link :href="route('settings.storage')" :active="request()->routeIs('settings.*')">
+            ⚙️ {{ __('Pengaturan') }}
+        </x-responsive-nav-link>
+        @endif
         <div x-data="{ openBroadcast: {{ request()->routeIs('broadcast.*') ? 'true' : 'false' }} }" class="space-y-1">
             <button @click="openBroadcast = !openBroadcast"
                 class="flex w-full items-center justify-between rounded-xl px-4 py-2.5 text-sm font-semibold transition hover:bg-stone-50 focus:outline-none {{ request()->routeIs('broadcast.*') ? 'text-brand-700' : 'text-stone-700' }}">
