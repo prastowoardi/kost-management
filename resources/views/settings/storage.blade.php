@@ -114,29 +114,51 @@
                             $migrateToS3 = $currentDisk === 's3';
                             $fromLabel = $migrateToS3 ? 'Lokal' : 'R2';
                             $toLabel = $migrateToS3 ? 'R2' : 'Lokal';
-                            $sourceCount = $migrateToS3 ? $counts['public'] : $counts['s3'];
-                            $sourceEmpty = $sourceCount === 0;
+                            $missingCount = $inconsistent['count'];
+                            $sourceEmpty = $missingCount === 0;
                         @endphp
                         <p class="mb-4 text-sm text-stone-600">
                             Pindahkan file yang sudah ada dari <b>{{ $fromLabel }}</b> ke <b>{{ $toLabel }}</b> agar semua berkas tetap dapat diakses.
                         </p>
 
-                        <form method="POST" action="{{ route('settings.storage.migrate') }}" onsubmit="return confirmForm(event, 'Mulai migrasi {{ $sourceCount }} file dari {{ $fromLabel }} ke {{ $toLabel }}?')">
-                            @csrf
-                            <label class="mb-4 flex items-center gap-2 text-sm text-stone-700">
-                                <input type="checkbox" name="delete_source" value="1" class="rounded border-stone-300 text-brand-600 focus:ring-brand-500">
-                                Hapus file dari sumber setelah berhasil disalin
-                            </label>
-                            <div class="flex items-center gap-3">
-                                <button type="submit" class="btn-primary" {{ $sourceEmpty ? 'disabled' : '' }}>
-                                    Migrasi Sekarang ({{ $fromLabel }} → {{ $toLabel }})
-                                </button>
-                                <span class="text-xs text-stone-500">{{ number_format($sourceCount) }} file akan dipindah</span>
-                            </div>
+                        <div
+                            x-data="migrateWidget"
+                            data-confirm-msg="Mulai migrasi {{ $missingCount }} file dari {{ $fromLabel }} ke {{ $toLabel }}?"
+                            data-running="{{ $progress['running'] ? '1' : '0' }}"
+                            data-percent="{{ $progress['percent'] }}"
+                            data-done="{{ $progress['done'] }}"
+                            data-total="{{ $progress['total'] }}"
+                        >
+                            <form method="POST" action="{{ route('settings.storage.migrate') }}" @submit.prevent="start($event)">
+                                @csrf
+                                <label class="mb-4 flex items-center gap-2 text-sm text-stone-700">
+                                    <input type="checkbox" name="delete_source" value="1" class="rounded border-stone-300 text-brand-600 focus:ring-brand-500" :disabled="running">
+                                    Hapus file dari sumber setelah berhasil disalin
+                                </label>
+                                <div class="flex items-center gap-3">
+                                    <button type="submit" class="btn-primary" :disabled="running || {{ $sourceEmpty ? 'true' : 'false' }}">
+                                        <span x-show="!running">Migrasi Sekarang ({{ $fromLabel }} → {{ $toLabel }})</span>
+                                        <span x-show="running">Memproses...</span>
+                                    </button>
+                                    <span class="text-xs text-stone-500">{{ number_format($missingCount) }} file akan dipindah</span>
+                                </div>
+
+                                <div x-show="running" class="mt-5">
+                                    <div class="h-2.5 w-full overflow-hidden rounded-full bg-stone-200">
+                                        <div class="h-full rounded-full bg-brand-600 transition-all duration-300"
+                                            :style="'width: ' + percent + '%'"></div>
+                                    </div>
+                                    <div class="mt-2 flex items-center justify-between text-xs text-stone-500">
+                                        <span x-text="done + ' / ' + total + ' file'"></span>
+                                        <span class="font-bold text-stone-700" x-text="percent + '%'"></span>
+                                    </div>
+                                </div>
+                            </form>
+
                             @if($sourceEmpty)
-                                <p class="form-hint mt-3">Tidak ada file di {{ $fromLabel }} yang perlu dipindah.</p>
+                                <p class="form-hint mt-3">Semua file dari {{ $fromLabel }} sudah ada di {{ $toLabel }}, tidak ada yang perlu dipindah.</p>
                             @endif
-                        </form>
+                        </div>
                     </div>
                 </div>
 
