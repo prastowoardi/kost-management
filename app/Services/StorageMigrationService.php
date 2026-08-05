@@ -42,16 +42,21 @@ class StorageMigrationService
         return $result;
     }
 
-    public function countFiles(string $disk): int
+    public function fileList(string $disk): array
     {
         try {
-            return count(array_filter(
+            return array_values(array_filter(
                 Storage::disk($disk)->allFiles(),
                 fn (string $file) => ! $this->shouldSkip($file)
             ));
         } catch (Throwable) {
-            return 0;
+            return [];
         }
+    }
+
+    public function countFiles(string $disk): int
+    {
+        return count($this->fileList($disk));
     }
 
     private function shouldSkip(string $file): bool

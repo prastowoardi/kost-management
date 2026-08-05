@@ -1,9 +1,15 @@
 import Alpine from 'alpinejs';
 
 document.addEventListener('alpine:init', () => {
-    Alpine.data('dateRangePicker', (el) => ({
-        startDate: el.dataset.startDate || '',
-        endDate: el.dataset.endDate || '',
+    Alpine.data('dateRangePicker', () => ({
+        startDate: '',
+        endDate: '',
+
+        init() {
+            const ds = this.$root.dataset;
+            this.startDate = ds.startDate || '';
+            this.endDate = ds.endDate || '';
+        },
 
         formatDate(date) {
             return new Date(date).toLocaleDateString('id-ID', {
@@ -38,11 +44,15 @@ document.addEventListener('alpine:init', () => {
         }
     }));
 
-    Alpine.data('financeAmount', (el) => ({
-        amountClean: el.dataset.amountClean || '',
-        amountDisplay: el.dataset.amountDisplay || '',
+    Alpine.data('financeAmount', () => ({
+        amountClean: '',
+        amountDisplay: '',
 
         init() {
+            const ds = this.$root.dataset;
+            this.amountClean = ds.amountClean || '';
+            this.amountDisplay = ds.amountDisplay || '';
+
             if (this.amountDisplay !== '') {
                 this.formatNumber();
             } else if (this.amountClean !== '') {
@@ -64,5 +74,71 @@ document.addEventListener('alpine:init', () => {
                 this.amountDisplay = '';
             }
         }
+    }));
+
+    Alpine.data('migrateWidget', () => ({
+        running: false,
+        percent: 0,
+        done: 0,
+        total: 0,
+
+        init() {
+            const ds = this.$root.dataset;
+            this.running = ds.running === '1';
+            this.percent = Number(ds.percent || 0);
+            this.done = Number(ds.done || 0);
+            this.total = Number(ds.total || 0);
+
+            if (this.running) {
+                this.poll();
+            }
+        },
+
+        async start(event) {
+            const root = this.$root;
+            const ok = await window.confirmAction(root.dataset.confirmMsg, 'Ya, Mulai!');
+            if (!ok) return;
+
+            this.running = true;
+            this.percent = 0;
+            this.done = 0;
+            this.total = 0;
+            this.poll();
+        },
+
+        async poll() {
+            const form = this.$root.querySelector('form');
+
+            try {
+                while (true) {
+                    const fd = new FormData(form);
+                    const r = await fetch(form.action, {
+                        method: 'POST',
+                        body: fd,
+                        headers: { 'X-CSRF-TOKEN': window.appCsrf },
+                    });
+                    const d = await r.json();
+
+                    if (!r.ok || d.error) {
+                        throw new Error(d.error || 'Terjadi kesalahan server.');
+                    }
+
+                    this.done = d.done ?? this.done;
+                    this.total = d.total ?? this.total;
+                    this.percent = d.percent ?? this.percent;
+
+                    if (d.finished) {
+                        this.running = false;
+                        const note = d.failed ? ' (' + d.failed + ' gagal)' : '';
+                        window.showSuccessToast('Migrasi selesai: ' + d.done + ' file' + note);
+                        setTimeout(() => window.location.reload(), 1200);
+                        return;
+                    }
+                }
+            } catch (e) {
+                this.running = false;
+                window.showErrorToast('Migrasi gagal: ' + (e.message || 'kesalahan server'));
+            }
+        },
     }));
 });
