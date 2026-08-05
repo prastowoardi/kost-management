@@ -44,6 +44,17 @@ window.confirmAction = function (message, confirmText = 'Ya, Lanjutkan!') {
     });
 };
 
+window.confirmForm = function (event, message, confirmText = 'Ya, Lanjutkan!') {
+    if (event) event.preventDefault();
+    const form = event.currentTarget;
+
+    confirmAction(message, confirmText).then((isConfirmed) => {
+        if (isConfirmed) {
+            form.submit();
+        }
+    });
+};
+
 const statusMessages = {
     'active': 'mengaktifkan',
     'inactive': 'menonaktifkan',

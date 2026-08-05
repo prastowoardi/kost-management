@@ -14,6 +14,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicRegistrationController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoomController;
+use App\Http\Controllers\StorageSettingController;
 use App\Http\Controllers\TenantController;
 use App\Http\Controllers\UserController;
 use App\Models\Room;
@@ -117,6 +118,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role:admin')->group(function () {
         Route::resource('users', UserController::class);
         Route::put('users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggleStatus');
+
+        // Pengaturan Penyimpanan
+        Route::prefix('settings')->name('settings.')->group(function () {
+            Route::get('/storage', [StorageSettingController::class, 'index'])->name('storage');
+            Route::post('/storage/switch', [StorageSettingController::class, 'switch'])->name('storage.switch');
+            Route::post('/storage/migrate', [StorageSettingController::class, 'migrate'])->name('storage.migrate');
+        });
     });
 
     /* --- Role: TENANT ONLY --- */
