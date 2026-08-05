@@ -19,27 +19,44 @@
     <body class="font-sans antialiased"
         data-flash-success="{{ session('success') ? e(session('success')) : '' }}"
         data-flash-error="{{ session('error') ? e(session('error')) : '' }}">
-        <div class="min-h-screen bg-stone-100" x-data="{ menuOpen: false }"
-            x-effect="document.body.classList.toggle('overflow-hidden', menuOpen)">
-            @if(!isset($hideNavigation))
+
+        @if(isset($hideNavigation))
+            <div class="min-h-screen bg-stone-100">
+                <!-- Page Content -->
+                <main class="min-h-screen">
+                    {{ $slot }}
+                </main>
+            </div>
+        @else
+            <div x-data="{ sidebarOpen: false }"
+                x-effect="document.body.classList.toggle('overflow-hidden', sidebarOpen && window.innerWidth < 1024)"
+                class="min-h-screen bg-stone-100 lg:grid lg:grid-cols-[var(--sidebar-w,288px)_minmax(0,1fr)]">
+
+                <!-- Sidebar -->
                 @include('layouts.navigation')
-            @endif
 
-            <!-- Page Heading -->
-            @isset($header)
-                <header class="relative overflow-hidden border-b border-stone-200/70 bg-gradient-to-br from-white via-brand-50/60 to-stone-50">
-                    <div class="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-brand-100/50 blur-3xl"></div>
-                    <div class="page-container relative py-4 sm:py-5">
-                        {{ $header }}
-                    </div>
-                </header>
-            @endisset
+                <!-- Main Column -->
+                <div class="flex min-w-0 flex-col">
+                    <!-- Topbar -->
+                    @include('layouts.partials.topbar')
 
-            <!-- Page Content -->
-            <main>
-                {{ $slot }}
-            </main>
-        </div>
+                    <!-- Page Heading -->
+                    @isset($header)
+                        <header class="relative overflow-hidden border-b border-stone-200/70 bg-gradient-to-br from-white via-brand-50/60 to-stone-50">
+                            <div class="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-brand-100/50 blur-3xl"></div>
+                            <div class="page-container relative py-4 sm:py-5">
+                                {{ $header }}
+                            </div>
+                        </header>
+                    @endisset
+
+                    <!-- Page Content -->
+                    <main class="flex-1">
+                        {{ $slot }}
+                    </main>
+                </div>
+            </div>
+        @endif
 
         @stack('scripts')
     </body>
