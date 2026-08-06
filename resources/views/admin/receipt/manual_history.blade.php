@@ -64,7 +64,7 @@
                                                         room_number: '{{ $receipt->room_number }}',
                                                         period: '{{ $receipt->period ? \Carbon\Carbon::parse($receipt->period)->translatedFormat('F Y') : '-' }}',
                                                         total_amount: 'Rp {{ number_format($receipt->total_amount ?? 0, 0, ',', '.') }}',
-                                                        render_url: '{{ route('admin.receipt.print', $receipt->id) }}?hide_buttons=1'
+                                                        render_url: '{{ route('admin.receipt.print', $receipt) }}?hide_buttons=1'
                                                     };
                                                     openDetail = true;
                                                 "
