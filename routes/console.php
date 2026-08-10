@@ -12,3 +12,7 @@ Artisan::command('inspire', function () {
 Schedule::call(function () {
     Broadcast::where('created_at', '<', now()->subMonths(3))->delete();
 })->daily();
+
+Schedule::command('database:backup --keep=30')
+    ->dailyAt('02:00')
+    ->withoutOverlapping();

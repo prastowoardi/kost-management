@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\Admin\LogController;
 use App\Http\Controllers\Admin\ReceiptController;
+use App\Http\Controllers\BackupController;
 use App\Http\Controllers\BroadcastController;
+use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FacilityController;
@@ -57,6 +59,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     /* --- Role: ADMIN & STAFF --- */
     Route::middleware('role:admin,staff')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+        // Kalender jadwal sewa
+        Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar');
 
         // Management Resources
         Route::resource('rooms', RoomController::class);
@@ -124,6 +129,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/storage', [StorageSettingController::class, 'index'])->name('storage');
             Route::post('/storage/switch', [StorageSettingController::class, 'switch'])->name('storage.switch');
             Route::post('/storage/migrate', [StorageSettingController::class, 'migrate'])->name('storage.migrate');
+
+            // Backup Database
+            Route::prefix('backup')->name('backup.')->group(function () {
+                Route::get('/', [BackupController::class, 'index'])->name('index');
+                Route::post('/', [BackupController::class, 'store'])->name('store');
+                Route::get('/{name}/download', [BackupController::class, 'download'])->name('download');
+                Route::delete('/{name}', [BackupController::class, 'destroy'])->name('destroy');
+            });
         });
     });
 
