@@ -14,11 +14,6 @@ class StorePaymentRequest extends FormRequest
         $amountClean = preg_replace('/[^0-9]/', '', $amountInput);
         $lateFeeClean = preg_replace('/[^0-9]/', '', $lateFeeInput);
 
-        dd([
-            'amount_sent' => $amountInput,
-            'amount_cleaned' => $amountClean,
-        ]);
-
         $this->merge([
             'amount' => $amountClean,
             'late_fee' => $lateFeeClean,

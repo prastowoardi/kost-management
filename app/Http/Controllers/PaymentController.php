@@ -10,6 +10,7 @@ use App\Services\WhatsAppService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class PaymentController extends Controller
@@ -85,7 +86,26 @@ class PaymentController extends Controller
             $validated['receipt_file'] = $request->file('receipt_file')->store('receipts');
         }
 
-        $payment = Payment::create($validated);
+        $payment = DB::transaction(function () use ($validated) {
+            $existing = Payment::lockForUpdate()
+                ->where('tenant_id', $validated['tenant_id'])
+                ->where('period_month', $validated['period_month'])
+                ->whereNull('deleted_at')
+                ->first();
+
+            if ($existing) {
+                throw new \Illuminate\Validation\ValidationException(
+                    validator([], [
+                        'period_month' => [
+                            "Pembayaran untuk periode ini sudah tercatat: {$existing->invoice_number}",
+                        ],
+                    ])
+                );
+            }
+
+            return Payment::create($validated);
+        });
+
         $payment->load(['room', 'tenant']);
 
         NotificationHelper::create(

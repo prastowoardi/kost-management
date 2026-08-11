@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Payment;
+use App\Models\Room;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +13,18 @@ class TenantRegistrationService
     public function registerWithUser(array $tenantData, ?string $password = null): Tenant
     {
         return DB::transaction(function () use ($tenantData, $password) {
+            $room = Room::where('id', $tenantData['room_id'])
+                ->lockForUpdate()
+                ->first();
+
+            if (! $room) {
+                throw new \InvalidArgumentException('Kamar tidak ditemukan.');
+            }
+
+            if ($room->status !== 'available') {
+                throw new \InvalidArgumentException('Kamar sudah terisi atau tidak tersedia.');
+            }
+
             $user = User::create([
                 'name' => $tenantData['name'],
                 'email' => $tenantData['email'],
@@ -24,7 +37,7 @@ class TenantRegistrationService
             $tenant = Tenant::create($tenantData);
             $tenant->load('room');
 
-            $tenant->room->update(['status' => 'occupied']);
+            $room->update(['status' => 'occupied']);
 
             return $tenant;
         });

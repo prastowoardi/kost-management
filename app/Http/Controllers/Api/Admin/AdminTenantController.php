@@ -49,6 +49,7 @@ class AdminTenantController extends Controller
             'room_id' => 'required|string',
             'phone' => 'required',
             'id_card' => 'required',
+            'password' => 'required|min:8',
         ]);
 
         if ($validator->fails()) {
@@ -70,7 +71,7 @@ class AdminTenantController extends Controller
                     'emergency_contact_name' => $request->emergency_contact_name ?? '',
                     'emergency_contact_phone' => $request->emergency_contact_phone ?? '',
                     'status' => 'active',
-                ], $request->password ?? 'serratajos');
+                ], $request->password);
 
                 LogHelper::log(
                     'CREATE_TENANT',
@@ -84,6 +85,11 @@ class AdminTenantController extends Controller
                     'data' => $tenant->fresh()->load(['user', 'room']),
                 ]);
 
+            } catch (\InvalidArgumentException $e) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $e->getMessage(),
+                ], 422);
             } catch (\Exception $e) {
                 LogHelper::logError('CREATE_TENANT_FAILED', 'Gagal simpan tenant', $e);
 

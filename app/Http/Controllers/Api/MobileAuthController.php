@@ -49,6 +49,18 @@ class MobileAuthController extends Controller
             ], 401);
         }
 
+        if (! $user->is_active) {
+            LogHelper::logError(
+                'LOGIN_FAILED',
+                "Percobaan login akun nonaktif: {$request->email}",
+            );
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Akun Anda dinonaktifkan. Hubungi administrator.',
+            ], 403);
+        }
+
         if ($request->push_token) {
             User::where('expo_push_token', $request->push_token)->update(['expo_push_token' => null]);
 

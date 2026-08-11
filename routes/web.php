@@ -47,8 +47,6 @@ Route::get('/join/success', [PublicRegistrationController::class, 'success'])->n
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    Route::post('/send-reminder', [App\Http\Controllers\DashboardController::class, 'sendReminder'])->name('send.reminder');
-
     // Profile (Semua User)
     Route::controller(ProfileController::class)->group(function () {
         Route::get('/profile', 'edit')->name('profile.edit');
@@ -59,6 +57,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     /* --- Role: ADMIN & STAFF --- */
     Route::middleware('role:admin,staff')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+        Route::post('/send-reminder', [App\Http\Controllers\DashboardController::class, 'sendReminder'])->name('send.reminder');
 
         // Kalender jadwal sewa
         Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar');
@@ -149,11 +149,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
-Route::prefix('bo-admin')->group(function () {
-    Route::get('/receipt/create', [ReceiptController::class, 'manualCreate'])->name('admin.receipt.create');
-    Route::post('/receipt/store', [ReceiptController::class, 'manualStore'])->name('admin.receipt.store');
-    Route::get('/receipt/print/{id}', [ReceiptController::class, 'manualPrint'])->name('admin.receipt.print');
-    Route::get('/receipt/history', [ReceiptController::class, 'manualHistory'])->name('admin.receipt.history');
+Route::middleware(['auth', 'verified', 'role:admin,staff'])->prefix('bo-admin')->name('admin.receipt.')->group(function () {
+    Route::get('/receipt/create', [ReceiptController::class, 'manualCreate'])->name('create');
+    Route::post('/receipt/store', [ReceiptController::class, 'manualStore'])->name('store');
+    Route::get('/receipt/print/{id}', [ReceiptController::class, 'manualPrint'])->name('print');
+    Route::get('/receipt/history', [ReceiptController::class, 'manualHistory'])->name('history');
 });
 
 require __DIR__.'/auth.php';

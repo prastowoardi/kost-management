@@ -15,8 +15,7 @@ use App\Http\Controllers\Api\MobileTenantController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/login', [MobileAuthController::class, 'login']);
-Route::post('/register', [MobileAuthController::class, 'register']);
+Route::post('/login', [MobileAuthController::class, 'login'])->middleware('throttle:5,1');
 Route::get('health', function () {
     return response()->json(['status' => 'OK']);
 });
@@ -47,7 +46,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
-Route::middleware(['auth:sanctum'])
+Route::middleware(['auth:sanctum', 'role:admin,staff'])
     ->prefix('admin')
     ->as('admin.')
     ->group(function () {

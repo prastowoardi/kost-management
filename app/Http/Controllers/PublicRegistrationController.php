@@ -50,10 +50,14 @@ class PublicRegistrationController extends Controller
 
         $validated['status'] = 'active';
 
-        $tenant = $this->registration->registerWithPayment($validated, [
-            'payment_method' => $request->payment_method,
-            'receipt_file' => $receiptPath,
-        ]);
+        try {
+            $tenant = $this->registration->registerWithPayment($validated, [
+                'payment_method' => $request->payment_method,
+                'receipt_file' => $receiptPath,
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return back()->withInput()->withErrors(['room_id' => $e->getMessage()]);
+        }
 
         $this->sendWelcomeMessage($tenant);
 

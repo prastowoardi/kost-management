@@ -6,6 +6,7 @@ use App\Helpers\LogHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Tenant;
+use App\Services\PaymentService;
 use App\Services\PushNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +16,7 @@ class MobilePaymentController extends Controller
 {
     public function __construct(
         private PushNotificationService $pushNotification,
+        private PaymentService $paymentService,
     ) {}
 
     public function index(Request $request)
@@ -122,6 +124,10 @@ class MobilePaymentController extends Controller
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
 
+        $request->validate([
+            'status' => 'required|in:approved,accepted,rejected',
+        ]);
+
         $payment = Payment::with(['tenant.user', 'room'])->where('uuid', $id)->firstOrFail();
 
         $newStatus = ($request->status === 'rejected') ? 'overdue' : 'paid';
@@ -136,6 +142,10 @@ class MobilePaymentController extends Controller
                 'status' => $newStatus,
                 'verified_at' => now(),
             ]);
+
+            if ($newStatus === 'paid') {
+                $this->paymentService->syncFinanceRecord($payment);
+            }
 
             LogHelper::log(
                 'VERIFY_PAYMENT',

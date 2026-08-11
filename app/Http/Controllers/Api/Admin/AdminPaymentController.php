@@ -10,6 +10,7 @@ use App\Services\PaymentService;
 use App\Services\PushNotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Throwable;
 
@@ -42,28 +43,38 @@ class AdminPaymentController extends Controller
         try {
             $tenant = Tenant::with('room')->where('uuid', $request->tenant_id)->firstOrFail();
 
-            $payment = Payment::create([
-                'tenant_id' => $tenant->id,
-                'room_id' => $tenant->room_id,
-                'payment_date' => $request->payment_date,
-                'period_month' => $request->period_month,
-                'amount' => $request->amount,
-                'late_fee' => $request->late_fee ?? 0,
-                'total' => $request->amount + ($request->late_fee ?? 0),
-                'payment_method' => $request->payment_method,
-                'status' => 'paid',
-                'notes' => $request->notes,
-            ]);
+            $existing = Payment::where('tenant_id', $tenant->id)
+                ->where('period_month', $request->period_month)
+                ->whereNull('deleted_at')
+                ->first();
+
+            if ($existing) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => "Pembayaran untuk periode ini sudah tercatat: {$existing->invoice_number}",
+                ], 422);
+            }
+
+            $payment = DB::transaction(function () use ($request, $tenant) {
+                return Payment::create([
+                    'tenant_id' => $tenant->id,
+                    'room_id' => $tenant->room_id,
+                    'payment_date' => $request->payment_date,
+                    'period_month' => $request->period_month,
+                    'amount' => $request->amount,
+                    'late_fee' => $request->late_fee ?? 0,
+                    'total' => $request->amount + ($request->late_fee ?? 0),
+                    'payment_method' => $request->payment_method,
+                    'status' => 'paid',
+                    'notes' => $request->notes,
+                ]);
+            });
 
             $payment->load(['tenant.user', 'room']);
 
             $this->paymentService->createFinanceRecord($payment);
 
             $tenantUser = $tenant->user;
-            \Illuminate\Support\Facades\Log::info('NOTIF: tenant user', [
-                'exists' => $tenantUser ? 'yes' : 'no',
-                'push_token' => $tenantUser?->expo_push_token ?? 'none',
-            ]);
             if ($tenantUser && $tenantUser->expo_push_token) {
                 $sent = $this->pushNotification->sendPaymentReceipt(
                     $tenantUser->expo_push_token,

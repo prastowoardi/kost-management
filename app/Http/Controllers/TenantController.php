@@ -61,7 +61,11 @@ class TenantController extends Controller
             $validated['photo'] = $request->file('photo')->store('tenants');
         }
 
-        $tenant = $this->registration->registerWithUser($validated);
+        try {
+            $tenant = $this->registration->registerWithUser($validated);
+        } catch (\InvalidArgumentException $e) {
+            return back()->withInput()->withErrors(['room_id' => $e->getMessage()]);
+        }
 
         LogHelper::log('CREATE_TENANT', "Menambah penghuni {$tenant->name}", $tenant);
 

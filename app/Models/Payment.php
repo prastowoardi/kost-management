@@ -23,6 +23,8 @@ class Payment extends Model
         'payment_method',
         'notes',
         'receipt_file',
+        'proof_of_payment',
+        'verified_at',
     ];
 
     protected $hidden = ['id'];
