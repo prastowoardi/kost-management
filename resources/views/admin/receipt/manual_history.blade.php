@@ -84,9 +84,7 @@
                         </table>
                     </div>
 
-                    <div class="mt-4">
-                        {{ $receipts->links() }}
-                    </div>
+                    <x-pagination :paginator="$receipts" />
                 </div>
             </div>
 

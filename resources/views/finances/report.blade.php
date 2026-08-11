@@ -184,7 +184,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($finances as $finance)
+                        @forelse($financesPage as $finance)
                         <tr>
                             <td>
                                 {{ $finance->transaction_date->format('d M Y') }}
@@ -232,6 +232,8 @@
                     </tfoot>
                 </table>
             </div>
+
+            <x-pagination :paginator="$financesPage" />
         </div>
 
     </div>

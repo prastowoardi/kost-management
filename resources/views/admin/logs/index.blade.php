@@ -215,9 +215,7 @@
             </div>
 
             {{-- Pagination --}}
-            <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-stone-100 px-3 sm:px-5 py-3 sm:py-4">
-                {{ $logs->appends(request()->query())->links() }}
-            </div>
+            <x-pagination :paginator="$logs" card />
 
         </div>
     </div>

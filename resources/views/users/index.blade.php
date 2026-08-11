@@ -203,9 +203,7 @@
                     </div>
 
                     <!-- Pagination -->
-                    <div class="mt-5">
-                        {{ $users->links() }}
-                    </div>
+                    <x-pagination :paginator="$users" />
                 </div>
             </div>
         </div>

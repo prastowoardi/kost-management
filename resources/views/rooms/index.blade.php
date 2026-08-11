@@ -130,9 +130,7 @@
                         </table>
                     </div>
 
-                    <div class="mt-4">
-                        {{ $rooms->links() }}
-                    </div>
+                    <x-pagination :paginator="$rooms" />
                 </div>
             </div>
         </div>

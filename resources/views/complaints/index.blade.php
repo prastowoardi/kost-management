@@ -110,9 +110,7 @@
                     </div>
 
                     {{-- Bagian Pagination --}}
-                    <div class="mt-6">
-                        {{ $complaints->links() }}
-                    </div>
+                    <x-pagination :paginator="$complaints" />
                 </div>
             </div>
         </div>

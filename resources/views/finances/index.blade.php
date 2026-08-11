@@ -231,9 +231,7 @@
                     </table>
                 </div>
 
-                <div class="mt-4">
-                    {{ $finances->links() }}
-                </div>
+                <x-pagination :paginator="$finances" />
             </div>
         </div>
 

@@ -82,6 +82,11 @@ class FinanceController extends Controller
             ->orderBy('transaction_date', 'desc')
             ->get();
 
+        $financesPage = Finance::whereBetween('transaction_date', [$startDate, $endDate])
+            ->orderBy('transaction_date', 'desc')
+            ->paginate(15)
+            ->appends($request->query());
+
         $totalIncome = Finance::income()
             ->whereBetween('transaction_date', [$startDate, $endDate])
             ->sum('amount');
@@ -124,6 +129,7 @@ class FinanceController extends Controller
 
         $data = compact(
             'finances',
+            'financesPage',
             'month',
             'year',
             'totalIncome',

@@ -141,9 +141,7 @@
                     </table>
                 </div>
 
-                <div class="mt-5">
-                    {{ $payments->appends(request()->query())->links() }}
-                </div>
+                <x-pagination :paginator="$payments" />
             </div>
         </div>
 

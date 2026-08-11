@@ -111,9 +111,7 @@
                     </div>
 
                     <!-- PAGINATION -->
-                    <div class="mt-4">
-                        {{ $facilities->links() }}
-                    </div>
+                    <x-pagination :paginator="$facilities" />
 
                 </div>
             </div>

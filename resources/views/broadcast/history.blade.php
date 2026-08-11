@@ -90,9 +90,7 @@
                         @endforelse
                     </div>
 
-                    <div class="mt-6">
-                        {{ $history->links() }}
-                    </div>
+                    <x-pagination :paginator="$history" />
                 </div>
             </div>
         </div>
