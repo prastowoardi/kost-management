@@ -80,7 +80,8 @@
                     <div class="card-body">
 
                         <div class="overflow-x-auto">
-                            <table class="w-full min-w-[680px] border-separate" style="border-spacing: 4px;">
+                            <div class="min-w-[680px]">
+                                <table class="w-full table-fixed border-separate" style="border-spacing: 4px;">
                                 <thead>
                                     <tr>
                                         @foreach(['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'] as $idx => $day)
@@ -142,7 +143,7 @@
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                                                 @endif
                                                             </svg>
-                                                            <span class="truncate">{{ $event['label'] }}</span>
+                                                            <span class="min-w-0 flex-1 truncate">{{ $event['label'] }}</span>
                                                         </a>
                                                     @endforeach
 
@@ -159,6 +160,7 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                            </div>
                         </div>
 
                         <div class="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-stone-100 pt-4">
@@ -189,7 +191,7 @@
                         <div class="card-header bg-gradient-to-r from-brand-600 to-brand-500">
                             <h3 class="section-title !text-white flex items-center gap-2">
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                30 Hari Mendatang
+                                Agenda Bulan Ini
                             </h3>
                         </div>
                         <div class="card-body">
