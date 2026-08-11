@@ -241,6 +241,90 @@
 
                 </div>
             </div>
+
+            <!-- Room History -->
+            <div class="mt-6">
+                <div class="card overflow-hidden">
+                    <div class="card-header">
+                        <h3 class="section-title">
+                            📜 Histori Penghuni & Pembayaran ({{ $room->tenants->count() }} penghuni)
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        @if($room->tenants->count() > 0)
+                        <div class="space-y-6">
+                            @foreach($room->tenants as $tenant)
+                            <div class="rounded-xl border border-stone-200 overflow-hidden">
+                                <div class="flex flex-wrap items-center justify-between gap-3 bg-stone-50 px-4 py-3">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        @if($tenant->photo)
+                                        <img src="{{ Storage::url($tenant->photo) }}" class="h-10 w-10 rounded-full object-cover" alt="{{ $tenant->name }}">
+                                        @else
+                                        <div class="avatar h-10 w-10">
+                                            <span>{{ substr($tenant->name, 0, 1) }}</span>
+                                        </div>
+                                        @endif
+                                        <div class="min-w-0">
+                                            <a href="{{ route('tenants.show', $tenant) }}" class="font-semibold text-stone-900 hover:text-brand-600">
+                                                {{ $tenant->name }}
+                                            </a>
+                                            <p class="text-xs text-stone-500 tabular">
+                                                {{ $tenant->entry_date->format('d M Y') }} –
+                                                {{ $tenant->exit_date ? $tenant->exit_date->format('d M Y') : 'Sekarang' }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <span class="{{ $tenant->status == 'active' ? 'badge-success' : 'badge-danger' }}">
+                                        {{ $tenant->status == 'active' ? 'Menghuni' : 'Keluar' }}
+                                    </span>
+                                </div>
+
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-max w-full">
+                                        <thead>
+                                            <tr>
+                                                <th>Periode</th>
+                                                <th>Tanggal Bayar</th>
+                                                <th>Jumlah</th>
+                                                <th>Metode</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse($tenant->payments->sortByDesc('period_month') as $payment)
+                                            <tr>
+                                                <td class="font-medium text-stone-900">{{ $payment->period_month->format('M Y') }}</td>
+                                                <td class="text-stone-500 tabular">{{ $payment->payment_date->format('d/m/Y') }}</td>
+                                                <td class="font-semibold text-stone-900 tabular">Rp {{ number_format($payment->total, 0, ',', '.') }}</td>
+                                                <td class="text-stone-500">{{ ucfirst($payment->payment_method ?? '-') }}</td>
+                                                <td>
+                                                    <span class="{{ $payment->status == 'paid' ? 'badge-success' : ($payment->status == 'overdue' ? 'badge-danger' : 'badge-warning') }}">
+                                                        {{ ucfirst($payment->status) }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            @empty
+                                            <tr>
+                                                <td colspan="5" class="text-center py-4 text-sm text-stone-500">Belum ada pembayaran dari penghuni ini</td>
+                                            </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                        @else
+                        <div class="empty-state">
+                            <svg class="h-12 w-12 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                            </svg>
+                            <p class="mt-2 text-sm text-stone-500">Kamar ini belum pernah dihuni</p>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

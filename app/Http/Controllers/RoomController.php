@@ -80,7 +80,13 @@ class RoomController extends Controller
 
     public function show(Room $room)
     {
-        $room->load(['activeTenant', 'facilities', 'payments', 'complaints']);
+        $room->load([
+            'activeTenant',
+            'facilities',
+            'payments',
+            'complaints',
+            'tenants' => fn ($q) => $q->with('payments')->orderBy('entry_date'),
+        ]);
 
         return view('rooms.show', compact('room'));
     }
