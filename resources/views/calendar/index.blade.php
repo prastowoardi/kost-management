@@ -198,7 +198,7 @@
                             @if(count($upcoming) === 0)
                                 <div class="empty-state !py-8">
                                     <p class="text-sm font-medium text-stone-600">Tidak ada aktivitas</p>
-                                    <p class="mt-1 text-xs text-stone-400">Tidak ada agenda dalam 30 hari ke depan.</p>
+                                    <p class="mt-1 text-xs text-stone-400">Tidak ada agenda pada bulan ini.</p>
                                 </div>
                             @else
                                 <ol class="relative space-y-4 border-l-2 border-stone-100 pl-4 ml-2">

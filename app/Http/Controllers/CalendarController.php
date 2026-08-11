@@ -142,8 +142,8 @@ class CalendarController extends Controller
 
     private function buildUpcoming(): \Illuminate\Support\Collection
     {
-        $from = now()->startOfDay();
-        $to = now()->addDays(30)->endOfDay();
+        $from = now()->startOfMonth()->startOfDay();
+        $to = now()->endOfMonth()->endOfDay();
 
         $items = collect();
 
@@ -196,7 +196,7 @@ class CalendarController extends Controller
             ]);
         }
 
-        return $items->sortBy('date')->values()->take(10);
+        return $items->sortBy('date')->values()->take(20);
     }
 
     private function moveInTenants(Carbon $start, Carbon $end)
