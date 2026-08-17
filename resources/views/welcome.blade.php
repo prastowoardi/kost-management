@@ -33,18 +33,101 @@
             .bento-card:hover {
                 transform: translateY(-5px);
             }
+            section[id] {
+                scroll-margin-top: 8rem;
+            }
+
+            /* --- Navbar --- */
+            #navbar {
+                animation: navbar-enter 0.6s ease-out both;
+            }
+            #navbar-bg {
+                max-width: 72rem;
+                padding-left: 1.25rem;
+                padding-right: 1.25rem;
+                background-color: transparent;
+                border: 1px solid transparent;
+                transition: background-color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease, max-width 0.5s ease;
+            }
+            #navbar.is-scrolled #navbar-bg {
+                max-width: 56rem;
+                background-color: rgb(255 255 255 / 0.85);
+                border-color: rgb(255 255 255 / 0.25);
+                box-shadow: 0 12px 32px -12px rgb(0 0 0 / 0.18);
+                backdrop-filter: blur(20px) saturate(1.4);
+                -webkit-backdrop-filter: blur(20px) saturate(1.4);
+            }
+            #logo-text,
+            #menu-text {
+                color: #0f172a;
+                transition: color 0.3s ease;
+            }
+            #menu-text {
+                display: none;
+                align-items: center;
+                gap: 2rem;
+            }
+            #menu-text a {
+                position: relative;
+                transition: color 0.3s ease;
+            }
+            #menu-text a:hover {
+                color: #f472b6;
+            }
+            #menu-text a::after {
+                content: "";
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: -6px;
+                height: 2px;
+                border-radius: 999px;
+                background: linear-gradient(90deg, #db2777, #7c3aed);
+                transform: scaleX(0);
+                transform-origin: left;
+                transition: transform 0.3s ease;
+            }
+            #menu-text a:hover::after,
+            #menu-text a.active::after {
+                transform: scaleX(1);
+            }
+
+            @media (min-width: 640px) {
+                #navbar-bg {
+                    padding-left: 2rem;
+                    padding-right: 2rem;
+                }
+                #menu-text {
+                    display: flex;
+                }
+            }
+
+            @keyframes navbar-enter {
+                from { opacity: 0; transform: translateY(-16px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            @media (prefers-color-scheme: dark) {
+                #logo-text,
+                #menu-text {
+                    color: #fff;
+                }
+                #navbar.is-scrolled #navbar-bg {
+                    background-color: rgb(15 23 42 / 0.75);
+                    border-color: rgb(255 255 255 / 0.12);
+                }
+            }
         </style>
     </head>
     <body class="bg-[#f8fafc] dark:bg-[#0f172a] text-[#1e293b] antialiased">
 
-        <nav id="navbar" class="fixed top-0 inset-x-0 z-50 transition-all duration-500 ease-in-out px-4 py-4">
-            <div id="navbar-bg" class="max-w-6xl mx-auto h-16 flex justify-between items-center px-8 transition-all duration-500 rounded-2xl">
-                <div id="logo-text" class="text-xl font-extrabold tracking-tight text-white flex items-center gap-2 transition-colors duration-500">
+        <nav id="navbar" class="fixed top-0 inset-x-0 z-50 px-4 py-4">
+            <div id="navbar-bg" class="mx-auto flex h-16 max-w-6xl items-center justify-between rounded-2xl">
+                <div id="logo-text" class="flex items-center gap-2 text-xl font-extrabold tracking-tight">
                     <span>🛖 Serrata</span><span class="text-pink-500">.</span>
                 </div>
-                <div id="menu-text" class="flex gap-8 items-center font-bold text-white transition-colors duration-500">
-                    <a href="#fasilitas" class="text-sm hover:text-pink-400 transition">Fasilitas</a>
-                    <a href="#lokasi" class="text-sm hover:text-pink-400 transition">Lokasi</a>
+                <div id="menu-text" class="font-bold">
+                    <a href="#fasilitas" class="text-sm">Fasilitas</a>
+                    <a href="#lokasi" class="text-sm">Lokasi</a>
                 </div>
             </div>
         </nav>

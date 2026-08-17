@@ -1,30 +1,30 @@
 import 'spotlight.js/dist/spotlight.bundle.js';
 
 const navbar = document.getElementById('navbar');
-const bg = document.getElementById('navbar-bg');
-const logo = document.getElementById('logo-text');
-const menu = document.getElementById('menu-text');
+const links = document.querySelectorAll('#navbar a[href^="#"]');
+const sections = document.querySelectorAll('main section[id]');
 
 function handleNavbarScroll() {
-    if (window.scrollY > 50) {
-        navbar.classList.add('pt-6');
-        bg.classList.add('bg-white/80', 'backdrop-blur-xl', 'shadow-lg', 'border', 'border-white/20');
-        bg.classList.remove('max-w-6xl');
-        bg.classList.add('max-w-4xl');
-
-        logo.classList.replace('text-white', 'text-slate-900');
-        menu.classList.replace('text-white', 'text-slate-900');
-    } else {
-        navbar.classList.remove('pt-6');
-        bg.classList.remove('bg-white/80', 'backdrop-blur-xl', 'shadow-lg', 'border', 'border-white/20', 'max-w-4xl');
-        bg.classList.add('max-w-6xl');
-
-        logo.classList.replace('text-slate-900', 'text-white');
-        menu.classList.replace('text-slate-900', 'text-white');
-    }
+    navbar.classList.toggle('is-scrolled', window.scrollY > 40);
 }
 
-if (navbar && bg && logo && menu) {
-    window.addEventListener('scroll', handleNavbarScroll);
+function highlightActiveLink() {
+    const pos = window.scrollY + 140;
+    let current = '';
+    sections.forEach(section => {
+        if (pos >= section.getBoundingClientRect().top + window.scrollY) {
+            current = section.id;
+        }
+    });
+    links.forEach(link => link.classList.toggle('active', link.getAttribute('href') === '#' + current));
+}
+
+function onScroll() {
     handleNavbarScroll();
+    highlightActiveLink();
+}
+
+if (navbar) {
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
 }
