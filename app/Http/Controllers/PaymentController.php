@@ -1,8 +1,9 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Helpers\NotificationHelper;
+
 use App\Helpers\LogHelper;
+use App\Helpers\NotificationHelper;
 use App\Models\Payment;
 use App\Models\Tenant;
 use App\Services\PaymentService;
@@ -10,7 +11,6 @@ use App\Services\WhatsAppService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class PaymentController extends Controller
@@ -19,6 +19,29 @@ class PaymentController extends Controller
         private WhatsAppService $whatsapp,
         private PaymentService $paymentService,
     ) {}
+
+    /**
+     * Sanitasi input rupiah ("Rp 1.500.000" -> 1500000).
+     * Mengembalikan null jika input tidak mengandung digit sama sekali,
+     * agar gagal di validasi 'required' alih-alih diam-diam menjadi 0.
+     */
+    private function parseRupiah(mixed $value): ?int
+    {
+        if ($value === null || ! preg_match('/\d/', (string) $value)) {
+            return null;
+        }
+
+        return (int) preg_replace('/[^0-9]/', '', (string) $value);
+    }
+
+    /**
+     * Normalisasi periode dari form ("2026-08") menjadi tanggal pertama
+     * bulan tersebut ("2026-08-01") agar perbandingan duplikat akurat.
+     */
+    private function normalizePeriod(mixed $value): string
+    {
+        return Carbon::parse($value)->startOfMonth()->toDateString();
+    }
 
     public function index(Request $request)
     {
@@ -62,49 +85,31 @@ class PaymentController extends Controller
     public function store(Request $request)
     {
         $request->merge([
-            'amount' => (int) preg_replace('/[^0-9]/', '', $request->amount),
-            'late_fee' => (int) preg_replace('/[^0-9]/', '', $request->late_fee ?? 0),
+            'amount' => $this->parseRupiah($request->amount),
+            'late_fee' => $this->parseRupiah($request->late_fee ?? 0),
         ]);
 
         $validated = $request->validate([
             'tenant_id' => 'required|exists:tenants,id',
             'payment_date' => 'required|date',
             'period_month' => 'required|date',
-            'amount' => 'required|numeric|min:0',
+            'amount' => 'required|numeric|min:1',
             'late_fee' => 'nullable|numeric|min:0',
             'payment_method' => 'required|in:cash,transfer,e-wallet',
             'notes' => 'nullable|string',
             'receipt_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
+        $validated['period_month'] = $this->normalizePeriod($validated['period_month']);
+
         $tenant = Tenant::findOrFail($validated['tenant_id']);
-        $validated['room_id'] = $tenant->room_id;
-        $validated['total'] = $validated['amount'] + $validated['late_fee'];
-        $validated['status'] = 'paid';
 
         if ($request->hasFile('receipt_file')) {
             $validated['receipt_file'] = $request->file('receipt_file')->store('receipts');
         }
 
-        $payment = DB::transaction(function () use ($validated) {
-            $existing = Payment::lockForUpdate()
-                ->where('tenant_id', $validated['tenant_id'])
-                ->where('period_month', $validated['period_month'])
-                ->whereNull('deleted_at')
-                ->first();
-
-            if ($existing) {
-                throw new \Illuminate\Validation\ValidationException(
-                    validator([], [
-                        'period_month' => [
-                            "Pembayaran untuk periode ini sudah tercatat: {$existing->invoice_number}",
-                        ],
-                    ])
-                );
-            }
-
-            return Payment::create($validated);
-        });
+        // Mendukung cicilan: validasi sisa tagihan & auto-note ada di service
+        $payment = $this->paymentService->createInstallmentPayment($tenant, $validated);
 
         $payment->load(['room', 'tenant']);
 
@@ -186,21 +191,23 @@ class PaymentController extends Controller
     public function update(Request $request, Payment $payment)
     {
         $request->merge([
-            'amount' => (int) preg_replace('/[^0-9]/', '', $request->amount),
-            'late_fee' => (int) preg_replace('/[^0-9]/', '', $request->late_fee ?? 0),
+            'amount' => $this->parseRupiah($request->amount),
+            'late_fee' => $this->parseRupiah($request->late_fee ?? 0),
         ]);
 
         $validated = $request->validate([
             'tenant_id' => 'required|exists:tenants,id',
             'payment_date' => 'required|date',
             'period_month' => 'required|date',
-            'amount' => 'required|numeric|min:0',
+            'amount' => 'required|numeric|min:1',
             'late_fee' => 'nullable|numeric|min:0',
             'status' => 'required|in:pending,paid,overdue',
             'payment_method' => 'nullable|in:cash,transfer,e-wallet',
             'notes' => 'nullable|string',
             'receipt_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
+
+        $validated['period_month'] = $this->normalizePeriod($validated['period_month']);
 
         $tenant = Tenant::findOrFail($validated['tenant_id']);
 

@@ -34,33 +34,17 @@ class DashboardController extends Controller
             ->where('status', 'active')
             ->get()
             ->filter(function ($tenant) {
-                if (! $tenant->entry_date) {
+                // Perhitungan jatuh tempo terpusat di accessor model Tenant
+                $dueDate = $tenant->calculated_due_date;
+
+                if (! $dueDate) {
                     return false;
-                }
-
-                $now = Carbon::now()->startOfDay();
-                $entryDate = Carbon::parse($tenant->entry_date)->startOfDay();
-
-                if ($entryDate->greaterThan($now)) {
-                    return false;
-                }
-
-                $targetDate = Carbon::now()->setDay($entryDate->day)->startOfDay();
-
-                $diff = $now->diffInDays($targetDate, false);
-                if ($diff < -20) {
-                    $targetDate->addMonth();
-                } elseif ($diff > 20) {
-                    $targetDate->subMonth();
                 }
 
                 $isPaid = $tenant->payments->where('status', 'paid')
-                    ->filter(function ($payment) use ($targetDate) {
-                        return Carbon::parse($payment->period_month)->format('Y-m') === $targetDate->format('Y-m');
-                    })->first();
-
-                $tenant->days_left = (int) $now->diffInDays($targetDate, false);
-                $tenant->calculated_due_date = $targetDate;
+                    ->contains(function ($payment) use ($dueDate) {
+                        return Carbon::parse($payment->period_month)->format('Y-m') === $dueDate->format('Y-m');
+                    });
 
                 return ! $isPaid && ($tenant->days_left <= 7 && $tenant->days_left >= -14);
             });

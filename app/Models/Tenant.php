@@ -49,7 +49,7 @@ class Tenant extends Model
             return null;
         }
 
-        $targetDate = Carbon::now()->setDay($entryDate->day)->startOfDay();
+        $targetDate = $now->copy()->setDay(min($entryDate->day, $now->daysInMonth));
 
         $diff = $now->diffInDays($targetDate, false);
         if ($diff < -20) {

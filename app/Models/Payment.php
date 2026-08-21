@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -65,5 +66,19 @@ class Payment extends Model
         $dueDate = $this->created_at->addMonth();
 
         return now()->greaterThanOrEqualTo($dueDate);
+    }
+
+    /**
+     * Sisa tagihan sebuah periode untuk tenant tertentu.
+     * Mendukung pembayaran bertahap (cicilan): sisa = harga - total terbayar.
+     */
+    public static function remainingForPeriod(int|string $tenantId, string $period, float|int $price): float
+    {
+        $paid = (float) static::where('tenant_id', $tenantId)
+            ->whereDate('period_month', Carbon::parse($period)->startOfMonth()->toDateString())
+            ->whereNull('deleted_at')
+            ->sum('total');
+
+        return max(0.0, (float) $price - $paid);
     }
 }
