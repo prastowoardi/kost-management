@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Helpers\LogHelper;
 use App\Models\Broadcast;
-use App\Models\BroadcastLog;
 use App\Models\Tenant;
 use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
@@ -38,43 +37,22 @@ class BroadcastController extends Controller
                 'message' => $request->message,
             ]);
 
-            $success = 0;
-            $failed = 0;
-
+            // Kirim massal via queue: satu job per penghuni, request HTTP
+            // langsung selesai tanpa menunggu gateway satu per satu.
             foreach ($tenants as $tenant) {
-                $errorMsg = null;
-                $sent = $this->whatsapp->sendMessage($tenant->phone, $request->message);
-
-                if ($sent) {
-                    $status = 'success';
-                    $success++;
-                } else {
-                    $status = 'failed';
-                    $failed++;
-                    $errorMsg = 'Gagal kirim pesan';
-                }
-
-                BroadcastLog::create([
-                    'broadcast_id' => $broadcast->id,
-                    'tenant_name' => $tenant->name,
-                    'phone' => $tenant->phone,
-                    'status' => $status,
-                    'error_message' => $errorMsg,
-                ]);
+                \App\Jobs\SendWhatsAppMessageJob::dispatch(
+                    $tenant->phone,
+                    $request->message,
+                    $broadcast->id,
+                    $tenant->name,
+                );
             }
 
-            $broadcast->update([
-                'total_success' => $success,
-                'total_failed' => $failed,
-            ]);
-
-            LogHelper::log('SEND_BROADCAST', "Mengirim broadcast ke {$success} berhasil, {$failed} gagal", $broadcast, [
+            LogHelper::log('SEND_BROADCAST', "Broadcast mengantre dikirim ke {$tenants->count()} penghuni", $broadcast, [
                 'total_tenant' => $tenants->count(),
-                'success' => $success,
-                'failed' => $failed,
             ]);
 
-            return back()->with('status', 'Broadcast terkirim ke '.$success.' penghuni!');
+            return back()->with('status', 'Broadcast mengantre dikirim ke '.$tenants->count().' penghuni!');
         } catch (Throwable $e) {
             LogHelper::logError(
                 'BROADCAST_FAILED',
@@ -118,6 +96,7 @@ class BroadcastController extends Controller
 
         if ($sent) {
             LogHelper::log('SEND_PERSONAL_CHAT', "Mengirim pesan personal ke {$request->phone}");
+
             return back()->with('status', 'Pesan terkirim!');
         }
 
