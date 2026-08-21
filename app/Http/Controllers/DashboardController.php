@@ -11,6 +11,7 @@ use App\Models\Tenant;
 use App\Services\WhatsAppService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
@@ -30,43 +31,38 @@ class DashboardController extends Controller
             ->whereMonth('transaction_date', Carbon::now()->month)
             ->sum('amount');
 
-        $allDueTenants = Tenant::with(['room', 'payments'])
-            ->where('status', 'active')
-            ->get()
-            ->filter(function ($tenant) {
-                if (! $tenant->entry_date) {
-                    return false;
-                }
+        // Query berat (semua tenant aktif + payments) di-cache 5 menit agar
+        // dashboard tidak menghitung ulang setiap kali dibuka.
+        $dueData = Cache::remember('dashboard.due_tenants', now()->addMinutes(5), function () {
+            $dueTenants = Tenant::with(['room', 'payments'])
+                ->where('status', 'active')
+                ->get()
+                ->filter(function ($tenant) {
+                    // Perhitungan jatuh tempo terpusat di accessor model Tenant
+                    $dueDate = $tenant->calculated_due_date;
 
-                $now = Carbon::now()->startOfDay();
-                $entryDate = Carbon::parse($tenant->entry_date)->startOfDay();
+                    if (! $dueDate) {
+                        return false;
+                    }
 
-                if ($entryDate->greaterThan($now)) {
-                    return false;
-                }
+                    $isPaid = $tenant->payments->where('status', 'paid')
+                        ->contains(function ($payment) use ($dueDate) {
+                            return Carbon::parse($payment->period_month)->format('Y-m') === $dueDate->format('Y-m');
+                        });
 
-                $targetDate = Carbon::now()->setDay($entryDate->day)->startOfDay();
+                    return ! $isPaid && ($tenant->days_left <= 7 && $tenant->days_left >= -14);
+                })
+                ->sortBy('days_left')
+                ->values();
 
-                $diff = $now->diffInDays($targetDate, false);
-                if ($diff < -20) {
-                    $targetDate->addMonth();
-                } elseif ($diff > 20) {
-                    $targetDate->subMonth();
-                }
+            return [
+                'list' => $dueTenants,
+                'count' => $dueTenants->count(),
+            ];
+        });
 
-                $isPaid = $tenant->payments->where('status', 'paid')
-                    ->filter(function ($payment) use ($targetDate) {
-                        return Carbon::parse($payment->period_month)->format('Y-m') === $targetDate->format('Y-m');
-                    })->first();
-
-                $tenant->days_left = (int) $now->diffInDays($targetDate, false);
-                $tenant->calculated_due_date = $targetDate;
-
-                return ! $isPaid && ($tenant->days_left <= 7 && $tenant->days_left >= -14);
-            });
-
-        $duePayments = $allDueTenants->sortBy('days_left');
-        $pendingPayments = $allDueTenants->count();
+        $duePayments = $dueData['list'];
+        $pendingPayments = $dueData['count'];
 
         $overduePayments = Payment::where('status', 'overdue')->count();
         $openComplaints = Complaint::where('status', 'open')->count();

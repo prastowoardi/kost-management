@@ -37,6 +37,7 @@ return [
 
     'whatsapp' => [
         'gateway_url' => env('WHATSAPP_GATEWAY_URL', 'http://localhost:3000'),
+        'gateway_api_key' => env('WHATSAPP_GATEWAY_API_KEY'),
         'admin_phone' => env('WHATSAPP_ADMIN_PHONE', ''),
     ],
 

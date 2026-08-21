@@ -56,7 +56,7 @@ class MobileComplaintController extends Controller
         } catch (Throwable $e) {
             LogHelper::logError(
                 'CREATE_COMPLAINT_FAILED',
-                "Gagal membuat laporan",
+                'Gagal membuat laporan',
                 $e,
                 ['title' => $request->title]
             );

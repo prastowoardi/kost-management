@@ -74,13 +74,14 @@ jobs:
             # pm2 restart wa-gateway || pm2 start server.cjs --name "wa-gateway"
             # cd ..
 
-            # echo "🔄 Restart Queue Worker"
-            # cd ${{ secrets.VPS_PATH }}
-            # pm2 delete laravel-worker || true
-            # pm2 start "php artisan queue:work" --name "laravel-worker"
-
-            # echo "💾 Save PM2 process list"
-            # pm2 save
+            # WA dikirim via queue — cek worker, jalankan hanya jika belum berjalan
+            echo "🔄 Cek Queue Worker..."
+            if [ -z "$(pm2 pid laravel-worker 2>/dev/null)" ]; then
+              echo "🚀 Queue Worker tidak berjalan, menjalankan..."
+              pm2 start "php artisan queue:work --tries=3 --timeout=120" --name "laravel-worker" || pm2 restart laravel-worker
+            else
+              echo "✅ Queue Worker sudah berjalan, dilewati."
+            fi
 
             echo "🔺 Disable maintenance mode"
             php artisan up

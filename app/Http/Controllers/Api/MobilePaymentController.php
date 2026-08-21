@@ -72,7 +72,7 @@ class MobilePaymentController extends Controller
         if (! $tenant) {
             LogHelper::logError(
                 'UPLOAD_RECEIPT_FAILED',
-                "Gagal upload bukti bayar: tenant tidak ditemukan"
+                'Gagal upload bukti bayar: tenant tidak ditemukan'
             );
 
             return response()->json(['message' => 'Data tenant tidak ditemukan'], 404);
@@ -98,7 +98,7 @@ class MobilePaymentController extends Controller
 
             LogHelper::log(
                 'UPLOAD_RECEIPT',
-                "Mengunggah bukti bayar untuk tagihan bulan ".now()->format('F'),
+                'Mengunggah bukti bayar untuk tagihan bulan '.now()->format('F'),
                 $payment
             );
 
@@ -110,7 +110,7 @@ class MobilePaymentController extends Controller
         } catch (Throwable $e) {
             LogHelper::logError(
                 'UPLOAD_RECEIPT_FAILED',
-                "Gagal upload bukti bayar",
+                'Gagal upload bukti bayar',
                 $e
             );
 

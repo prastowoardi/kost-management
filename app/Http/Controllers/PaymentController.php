@@ -1,8 +1,11 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Helpers\NotificationHelper;
+
 use App\Helpers\LogHelper;
+use App\Helpers\NotificationHelper;
+use App\Http\Requests\StorePaymentRequest;
+use App\Http\Requests\UpdatePaymentRequest;
 use App\Models\Payment;
 use App\Models\Tenant;
 use App\Services\PaymentService;
@@ -10,7 +13,6 @@ use App\Services\WhatsAppService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class PaymentController extends Controller
@@ -19,6 +21,15 @@ class PaymentController extends Controller
         private WhatsAppService $whatsapp,
         private PaymentService $paymentService,
     ) {}
+
+    /**
+     * Normalisasi periode dari form ("2026-08") menjadi tanggal pertama
+     * bulan tersebut ("2026-08-01") agar perbandingan duplikat akurat.
+     */
+    private function normalizePeriod(mixed $value): string
+    {
+        return Carbon::parse($value)->startOfMonth()->toDateString();
+    }
 
     public function index(Request $request)
     {
@@ -59,52 +70,20 @@ class PaymentController extends Controller
         return view('payments.create', compact('tenants'));
     }
 
-    public function store(Request $request)
+    public function store(StorePaymentRequest $request)
     {
-        $request->merge([
-            'amount' => (int) preg_replace('/[^0-9]/', '', $request->amount),
-            'late_fee' => (int) preg_replace('/[^0-9]/', '', $request->late_fee ?? 0),
-        ]);
+        $validated = $request->validated();
 
-        $validated = $request->validate([
-            'tenant_id' => 'required|exists:tenants,id',
-            'payment_date' => 'required|date',
-            'period_month' => 'required|date',
-            'amount' => 'required|numeric|min:0',
-            'late_fee' => 'nullable|numeric|min:0',
-            'payment_method' => 'required|in:cash,transfer,e-wallet',
-            'notes' => 'nullable|string',
-            'receipt_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-        ]);
+        $validated['period_month'] = $this->normalizePeriod($validated['period_month']);
 
         $tenant = Tenant::findOrFail($validated['tenant_id']);
-        $validated['room_id'] = $tenant->room_id;
-        $validated['total'] = $validated['amount'] + $validated['late_fee'];
-        $validated['status'] = 'paid';
 
         if ($request->hasFile('receipt_file')) {
             $validated['receipt_file'] = $request->file('receipt_file')->store('receipts');
         }
 
-        $payment = DB::transaction(function () use ($validated) {
-            $existing = Payment::lockForUpdate()
-                ->where('tenant_id', $validated['tenant_id'])
-                ->where('period_month', $validated['period_month'])
-                ->whereNull('deleted_at')
-                ->first();
-
-            if ($existing) {
-                throw new \Illuminate\Validation\ValidationException(
-                    validator([], [
-                        'period_month' => [
-                            "Pembayaran untuk periode ini sudah tercatat: {$existing->invoice_number}",
-                        ],
-                    ])
-                );
-            }
-
-            return Payment::create($validated);
-        });
+        // Mendukung cicilan: validasi sisa tagihan & auto-note ada di service
+        $payment = $this->paymentService->createInstallmentPayment($tenant, $validated);
 
         $payment->load(['room', 'tenant']);
 
@@ -125,23 +104,12 @@ class PaymentController extends Controller
 
     private function sendWhatsAppReceipt($payment)
     {
-        $tenant = $payment->tenant;
-        if (! $tenant || ! $tenant->phone) {
+        if (! $payment->tenant?->phone) {
             return;
         }
 
-        $htmlContent = view('payments.receipt', compact('payment'))->render();
-        $caption = $this->whatsapp->getPaymentReceiptCaption($tenant->name);
-
-        $success = $this->whatsapp->sendImage($tenant->phone, $htmlContent, $caption);
-
-        \App\Models\BroadcastLog::create([
-            'broadcast_id' => null,
-            'tenant_name' => $tenant->name,
-            'phone' => $tenant->phone,
-            'status' => $success ? 'success' : 'failed',
-            'error_message' => $success ? null : 'Gagal kirim gambar WA',
-        ]);
+        // Render + kirim kwitansi berat (Puppeteer), jalankan di queue
+        \App\Jobs\SendWhatsAppReceiptJob::dispatch($payment->id);
     }
 
     public function sendGatewayWA(Payment $payment)
@@ -183,24 +151,11 @@ class PaymentController extends Controller
         return view('payments.edit', compact('payment', 'tenants'));
     }
 
-    public function update(Request $request, Payment $payment)
+    public function update(UpdatePaymentRequest $request, Payment $payment)
     {
-        $request->merge([
-            'amount' => (int) preg_replace('/[^0-9]/', '', $request->amount),
-            'late_fee' => (int) preg_replace('/[^0-9]/', '', $request->late_fee ?? 0),
-        ]);
+        $validated = $request->validated();
 
-        $validated = $request->validate([
-            'tenant_id' => 'required|exists:tenants,id',
-            'payment_date' => 'required|date',
-            'period_month' => 'required|date',
-            'amount' => 'required|numeric|min:0',
-            'late_fee' => 'nullable|numeric|min:0',
-            'status' => 'required|in:pending,paid,overdue',
-            'payment_method' => 'nullable|in:cash,transfer,e-wallet',
-            'notes' => 'nullable|string',
-            'receipt_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-        ]);
+        $validated['period_month'] = $this->normalizePeriod($validated['period_month']);
 
         $tenant = Tenant::findOrFail($validated['tenant_id']);
 
@@ -285,28 +240,5 @@ class PaymentController extends Controller
         $payment->load(['tenant', 'room']);
 
         return view('payments.receipt', compact('payment'));
-    }
-
-    public function upload(Request $request, $hash)
-    {
-        $id = decrypt($hash);
-        $payment = Payment::findOrFail($id);
-
-        $request->validate([
-            'proof' => 'required|image|max:2048',
-        ]);
-
-        if ($request->hasFile('proof')) {
-            $file = $request->file('proof');
-            $filename = 'proof_'.$id.'_'.time().'.'.$file->getClientOriginalExtension();
-            $file->storeAs('proofs', $filename);
-
-            $payment->update([
-                'proof_of_payment' => $filename,
-                'status' => 'pending',
-            ]);
-
-            return redirect()->route('public.pay.success', $hash);
-        }
     }
 }

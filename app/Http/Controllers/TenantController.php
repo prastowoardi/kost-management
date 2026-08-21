@@ -72,7 +72,7 @@ class TenantController extends Controller
         $message = $this->whatsapp->getWelcomeMessage($tenant->name);
         $waUrl = 'https://wa.me/'.$tenant->phone.'?text='.urlencode($message);
 
-        $this->whatsapp->sendMessage($tenant->phone, $message);
+        \App\Jobs\SendWhatsAppMessageJob::dispatch($tenant->phone, $message);
 
         if ($request->wantsJson() || $request->is('api/*')) {
             return response()->json([

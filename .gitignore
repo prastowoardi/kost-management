@@ -14,6 +14,7 @@
 /auth.json
 /node_modules
 /whatsapp-gateway/node_modules
+/whatsapp-gateway/.env
 /whatsapp-gateway/sessions
 /whatsapp-gateway/auth_info_baileys
 /whatsapp-gateway/.wwebjs_cache/

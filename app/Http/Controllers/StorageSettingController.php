@@ -81,9 +81,9 @@ class StorageSettingController extends Controller
         Setting::set(Setting::STORAGE_DISK_KEY, $target);
         Cache::forget('setting.storage_disk');
 
-        LogHelper::log('SWITCH_STORAGE', "Mengganti penyimpanan file ke ".Setting::DISKS[$target]);
+        LogHelper::log('SWITCH_STORAGE', 'Mengganti penyimpanan file ke '.Setting::DISKS[$target]);
 
-        return back()->with('success', "Penyimpanan diganti ke ".Setting::DISKS[$target].". Jangan lupa migrasi file.");
+        return back()->with('success', 'Penyimpanan diganti ke '.Setting::DISKS[$target].'. Jangan lupa migrasi file.');
     }
 
     public function migrate(Request $request)

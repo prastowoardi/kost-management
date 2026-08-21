@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Requests\Concerns\ParsesRupiah;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StorePaymentRequest extends FormRequest
+class UpdatePaymentRequest extends FormRequest
 {
     use ParsesRupiah;
 
@@ -30,7 +30,8 @@ class StorePaymentRequest extends FormRequest
             'period_month' => 'required|date',
             'amount' => 'required|numeric|min:1',
             'late_fee' => 'nullable|numeric|min:0',
-            'payment_method' => 'required|in:cash,transfer,e-wallet',
+            'status' => 'required|in:pending,paid,overdue',
+            'payment_method' => 'nullable|in:cash,transfer,e-wallet',
             'notes' => 'nullable|string',
             'receipt_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ];
