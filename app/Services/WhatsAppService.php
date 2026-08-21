@@ -9,15 +9,25 @@ class WhatsAppService
 {
     private string $gatewayUrl;
 
+    private string $apiKey;
+
     public function __construct()
     {
         $this->gatewayUrl = config('services.whatsapp.gateway_url', 'http://localhost:3000');
+        $this->apiKey = (string) config('services.whatsapp.gateway_api_key');
+    }
+
+    private function client(int $timeout): \Illuminate\Http\Client\PendingRequest
+    {
+        return Http::timeout($timeout)->withHeaders([
+            'X-API-Key' => $this->apiKey,
+        ]);
     }
 
     public function sendMessage(string $phone, string $message, int $timeout = 10): bool
     {
         try {
-            $response = Http::timeout($timeout)->post("{$this->gatewayUrl}/send-message", [
+            $response = $this->client($timeout)->post("{$this->gatewayUrl}/send-message", [
                 'number' => $phone,
                 'message' => $message,
             ]);
@@ -41,7 +51,7 @@ class WhatsAppService
     public function sendImage(string $phone, string $html, string $caption, int $timeout = 60): bool
     {
         try {
-            $response = Http::timeout($timeout)->post("{$this->gatewayUrl}/send-image", [
+            $response = $this->client($timeout)->post("{$this->gatewayUrl}/send-image", [
                 'number' => $phone,
                 'html' => $html,
                 'message' => $caption,
@@ -66,7 +76,7 @@ class WhatsAppService
     public function getChats(string $phone, int $timeout = 10): array
     {
         try {
-            $response = Http::timeout($timeout)->get("{$this->gatewayUrl}/get-chats", [
+            $response = $this->client($timeout)->get("{$this->gatewayUrl}/get-chats", [
                 'number' => $phone,
             ]);
 

@@ -10,11 +10,61 @@ const puppeteer = require('puppeteer');
 const qrcode = require("qrcode-terminal");
 const express = require("express");
 const pino = require("pino");
+const crypto = require("crypto");
 const os = require("os");
 const fs = require("fs");
 
+// Loader .env sederhana agar WA_API_KEY bisa dibaca saat dijalankan via pm2
+// tanpa dependency tambahan (file .env diletakkan di folder whatsapp-gateway).
+(function loadEnv() {
+    const envPath = `${__dirname}/.env`;
+    if (!fs.existsSync(envPath)) return;
+
+    for (const line of fs.readFileSync(envPath, 'utf8').split('\n')) {
+        const match = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$/);
+        if (!match || process.env[match[1]] !== undefined) continue;
+
+        let value = match[2];
+        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+            value = value.slice(1, -1);
+        }
+        process.env[match[1]] = value;
+    }
+})();
+
+// ===== AUTENTIKASI API KEY =====
+// Semua request wajib mengirim header X-API-Key yang cocok dengan WA_API_KEY.
+// Tanpa ini, siapa pun yang bisa menjangkau port gateway bisa memakai nomor WA.
+const API_KEY = process.env.WA_API_KEY;
+
+if (!API_KEY || API_KEY.length < 32) {
+    console.error('❌ FATAL: WA_API_KEY belum diatur atau terlalu pendek (min. 32 karakter).');
+    console.error('   Buat key acak dengan: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"');
+    console.error('   Lalu simpan di whatsapp-gateway/.env dan di .env Laravel (WHATSAPP_GATEWAY_API_KEY).');
+    process.exit(1);
+}
+
+function verifyApiKey(req) {
+    const provided = req.get('X-API-Key') || '';
+
+    if (provided.length !== API_KEY.length) {
+        return false;
+    }
+
+    // timingSafeEqual mencegah serangan timing pada perbandingan string
+    return crypto.timingSafeEqual(Buffer.from(provided), Buffer.from(API_KEY));
+}
+
+function requireApiKey(req, res, next) {
+    if (!verifyApiKey(req)) {
+        console.warn(`⚠️  Request ditolak: API key tidak valid (IP: ${req.ip})`);
+        return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+    }
+    next();
+}
+
 const app = express();
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json({ limit: '2mb' }));
 
 let sock;
 
@@ -31,6 +81,47 @@ const chromePath = (() => {
             return undefined;
     }
 })();
+
+// Instance browser di-reuse antar request (launch Chrome itu mahal).
+// Jika browser crash/terputus, instance baru akan diluncurkan otomatis.
+let browser = null;
+
+async function getBrowser() {
+    if (browser && browser.connected) {
+        return browser;
+    }
+
+    if (browser) {
+        try {
+            await browser.close();
+        } catch (_) {
+            // abaikan, browser memang sudah mati
+        }
+        browser = null;
+    }
+
+    console.log('🚀 Meluncurkan instance Chrome headless...');
+
+    // --no-sandbox hanya dipakai jika benar-benar berjalan sebagai root
+    // (mis. container/VPS). Jika bukan root, sandbox Chrome tetap aktif.
+    const isRoot = os.platform() !== 'win32' && typeof process.getuid === 'function' && process.getuid() === 0;
+    const args = ['--disable-dev-shm-usage'];
+    if (isRoot) {
+        args.push('--no-sandbox', '--disable-setuid-sandbox');
+    }
+
+    browser = await puppeteer.launch({
+        executablePath: chromePath,
+        headless: true,
+        args
+    });
+    browser.once('disconnected', () => {
+        console.log('⚠️  Chrome terputus, akan diluncurkan ulang saat dibutuhkan.');
+        browser = null;
+    });
+
+    return browser;
+}
 
 async function connectToWhatsApp() {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
@@ -89,7 +180,7 @@ async function connectToWhatsApp() {
     });
 }
 
-app.post('/send-message', async (req, res) => {
+app.post('/send-message', requireApiKey, async (req, res) => {
     const { number, message } = req.body;
     try {
         let formattedNumber = number.replace(/\D/g, '');
@@ -107,9 +198,9 @@ app.post('/send-message', async (req, res) => {
     }
 });
 
-app.post('/send-image', async (req, res) => {
+app.post('/send-image', requireApiKey, async (req, res) => {
     const { number, html, message } = req.body;
-    let browser = null;
+    let page = null;
 
     if (!html) return res.status(400).json({ status: 'error', message: 'HTML content missing' });
 
@@ -121,28 +212,21 @@ app.post('/send-image', async (req, res) => {
         console.log(`\n--- Proses Render Kwitansi ---`);
         console.log(`Tujuan: ${formattedNumber}`);
 
-        const platform = os.platform();
-        let executablePath = undefined;
-        if (platform === 'darwin') {
-            executablePath = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-        } else if (platform === 'linux') {
-            executablePath = '/usr/bin/google-chrome';
-        } else if (platform === 'win32') {
-            executablePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-        }
+        const browserInstance = await getBrowser();
+        page = await browserInstance.newPage();
 
-        browser = await puppeteer.launch({
-            executablePath: chromePath,
-            headless: true,
-            args: [
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage'
-            ]
+        // Hardening: HTML dari request tidak boleh mengeksekusi script
+        // atau memuat resource eksternal (mencegah XSS & SSRF).
+        await page.setJavaScriptEnabled(false);
+        await page.setRequestInterception(true);
+        page.on('request', (request) => {
+            if (/^https?:/i.test(request.url())) {
+                request.abort();
+            } else {
+                request.continue();
+            }
         });
 
-        const page = await browser.newPage();
-        
         // Set ukuran layar agar screenshot pas
         await page.setViewport({ width: 750, height: 1000, deviceScaleFactor: 2 });
         
@@ -172,7 +256,7 @@ app.post('/send-image', async (req, res) => {
         console.error("❌ Gagal render/kirim gambar:", err.message);
         res.status(500).json({ status: 'error', message: err.message });
     } finally {
-        if (browser) await browser.close();
+        if (page) await page.close().catch(() => {});
     }
 });
 
