@@ -60,7 +60,7 @@ Route::middleware(['auth:sanctum', 'role:admin,staff'])
 
         Route::post('/payments/store', [AdminPaymentController::class, 'store']);
         Route::get('/payments/{uuid}', [AdminPaymentController::class, 'show']);
-        Route::post('/payments/{id}/verify', [MobilePaymentController::class, 'verifyPayment']);
+        Route::post('/payments/{uuid}/verify', [MobilePaymentController::class, 'verifyPayment']);
 
         Route::get('/complaints', [AdminComplaintController::class, 'index']);
         Route::get('/complaints/{id}', [AdminComplaintController::class, 'show']);

@@ -73,9 +73,10 @@ class PublicRegistrationController extends Controller
             $tenant->room->price
         );
 
-        $this->whatsapp->sendMessage($tenant->phone, $messages[0]);
-        sleep(1);
-        $this->whatsapp->sendMessage($tenant->phone, $messages[1]);
+        // Kirim via queue agar registrasi publik tidak menunggu gateway
+        foreach ($messages as $message) {
+            \App\Jobs\SendWhatsAppMessageJob::dispatch($tenant->phone, $message);
+        }
     }
 
     public function success()

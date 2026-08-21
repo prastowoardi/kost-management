@@ -17,7 +17,9 @@ return new class extends Migration
     public function up(): void
     {
         foreach ($this->tables as $table) {
-            if (!Schema::hasTable($table)) continue;
+            if (! Schema::hasTable($table)) {
+                continue;
+            }
 
             Schema::table($table, function (Blueprint $table) {
                 $table->uuid('uuid')->after('id')->nullable();
@@ -40,7 +42,9 @@ return new class extends Migration
     public function down(): void
     {
         foreach ($this->tables as $table) {
-            if (!Schema::hasTable($table) || !Schema::hasColumn($table, 'uuid')) continue;
+            if (! Schema::hasTable($table) || ! Schema::hasColumn($table, 'uuid')) {
+                continue;
+            }
 
             Schema::table($table, function (Blueprint $table) {
                 $table->dropUnique(['uuid']);

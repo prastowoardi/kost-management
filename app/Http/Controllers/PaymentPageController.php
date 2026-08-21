@@ -3,15 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Payment;
-use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 
 class PaymentPageController extends Controller
 {
-    public function __construct(
-        private WhatsAppService $whatsapp,
-    ) {}
-
     public function show($hash)
     {
         $payment = Payment::with(['tenant.room'])->where('id', decrypt($hash))->firstOrFail();
@@ -52,7 +47,7 @@ class PaymentPageController extends Controller
             return;
         }
 
-        $this->whatsapp->sendMessage(
+        \App\Jobs\SendWhatsAppMessageJob::dispatch(
             $adminPhone,
             "📩 *Bukti Bayar Masuk!*\n\n".
             "Dari: {$payment->tenant->name}\n".

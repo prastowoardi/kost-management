@@ -39,7 +39,7 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        LogHelper::log('LOGOUT', "Logout dari sistem");
+        LogHelper::log('LOGOUT', 'Logout dari sistem');
 
         Auth::guard('web')->logout();
 

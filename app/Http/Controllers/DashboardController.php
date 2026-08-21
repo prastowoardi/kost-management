@@ -11,6 +11,7 @@ use App\Models\Tenant;
 use App\Services\WhatsAppService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
@@ -30,27 +31,38 @@ class DashboardController extends Controller
             ->whereMonth('transaction_date', Carbon::now()->month)
             ->sum('amount');
 
-        $allDueTenants = Tenant::with(['room', 'payments'])
-            ->where('status', 'active')
-            ->get()
-            ->filter(function ($tenant) {
-                // Perhitungan jatuh tempo terpusat di accessor model Tenant
-                $dueDate = $tenant->calculated_due_date;
+        // Query berat (semua tenant aktif + payments) di-cache 5 menit agar
+        // dashboard tidak menghitung ulang setiap kali dibuka.
+        $dueData = Cache::remember('dashboard.due_tenants', now()->addMinutes(5), function () {
+            $dueTenants = Tenant::with(['room', 'payments'])
+                ->where('status', 'active')
+                ->get()
+                ->filter(function ($tenant) {
+                    // Perhitungan jatuh tempo terpusat di accessor model Tenant
+                    $dueDate = $tenant->calculated_due_date;
 
-                if (! $dueDate) {
-                    return false;
-                }
+                    if (! $dueDate) {
+                        return false;
+                    }
 
-                $isPaid = $tenant->payments->where('status', 'paid')
-                    ->contains(function ($payment) use ($dueDate) {
-                        return Carbon::parse($payment->period_month)->format('Y-m') === $dueDate->format('Y-m');
-                    });
+                    $isPaid = $tenant->payments->where('status', 'paid')
+                        ->contains(function ($payment) use ($dueDate) {
+                            return Carbon::parse($payment->period_month)->format('Y-m') === $dueDate->format('Y-m');
+                        });
 
-                return ! $isPaid && ($tenant->days_left <= 7 && $tenant->days_left >= -14);
-            });
+                    return ! $isPaid && ($tenant->days_left <= 7 && $tenant->days_left >= -14);
+                })
+                ->sortBy('days_left')
+                ->values();
 
-        $duePayments = $allDueTenants->sortBy('days_left');
-        $pendingPayments = $allDueTenants->count();
+            return [
+                'list' => $dueTenants,
+                'count' => $dueTenants->count(),
+            ];
+        });
+
+        $duePayments = $dueData['list'];
+        $pendingPayments = $dueData['count'];
 
         $overduePayments = Payment::where('status', 'overdue')->count();
         $openComplaints = Complaint::where('status', 'open')->count();

@@ -56,7 +56,13 @@ class Payment extends Model
 
         static::creating(function ($payment) {
             if (! $payment->invoice_number) {
-                $payment->invoice_number = 'INV-'.date('Ymd').'-'.strtoupper(substr(uniqid(), -6));
+                // random_bytes + cek keunikan: jauh lebih aman dari tabrakan
+                // dibanding uniqid() yang berbasis microsecond.
+                do {
+                    $candidate = 'INV-'.date('Ymd').'-'.strtoupper(bin2hex(random_bytes(3)));
+                } while (static::withTrashed()->where('invoice_number', $candidate)->exists());
+
+                $payment->invoice_number = $candidate;
             }
         });
     }

@@ -34,15 +34,15 @@ Route::get('/', function () {
 });
 
 // Halaman Pembayaran Publik (Tanpa Login)
-Route::controller(PaymentPageController::class)->group(function () {
+Route::controller(PaymentPageController::class)->middleware('throttle:10,1')->group(function () {
     Route::get('/pay/{hash}', 'show')->name('public.pay');
     Route::post('/pay/{hash}/upload', 'upload')->name('public.pay.upload');
     Route::get('/pay/{hash}/success', 'success')->name('public.pay.success');
 });
 
 // Form register
-Route::get('/join', [PublicRegistrationController::class, 'index'])->name('public.register');
-Route::post('/join', [PublicRegistrationController::class, 'store'])->name('public.register.store');
+Route::get('/join', [PublicRegistrationController::class, 'index'])->name('public.register')->middleware('throttle:10,1');
+Route::post('/join', [PublicRegistrationController::class, 'store'])->name('public.register.store')->middleware('throttle:5,1');
 Route::get('/join/success', [PublicRegistrationController::class, 'success'])->name('public.register.success');
 
 Route::middleware(['auth', 'verified'])->group(function () {
