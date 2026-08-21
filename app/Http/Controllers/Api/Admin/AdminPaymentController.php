@@ -10,8 +10,8 @@ use App\Services\PaymentService;
 use App\Services\PushNotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 class AdminPaymentController extends Controller
@@ -41,34 +41,11 @@ class AdminPaymentController extends Controller
         }
 
         try {
-            $tenant = Tenant::with('room')->where('uuid', $request->tenant_id)->firstOrFail();
+            $validated = $validator->validated();
+            $tenant = Tenant::with('room')->where('uuid', $validated['tenant_id'])->firstOrFail();
 
-            $existing = Payment::where('tenant_id', $tenant->id)
-                ->where('period_month', $request->period_month)
-                ->whereNull('deleted_at')
-                ->first();
-
-            if ($existing) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => "Pembayaran untuk periode ini sudah tercatat: {$existing->invoice_number}",
-                ], 422);
-            }
-
-            $payment = DB::transaction(function () use ($request, $tenant) {
-                return Payment::create([
-                    'tenant_id' => $tenant->id,
-                    'room_id' => $tenant->room_id,
-                    'payment_date' => $request->payment_date,
-                    'period_month' => $request->period_month,
-                    'amount' => $request->amount,
-                    'late_fee' => $request->late_fee ?? 0,
-                    'total' => $request->amount + ($request->late_fee ?? 0),
-                    'payment_method' => $request->payment_method,
-                    'status' => 'paid',
-                    'notes' => $request->notes,
-                ]);
-            });
+            // Mendukung cicilan: validasi sisa tagihan & auto-note ada di service
+            $payment = $this->paymentService->createInstallmentPayment($tenant, $validated);
 
             $payment->load(['tenant.user', 'room']);
 
@@ -106,6 +83,12 @@ class AdminPaymentController extends Controller
                     'payment_date' => $payment->payment_date,
                 ],
             ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => collect($e->errors())->flatten()->first() ?? 'Validasi gagal.',
+                'errors' => $e->errors(),
+            ], 422);
         } catch (Throwable $e) {
             LogHelper::logError('CREATE_PAYMENT_API_FAILED', 'Gagal catat pembayaran', $e);
 

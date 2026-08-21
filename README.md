@@ -50,7 +50,41 @@ Gateway ini berfungsi menerima data dari Laravel, merender HTML menjadi gambar k
     cd whatsapp-gateway
     npm install
     sudo npm install pm2 -g
-3. **Menjalankan & Menghubungkan WhatsApp**
+
+3. **Konfigurasi API Key (Wajib)**
+Gateway hanya menerima request yang menyertakan header `X-API-Key`. Tanpa key yang valid, semua request ditolak (401).
+
+    **a. Generate key acak** (pilih salah satu):
+    ```bash
+    # Node.js
+    node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+
+    # OpenSSL (Mac/Linux)
+    openssl rand -hex 32
+
+    # PHP
+    php -r "echo bin2hex(random_bytes(32));"
+    ```
+
+    **b. Pasang di kedua tempat** (nilai harus sama persis):
+
+    ```bash
+    # 1. Di VPS — file: whatsapp-gateway/.env
+    WA_API_KEY=8bc6aeb65418a********5e054407e56003cdc5f24
+
+    # restart gateway agar key terbaca
+    pm2 restart wa-gateway
+
+    # 2. Di server Laravel — file: .env
+    WHATSAPP_GATEWAY_API_KEY=8bc6aeb65418a********5e054407e56003cdc5f24
+
+    # bersihkan cache config
+    php artisan config:clear
+    ```
+
+> ⚠️ Gateway akan menolak start jika `WA_API_KEY` tidak diatur atau kurang dari 32 karakter.
+
+4. **Menjalankan & Menghubungkan WhatsApp**
 Gunakan PM2 agar service tetap berjalan 24/7 meskipun terminal ditutup.
     ```bash
     # Menjalankan aplikasi pertama kali

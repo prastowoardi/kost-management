@@ -51,7 +51,7 @@ return new class extends Migration
         // Generated column -> NULL saat soft-deleted, jadi soft-delete tidak memblokir input ulang.
         if (! Schema::hasColumn('payments', 'period_active')) {
             Schema::table('payments', function (Blueprint $table) {
-                $table->date('period_active')->storedAs('IF(deleted_at IS NULL, period_month, NULL)');
+                $table->date('period_active')->storedAs('CASE WHEN deleted_at IS NULL THEN period_month ELSE NULL END');
             });
 
             Schema::table('payments', function (Blueprint $table) {

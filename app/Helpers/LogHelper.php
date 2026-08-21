@@ -33,9 +33,9 @@ class LogHelper
             : $context;
 
         ActivityLog::create([
-            'user_id'    => $currentUserId,
-            'action'     => $action,
-            'description'=> "[$userName] $description",
+            'user_id' => $currentUserId,
+            'action' => $action,
+            'description' => "[$userName] $description",
             'model_type' => $model ? get_class($model) : 'App\Models\User',
             'model_id' => $model ? ($model->id ?? null) : $currentUserId,
             'payload' => $mergedPayload,
