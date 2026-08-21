@@ -49,7 +49,22 @@ class PaymentController extends Controller
 
         $payments = $query->paginate(15)->appends($request->query());
 
-        return view('payments.index', compact('payments', 'tenants'));
+        $remainingByPeriod = collect();
+        foreach ($payments as $payment) {
+            $key = $payment->tenant_id.'|'.$payment->period_month->format('Y-m');
+
+            if ($remainingByPeriod->has($key)) {
+                continue;
+            }
+
+            $remainingByPeriod[$key] = Payment::remainingForPeriod(
+                $payment->tenant_id,
+                $payment->period_month->format('Y-m'),
+                (float) $payment->room->price,
+            );
+        }
+
+        return view('payments.index', compact('payments', 'tenants', 'remainingByPeriod'));
     }
 
     public function create()
@@ -77,8 +92,9 @@ class PaymentController extends Controller
             'receipt_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
-        $tenant = Tenant::findOrFail($validated['tenant_id']);
+        $tenant = Tenant::with('room')->findOrFail($validated['tenant_id']);
         $validated['room_id'] = $tenant->room_id;
+        $validated['period_month'] = Payment::normalizePeriodMonth($validated['period_month']);
         $validated['total'] = $validated['amount'] + $validated['late_fee'];
         $validated['status'] = 'paid';
 
@@ -86,21 +102,45 @@ class PaymentController extends Controller
             $validated['receipt_file'] = $request->file('receipt_file')->store('receipts');
         }
 
-        $payment = DB::transaction(function () use ($validated) {
-            $existing = Payment::lockForUpdate()
+        $payment = DB::transaction(function () use ($validated, $tenant) {
+            [$periodStart, $periodEnd] = Payment::periodRange($validated['period_month']);
+
+            $agg = Payment::lockForUpdate()
                 ->where('tenant_id', $validated['tenant_id'])
-                ->where('period_month', $validated['period_month'])
+                ->whereBetween('period_month', [$periodStart, $periodEnd])
+                ->where('status', 'paid')
                 ->whereNull('deleted_at')
+                ->selectRaw('COALESCE(SUM(total), 0) AS total_paid, COUNT(*) AS cnt')
                 ->first();
 
-            if ($existing) {
+            $paidSoFar = (float) $agg->total_paid;
+            $paidCount = (int) $agg->cnt;
+
+            $price = (float) $tenant->room->price;
+            $remaining = $price - $paidSoFar;
+
+            if ($remaining <= 0) {
                 throw new \Illuminate\Validation\ValidationException(
                     validator([], [
                         'period_month' => [
-                            "Pembayaran untuk periode ini sudah tercatat: {$existing->invoice_number}",
+                            "Periode ini sudah lunas (total bayar Rp ".number_format($paidSoFar, 0, ',', '.').").",
                         ],
                     ])
                 );
+            }
+
+            if ($validated['total'] > $remaining) {
+                throw new \Illuminate\Validation\ValidationException(
+                    validator([], [
+                        'amount' => [
+                            "Jumlah melebihi sisa tagihan (sisa Rp ".number_format($remaining, 0, ',', '.').").",
+                        ],
+                    ])
+                );
+            }
+
+            if (blank($validated['notes'] ?? null)) {
+                $validated['notes'] = Payment::splitPaymentNote($paidCount + 1, $remaining - $validated['total']);
             }
 
             return Payment::create($validated);

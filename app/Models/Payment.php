@@ -66,4 +66,41 @@ class Payment extends Model
 
         return now()->greaterThanOrEqualTo($dueDate);
     }
+
+    public static function paidAmountForPeriod(int $tenantId, string $periodMonth): float
+    {
+        [$start, $end] = static::periodRange($periodMonth);
+
+        return (float) static::where('tenant_id', $tenantId)
+            ->whereBetween('period_month', [$start, $end])
+            ->where('status', 'paid')
+            ->whereNull('deleted_at')
+            ->sum('total');
+    }
+
+    public static function remainingForPeriod(int $tenantId, string $periodMonth, float $price): float
+    {
+        return max(0, $price - static::paidAmountForPeriod($tenantId, $periodMonth));
+    }
+
+    public static function normalizePeriodMonth(string $periodMonth): string
+    {
+        return \Carbon\Carbon::parse($periodMonth)->format('Y-m-01');
+    }
+
+    public static function periodRange(string $periodMonth): array
+    {
+        $month = \Carbon\Carbon::parse($periodMonth);
+
+        return [$month->copy()->startOfMonth(), $month->copy()->endOfMonth()];
+    }
+
+    public static function splitPaymentNote(int $sequence, float $remainingAfter): string
+    {
+        $prefix = 'Cicilan ke-'.$sequence.' dari pembayaran bertahap';
+
+        return $remainingAfter > 0
+            ? $prefix.' — sisa Rp '.number_format($remainingAfter, 0, ',', '.').'.'
+            : $prefix.' — lunas.';
+    }
 }

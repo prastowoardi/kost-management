@@ -43,19 +43,45 @@ class AdminPaymentController extends Controller
         try {
             $tenant = Tenant::with('room')->where('uuid', $request->tenant_id)->firstOrFail();
 
-            $existing = Payment::where('tenant_id', $tenant->id)
-                ->where('period_month', $request->period_month)
-                ->whereNull('deleted_at')
-                ->first();
-
-            if ($existing) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => "Pembayaran untuk periode ini sudah tercatat: {$existing->invoice_number}",
-                ], 422);
-            }
+            $request->merge([
+                'period_month' => Payment::normalizePeriodMonth($request->period_month),
+            ]);
 
             $payment = DB::transaction(function () use ($request, $tenant) {
+                [$periodStart, $periodEnd] = Payment::periodRange($request->period_month);
+
+                $agg = Payment::lockForUpdate()
+                    ->where('tenant_id', $tenant->id)
+                    ->whereBetween('period_month', [$periodStart, $periodEnd])
+                    ->where('status', 'paid')
+                    ->whereNull('deleted_at')
+                    ->selectRaw('COALESCE(SUM(total), 0) AS total_paid, COUNT(*) AS cnt')
+                    ->first();
+
+                $paidSoFar = (float) $agg->total_paid;
+                $paidCount = (int) $agg->cnt;
+
+                $price = (float) $tenant->room->price;
+                $remaining = $price - $paidSoFar;
+
+                if ($remaining <= 0) {
+                    throw new \InvalidArgumentException(
+                        "Periode ini sudah lunas (total bayar Rp ".number_format($paidSoFar, 0, ',', '.').")."
+                    );
+                }
+
+                $newTotal = (float) $request->amount + (float) ($request->late_fee ?? 0);
+
+                if ($newTotal > $remaining) {
+                    throw new \InvalidArgumentException(
+                        "Jumlah melebihi sisa tagihan (sisa Rp ".number_format($remaining, 0, ',', '.').")."
+                    );
+                }
+
+                $notes = filled($request->notes)
+                    ? $request->notes
+                    : Payment::splitPaymentNote($paidCount + 1, $remaining - $newTotal);
+
                 return Payment::create([
                     'tenant_id' => $tenant->id,
                     'room_id' => $tenant->room_id,
@@ -63,10 +89,10 @@ class AdminPaymentController extends Controller
                     'period_month' => $request->period_month,
                     'amount' => $request->amount,
                     'late_fee' => $request->late_fee ?? 0,
-                    'total' => $request->amount + ($request->late_fee ?? 0),
+                    'total' => $newTotal,
                     'payment_method' => $request->payment_method,
                     'status' => 'paid',
-                    'notes' => $request->notes,
+                    'notes' => $notes,
                 ]);
             });
 
@@ -82,9 +108,6 @@ class AdminPaymentController extends Controller
                     $payment->invoice_number,
                     $payment->total,
                 );
-                \Illuminate\Support\Facades\Log::info('NOTIF: send result', ['success' => $sent ? 'yes' : 'no']);
-            } else {
-                \Illuminate\Support\Facades\Log::info('NOTIF: skipped - no user or no push token');
             }
 
             LogHelper::log(
@@ -106,6 +129,11 @@ class AdminPaymentController extends Controller
                     'payment_date' => $payment->payment_date,
                 ],
             ]);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ], 422);
         } catch (Throwable $e) {
             LogHelper::logError('CREATE_PAYMENT_API_FAILED', 'Gagal catat pembayaran', $e);
 

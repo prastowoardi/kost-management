@@ -56,6 +56,7 @@
                                 <th class="hidden md:table-cell">Kamar</th>
                                 <th>Tanggal Bayar</th>
                                 <th>Jumlah</th>
+                                <th>Sisa Tagihan</th>
                                 <th>Status</th>
                                 <th class="text-center">Aksi</th>
                             </tr>
@@ -80,6 +81,16 @@
                                 </td>
                                 <td class="font-semibold text-stone-900 tabular">
                                     Rp {{ number_format($payment->total, 0, ',', '.') }}
+                                </td>
+                                <td>
+                                    @php
+                                        $remaining = $remainingByPeriod[$payment->tenant_id.'|'.$payment->period_month->format('Y-m')] ?? 0;
+                                    @endphp
+                                    @if($remaining > 0)
+                                        <span class="font-semibold text-amber-600 tabular">Rp {{ number_format($remaining, 0, ',', '.') }}</span>
+                                    @else
+                                        <span class="badge badge-success">Lunas</span>
+                                    @endif
                                 </td>
                                 <td>
                                     <span class="badge
@@ -128,7 +139,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="7" class="px-4 py-10">
+                                <td colspan="8" class="px-4 py-10">
                                     <div class="empty-state">
                                         <svg class="h-10 w-10 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                         <p class="mt-3 text-sm font-semibold text-stone-500">Data tidak ditemukan untuk filter ini.</p>
