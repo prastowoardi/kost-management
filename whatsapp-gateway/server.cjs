@@ -180,8 +180,21 @@ async function connectToWhatsApp() {
     });
 }
 
+function isWhatsAppConnected() {
+    return Boolean(sock?.user);
+}
+
 app.post('/send-message', requireApiKey, async (req, res) => {
     const { number, message } = req.body;
+
+    if (!number || !message) {
+        return res.status(400).json({ status: 'error', message: 'Field "number" dan "message" wajib diisi' });
+    }
+
+    if (!isWhatsAppConnected()) {
+        return res.status(503).json({ status: 'error', message: 'WhatsApp belum terhubung, coba beberapa saat lagi' });
+    }
+
     try {
         let formattedNumber = number.replace(/\D/g, '');
         if (formattedNumber.startsWith('0')) formattedNumber = '62' + formattedNumber.substring(1);
@@ -203,6 +216,8 @@ app.post('/send-image', requireApiKey, async (req, res) => {
     let page = null;
 
     if (!html) return res.status(400).json({ status: 'error', message: 'HTML content missing' });
+    if (!number) return res.status(400).json({ status: 'error', message: 'Field "number" wajib diisi' });
+    if (!isWhatsAppConnected()) return res.status(503).json({ status: 'error', message: 'WhatsApp belum terhubung, coba beberapa saat lagi' });
 
     try {
         let formattedNumber = number.replace(/\D/g, '');
