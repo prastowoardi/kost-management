@@ -1,0 +1,40 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        if (! Schema::hasIndex('payments', ['tenant_id'])) {
+            Schema::table('payments', function (Blueprint $table) {
+                $table->index('tenant_id');
+            });
+        }
+
+        Schema::table('payments', function (Blueprint $table) {
+            $table->dropUnique(['tenant_id', 'period_active']);
+        });
+
+        Schema::table('payments', function (Blueprint $table) {
+            $table->dropColumn('period_active');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('payments', function (Blueprint $table) {
+            $table->date('period_active')->storedAs('CASE WHEN deleted_at IS NULL THEN period_month ELSE NULL END');
+        });
+
+        Schema::table('payments', function (Blueprint $table) {
+            $table->unique(['tenant_id', 'period_active']);
+        });
+
+        Schema::table('payments', function (Blueprint $table) {
+            $table->dropIndex(['tenant_id']);
+        });
+    }
+};
