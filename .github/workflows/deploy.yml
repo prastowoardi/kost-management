@@ -69,7 +69,8 @@ jobs:
             sudo nginx -t && sudo systemctl reload nginx
 
             # echo "📦 Update WhatsApp Gateway"
-            # cd whatsapp-gateway
+            cd whatsapp-gateway
+            pm2 restart wa-gateway
             # npm install --production
             # pm2 restart wa-gateway || pm2 start server.cjs --name "wa-gateway"
             # cd ..
