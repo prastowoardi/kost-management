@@ -195,6 +195,22 @@ function normalizeNumber(number) {
     return '62' + digits;
 }
 
+function logBody(req) {
+    const summary = {
+        ip: req.ip,
+        path: req.path,
+        contentType: req.get('content-type'),
+        keys: req.body ? Object.keys(req.body) : null,
+        body: req.body,
+    };
+    console.log('📥 REQUEST INCOMING:', JSON.stringify(summary));
+}
+
+app.use((req, res, next) => {
+    if (req.method === 'POST') logBody(req);
+    next();
+});
+
 app.post('/send-message', requireApiKey, async (req, res) => {
     const { number, message } = req.body;
 
@@ -229,7 +245,10 @@ app.post('/send-image', requireApiKey, async (req, res) => {
     const { number, html, message } = req.body;
     let page = null;
 
-    if (!html) return res.status(400).json({ status: 'error', message: 'HTML content missing' });
+    if (!html) {
+        console.log('⚠️  /send-image: html missing. body keys =', req.body ? Object.keys(req.body) : null, 'contentType =', req.get('content-type'));
+        return res.status(400).json({ status: 'error', message: 'HTML content missing' });
+    }
 
     const formattedNumber = normalizeNumber(number);
     if (!formattedNumber) return res.status(400).json({ status: 'error', message: 'Field "number" wajib diisi dan harus berupa nomor WA yang valid' });

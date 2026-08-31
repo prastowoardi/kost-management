@@ -27,6 +27,7 @@ class WhatsAppService
     public function sendMessage(string $phone, string $message, int $timeout = 10): bool
     {
         try {
+            Log::debug('WA sendMessage payload', ['phone' => $phone, 'message' => $message]);
             $response = $this->client($timeout)->post("{$this->gatewayUrl}/send-message", [
                 'number' => $phone,
                 'message' => $message,
@@ -51,6 +52,7 @@ class WhatsAppService
     public function sendImage(string $phone, string $html, string $caption, int $timeout = 60): bool
     {
         try {
+            Log::debug('WA sendImage payload', ['phone' => $phone, 'caption' => $caption, 'html_len' => strlen($html)]);
             $response = $this->client($timeout)->post("{$this->gatewayUrl}/send-image", [
                 'number' => $phone,
                 'html' => $html,
