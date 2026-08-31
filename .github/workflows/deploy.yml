@@ -73,7 +73,7 @@ jobs:
             pm2 restart wa-gateway
             # npm install --production
             # pm2 restart wa-gateway || pm2 start server.cjs --name "wa-gateway"
-            # cd ..
+            cd ..
 
             # WA dikirim via queue — cek worker, jalankan hanya jika belum berjalan
             echo "🔄 Cek Queue Worker..."
