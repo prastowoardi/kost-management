@@ -184,11 +184,27 @@ function isWhatsAppConnected() {
     return Boolean(sock?.user);
 }
 
+function normalizeNumber(number) {
+    if (typeof number !== 'string' && typeof number !== 'number') return null;
+
+    const digits = String(number).replace(/\D/g, '');
+    if (digits.length < 9) return null;
+
+    if (digits.startsWith('0')) return '62' + digits.substring(1);
+    if (digits.startsWith('62')) return digits;
+    return '62' + digits;
+}
+
 app.post('/send-message', requireApiKey, async (req, res) => {
     const { number, message } = req.body;
 
-    if (!number || !message) {
-        return res.status(400).json({ status: 'error', message: 'Field "number" dan "message" wajib diisi' });
+    if (typeof message !== 'string' || !message.trim()) {
+        return res.status(400).json({ status: 'error', message: 'Field "message" wajib diisi' });
+    }
+
+    const formattedNumber = normalizeNumber(number);
+    if (!formattedNumber) {
+        return res.status(400).json({ status: 'error', message: 'Field "number" wajib diisi dan harus berupa nomor WA yang valid' });
     }
 
     if (!isWhatsAppConnected()) {
@@ -196,8 +212,6 @@ app.post('/send-message', requireApiKey, async (req, res) => {
     }
 
     try {
-        let formattedNumber = number.replace(/\D/g, '');
-        if (formattedNumber.startsWith('0')) formattedNumber = '62' + formattedNumber.substring(1);
         const jid = `${formattedNumber}@s.whatsapp.net`;
 
         await sock.sendMessage(jid, { text: message });
@@ -216,17 +230,16 @@ app.post('/send-image', requireApiKey, async (req, res) => {
     let page = null;
 
     if (!html) return res.status(400).json({ status: 'error', message: 'HTML content missing' });
-    if (!number) return res.status(400).json({ status: 'error', message: 'Field "number" wajib diisi' });
-    if (!isWhatsAppConnected()) return res.status(503).json({ status: 'error', message: 'WhatsApp belum terhubung, coba beberapa saat lagi' });
+
+    const formattedNumber = normalizeNumber(number);
+    if (!formattedNumber) return res.status(400).json({ status: 'error', message: 'Field "number" wajib diisi dan harus berupa nomor WA yang valid' });
+    if (!isWhatsAppConnected()) return res.status(503).json({ status: 'error', message: 'WhatsApp belum terhubung, coba beberapa saat ini' });
 
     try {
-        let formattedNumber = number.replace(/\D/g, '');
-        if (formattedNumber.startsWith('0')) formattedNumber = '62' + formattedNumber.substring(1);
         const jid = `${formattedNumber}@s.whatsapp.net`;
 
         console.log(`\n--- Proses Render Kwitansi ---`);
         console.log(`Tujuan: ${formattedNumber}`);
-
         const browserInstance = await getBrowser();
         page = await browserInstance.newPage();
 
