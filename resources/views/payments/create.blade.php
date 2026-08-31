@@ -19,7 +19,7 @@
                                     <select name="tenant_id" id="tenant_id" required class="mt-1 block w-full rounded-xl border-stone-200 shadow-sm focus:border-brand-500 focus:ring-brand-500">
                                         <option value="">Pilih Penghuni</option>
                                         @foreach($tenants as $tenant)
-                                        <option value="{{ $tenant->id }}" data-price="{{ $tenant->room->price }}" {{ old('tenant_id') == $tenant->id ? 'selected' : '' }}>
+                                        <option value="{{ $tenant->id }}" data-price="{{ $tenant->room->price }}" data-next-period="{{ $tenant->next_period }}" {{ old('tenant_id') == $tenant->id ? 'selected' : '' }}>
                                             {{ $tenant->name }} - Kamar {{ $tenant->room->room_number }}
                                         </option>
                                         @endforeach

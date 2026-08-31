@@ -35,6 +35,17 @@ const form = document.querySelector('.js-payment-form');
 if (form) {
     const amountInput = document.getElementById('amount');
     const lateFeeInput = document.getElementById('late_fee');
+    const totalDisplay = document.getElementById('total_display');
+
+    function parseRupiah(value) {
+        return parseInt((value || '0').replace(/\./g, ''), 10) || 0;
+    }
+
+    function updateTotal() {
+        if (!totalDisplay) return;
+        const total = parseRupiah(amountInput?.value) + parseRupiah(lateFeeInput?.value);
+        totalDisplay.value = total.toLocaleString('id-ID');
+    }
 
     form.addEventListener('submit', () => {
         if (amountInput && amountInput.value) {
@@ -59,6 +70,12 @@ if (form) {
         formatRupiah(lateFeeInput);
     }
 
+    updateTotal();
+
+    [amountInput, lateFeeInput].forEach((el) => {
+        if (el) el.addEventListener('input', updateTotal);
+    });
+
     const tenantSelect = document.getElementById('tenant_id');
     if (tenantSelect) {
         $(tenantSelect).select2({
@@ -72,20 +89,27 @@ if (form) {
             tenantSelect.dispatchEvent(new Event('change'));
         }
 
-        tenantSelect.addEventListener('change', function () {
+        $(tenantSelect).on('change', function () {
             const selectedOption = this.options[this.selectedIndex];
             let price = selectedOption.getAttribute('data-price');
+            const nextPeriod = selectedOption.getAttribute('data-next-period');
 
             if (price) {
                 if (price.includes('.')) {
                     price = price.split('.')[0];
                 }
-
                 amountInput.value = price;
                 formatRupiah(amountInput);
             } else {
                 amountInput.value = '';
             }
+
+            const periodInput = document.getElementById('period_month');
+            if (periodInput && nextPeriod) {
+                periodInput.value = nextPeriod;
+            }
+
+            updateTotal();
         });
     }
 }

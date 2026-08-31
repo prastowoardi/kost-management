@@ -65,9 +65,35 @@ class PaymentController extends Controller
 
     public function create()
     {
-        $tenants = Tenant::where('status', 'active')->with('room')->get();
+        $tenants = Tenant::where('status', 'active')
+            ->with('room')
+            ->with(['payments' => function ($q) {
+                $q->whereNull('deleted_at')->select('tenant_id', 'period_month');
+            }])
+            ->get()
+            ->map(function (Tenant $tenant) {
+                $tenant->next_period = $this->nextPeriodForTenant($tenant);
+
+                return $tenant;
+            });
 
         return view('payments.create', compact('tenants'));
+    }
+
+    private function nextPeriodForTenant(Tenant $tenant): string
+    {
+        $lastPaid = $tenant->payments
+            ->pluck('period_month')
+            ->map(fn ($d) => Carbon::parse($d)->startOfMonth())
+            ->max();
+
+        if ($lastPaid) {
+            return $lastPaid->addMonth()->startOfMonth()->format('Y-m');
+        }
+
+        return $tenant->entry_date
+            ? Carbon::parse($tenant->entry_date)->startOfMonth()->format('Y-m')
+            : now()->format('Y-m');
     }
 
     public function store(StorePaymentRequest $request)
