@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
+    public const DUE_TENANTS_CACHE_KEY = 'dashboard.due_tenants';
+
     public function __construct(
         private WhatsAppService $whatsapp,
     ) {}
@@ -33,7 +35,8 @@ class DashboardController extends Controller
 
         // Query berat (semua tenant aktif + payments) di-cache 5 menit agar
         // dashboard tidak menghitung ulang setiap kali dibuka.
-        $dueData = Cache::remember('dashboard.due_tenants', now()->addMinutes(5), function () {
+        // Cache di-reset otomatis oleh model event Payment (saved/deleted).
+        $dueData = Cache::remember(self::DUE_TENANTS_CACHE_KEY, now()->addMinutes(5), function () {
             $dueTenants = Tenant::with(['room', 'payments'])
                 ->where('status', 'active')
                 ->get()
@@ -50,7 +53,9 @@ class DashboardController extends Controller
                             return Carbon::parse($payment->period_month)->format('Y-m') === $dueDate->format('Y-m');
                         });
 
-                    return ! $isPaid && ($tenant->days_left <= 7 && $tenant->days_left >= -14);
+                    // Tanpa batas bawah: tenant telat berapa hari pun tetap
+                    // tampil (sortBy days_left menaruh paling telat di atas).
+                    return ! $isPaid && $tenant->days_left <= 7;
                 })
                 ->sortBy('days_left')
                 ->values();

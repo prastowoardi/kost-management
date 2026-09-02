@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Http\Controllers\DashboardController;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 
 class Payment extends Model
 {
@@ -65,6 +67,12 @@ class Payment extends Model
                 $payment->invoice_number = $candidate;
             }
         });
+
+        foreach (['saved', 'deleted', 'restored', 'forceDeleted'] as $event) {
+            static::$event(function () {
+                Cache::forget(DashboardController::DUE_TENANTS_CACHE_KEY);
+            });
+        }
     }
 
     public function isDue()

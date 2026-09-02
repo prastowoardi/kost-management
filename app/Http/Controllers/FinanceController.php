@@ -73,38 +73,48 @@ class FinanceController extends Controller
     public function report(Request $request)
     {
         $month = (int) $request->input('month', now()->month);
-        $year = (int) $request->input('year', now()->year);
 
-        $startDate = \Carbon\Carbon::createFromDate($year, $month, 1)->startOfMonth();
-        $endDate = \Carbon\Carbon::createFromDate($year, $month, 1)->endOfMonth();
+        $yearInput = $request->input('year');
+        $year = ($yearInput === null || $yearInput === '') ? null : (int) $yearInput;
 
-        $finances = Finance::whereBetween('transaction_date', [$startDate, $endDate])
+        $periodQuery = function ($query) use ($month, $year) {
+            if ($year) {
+                return $query->whereBetween('transaction_date', [
+                    \Carbon\Carbon::createFromDate($year, $month, 1)->startOfMonth(),
+                    \Carbon\Carbon::createFromDate($year, $month, 1)->endOfMonth(),
+                ]);
+            }
+
+            return $query->whereMonth('transaction_date', $month);
+        };
+
+        $periodLabel = $year
+            ? \Carbon\Carbon::createFromDate($year, $month, 1)->format('F Y')
+            : 'Semua Tahun — Bulan '.\Carbon\Carbon::createFromDate(null, $month, 1)->format('F');
+
+        $finances = $periodQuery(Finance::query())
             ->orderBy('transaction_date', 'desc')
             ->get();
 
-        $financesPage = Finance::whereBetween('transaction_date', [$startDate, $endDate])
+        $financesPage = $periodQuery(Finance::query())
             ->orderBy('transaction_date', 'desc')
             ->paginate(15)
             ->appends($request->query());
 
-        $totalIncome = Finance::income()
-            ->whereBetween('transaction_date', [$startDate, $endDate])
+        $totalIncome = $periodQuery(Finance::income())
             ->sum('amount');
 
-        $totalExpense = Finance::expense()
-            ->whereBetween('transaction_date', [$startDate, $endDate])
+        $totalExpense = $periodQuery(Finance::expense())
             ->sum('amount');
 
         $balance = $totalIncome - $totalExpense;
 
-        $incomeByCategory = Finance::income()
-            ->whereBetween('transaction_date', [$startDate, $endDate])
+        $incomeByCategory = $periodQuery(Finance::income())
             ->selectRaw('category, SUM(amount) as total')
             ->groupBy('category')
             ->get();
 
-        $expenseByCategory = Finance::expense()
-            ->whereBetween('transaction_date', [$startDate, $endDate])
+        $expenseByCategory = $periodQuery(Finance::expense())
             ->selectRaw('category, SUM(amount) as total')
             ->groupBy('category')
             ->get();
@@ -132,6 +142,7 @@ class FinanceController extends Controller
             'financesPage',
             'month',
             'year',
+            'periodLabel',
             'totalIncome',
             'totalExpense',
             'balance',
@@ -153,8 +164,7 @@ class FinanceController extends Controller
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('finances.report-pdf', $data);
 
         $filename = 'laporan-keuangan-'.
-                    \Carbon\Carbon::createFromDate($data['year'], $data['month'], 1)->format('F').
-                    '-'.$data['year'].'.pdf';
+                    preg_replace('/[^A-Za-z0-9\-]+/', '-', $data['periodLabel']).'.pdf';
 
         return $pdf->download($filename);
     }
