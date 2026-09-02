@@ -142,7 +142,7 @@
                                     <td>
                                         <span class="font-medium text-stone-900">{{ $finance->category }}</span>
                                     </td>
-                                    <td class="max-w-xs whitespace-normal">
+                                    <td class="max-w-xs !whitespace-normal break-words">
                                         {{ Str::limit($finance->description, 50) }}
                                     </td>
                                     <td class="font-semibold tabular {{ $finance->type == 'income' ? 'text-emerald-600' : 'text-red-600' }}">

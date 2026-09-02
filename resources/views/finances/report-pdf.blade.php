@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Keuangan - {{ \Carbon\Carbon::create()->month($month)->format('F') }} {{ $year }}</title>
+    <title>Laporan Keuangan - {{ $periodLabel }}</title>
     <style>
         * {
             margin: 0;
@@ -204,7 +204,7 @@
     
     <!-- Period -->
     <div class="period">
-        <strong>Periode: {{ \Carbon\Carbon::create()->month($month)->format('F') }} {{ $year }}</strong>
+        <strong>Periode: {{ $periodLabel }}</strong>
     </div>
     
     <!-- Summary Cards -->

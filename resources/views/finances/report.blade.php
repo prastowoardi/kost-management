@@ -34,10 +34,10 @@
 
         <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div class="card p-5">
-                <div class="flex items-center justify-between gap-3">
-                    <div>
+                <div class="flex min-w-0 items-center justify-between gap-3">
+                    <div class="min-w-0">
                         <p class="text-sm font-medium text-stone-500">Total Pemasukan</p>
-                        <p class="mt-1 text-2xl font-extrabold text-emerald-600 tabular">Rp {{ number_format($totalIncome, 0, ',', '.') }}</p>
+                        <p class="mt-1 break-words text-xl font-extrabold leading-tight text-emerald-600 tabular sm:text-2xl">Rp {{ number_format($totalIncome, 0, ',', '.') }}</p>
                     </div>
                     <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
                         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
@@ -45,10 +45,10 @@
                 </div>
             </div>
             <div class="card p-5">
-                <div class="flex items-center justify-between gap-3">
-                    <div>
+                <div class="flex min-w-0 items-center justify-between gap-3">
+                    <div class="min-w-0">
                         <p class="text-sm font-medium text-stone-500">Total Pengeluaran</p>
-                        <p class="mt-1 text-2xl font-extrabold text-red-600 tabular">Rp {{ number_format($totalExpense, 0, ',', '.') }}</p>
+                        <p class="mt-1 break-words text-xl font-extrabold leading-tight text-red-600 tabular sm:text-2xl">Rp {{ number_format($totalExpense, 0, ',', '.') }}</p>
                     </div>
                     <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
                         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
@@ -56,10 +56,10 @@
                 </div>
             </div>
             <div class="card p-5">
-                <div class="flex items-center justify-between gap-3">
-                    <div>
+                <div class="flex min-w-0 items-center justify-between gap-3">
+                    <div class="min-w-0">
                         <p class="text-sm font-medium text-stone-500">Saldo Bulan Ini</p>
-                        <p class="mt-1 text-2xl font-extrabold tabular {{ $balance >= 0 ? 'text-brand-600' : 'text-orange-600' }}">Rp {{ number_format($balance, 0, ',', '.') }}</p>
+                        <p class="mt-1 break-words text-xl font-extrabold leading-tight tabular sm:text-2xl {{ $balance >= 0 ? 'text-brand-600' : 'text-orange-600' }}">Rp {{ number_format($balance, 0, ',', '.') }}</p>
                     </div>
                     <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl {{ $balance >= 0 ? 'bg-brand-100 text-brand-600' : 'bg-orange-100 text-orange-600' }}">
                         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -78,9 +78,9 @@
                     <div class="space-y-4">
                         @foreach($incomeByCategory as $item)
                         <div>
-                            <div class="mb-1.5 flex items-center justify-between">
-                                <p class="text-sm font-medium text-stone-900">{{ $item['category'] }}</p>
-                                <div class="text-right">
+                            <div class="mb-1.5 flex min-w-0 items-center justify-between gap-3">
+                                <p class="min-w-0 break-words text-sm font-medium text-stone-900">{{ $item['category'] }}</p>
+                                <div class="flex-shrink-0 text-right">
                                     <p class="text-sm font-semibold text-emerald-600 tabular">Rp {{ number_format($item['total'], 0, ',', '.') }}</p>
                                     <p class="text-xs text-stone-500">{{ $totalIncome > 0 ? number_format($item['total'] / $totalIncome * 100, 1) : 0 }}%</p>
                                 </div>
@@ -107,9 +107,9 @@
                     <div class="space-y-4">
                         @foreach($expenseByCategory as $item)
                         <div>
-                            <div class="mb-1.5 flex items-center justify-between">
-                                <p class="text-sm font-medium text-stone-900">{{ $item['category'] }}</p>
-                                <div class="text-right">
+                            <div class="mb-1.5 flex min-w-0 items-center justify-between gap-3">
+                                <p class="min-w-0 break-words text-sm font-medium text-stone-900">{{ $item['category'] }}</p>
+                                <div class="flex-shrink-0 text-right">
                                     <p class="text-sm font-semibold text-red-600 tabular">Rp {{ number_format($item['total'], 0, ',', '.') }}</p>
                                     <p class="text-xs text-stone-500">{{ $totalExpense > 0 ? number_format($item['total'] / $totalExpense * 100, 1) : 0 }}%</p>
                                 </div>
@@ -128,12 +128,12 @@
             </div>
         </div>
 
-        <div class="card overflow-hidden">
+        <div class="mb-6 card overflow-hidden">
             <div class="border-b border-stone-100 px-5 py-4">
                 <h3 class="section-title">Tren 12 Bulan Terakhir</h3>
             </div>
             <div class="overflow-x-auto">
-                <table class="min-w-max w-full">
+                <table class="w-full">
                     <thead>
                         <tr>
                             <th>Bulan</th>
@@ -168,12 +168,11 @@
         <div class="card overflow-hidden">
             <div class="border-b border-stone-100 px-5 py-4">
                 <h3 class="section-title">
-                    Detail Transaksi -
-                    {{ \Carbon\Carbon::createFromDate($year, $month, 1)->format('F Y') }}
+                    Detail Transaksi - {{ $periodLabel }}
                 </h3>
             </div>
             <div class="overflow-x-auto">
-                <table class="min-w-max w-full">
+                <table class="w-full">
                     <thead>
                         <tr>
                             <th>Tanggal</th>
@@ -192,7 +191,7 @@
                             <td>
                                 <span class="font-medium text-stone-900">{{ $finance->category }}</span>
                             </td>
-                            <td class="max-w-xs whitespace-normal">
+                            <td class="max-w-xs !whitespace-normal break-words">
                                 {{ $finance->description }}
                             </td>
                             <td class="text-right font-semibold text-emerald-600 tabular">
@@ -214,19 +213,25 @@
                         @endforelse
                     </tbody>
                     <tfoot>
-                        <tr class="font-bold">
-                            <td colspan="3" class="text-right text-stone-900">TOTAL:</td>
-                            <td class="text-right text-lg font-extrabold text-emerald-600 tabular">
-                                Rp {{ number_format($totalIncome, 0, ',', '.') }}
-                            </td>
-                            <td class="text-right text-lg font-extrabold text-red-600 tabular">
-                                Rp {{ number_format($totalExpense, 0, ',', '.') }}
-                            </td>
-                        </tr>
-                        <tr class="font-bold">
-                            <td colspan="3" class="text-right text-stone-900">SALDO:</td>
-                            <td colspan="2" class="text-right text-lg font-extrabold tabular {{ $balance >= 0 ? 'text-brand-600' : 'text-orange-600' }}">
-                                Rp {{ number_format($balance, 0, ',', '.') }}
+                        <tr class="border-t-2 border-stone-200 bg-stone-50">
+                            <td colspan="5" class="px-5 py-5">
+                                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                    <p class="text-sm font-bold uppercase tracking-wider text-stone-500">Rekap Periode</p>
+                                    <div class="flex flex-col gap-2 sm:items-end">
+                                        <div class="flex items-center justify-between gap-6">
+                                            <span class="text-sm text-stone-500">Total Pemasukan</span>
+                                            <span class="text-sm font-semibold text-emerald-600 tabular">Rp {{ number_format($totalIncome, 0, ',', '.') }}</span>
+                                        </div>
+                                        <div class="flex items-center justify-between gap-6">
+                                            <span class="text-sm text-stone-500">Total Pengeluaran</span>
+                                            <span class="text-sm font-semibold text-red-600 tabular">Rp {{ number_format($totalExpense, 0, ',', '.') }}</span>
+                                        </div>
+                                        <div class="flex items-center justify-between gap-6 border-t border-stone-200 pt-2">
+                                            <span class="text-sm font-bold text-stone-700">Saldo</span>
+                                            <span class="text-lg font-extrabold tabular {{ $balance >= 0 ? 'text-brand-600' : 'text-orange-600' }}">Rp {{ number_format($balance, 0, ',', '.') }}</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     </tfoot>
