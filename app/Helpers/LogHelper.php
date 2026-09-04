@@ -8,10 +8,11 @@ use Illuminate\Support\Facades\Request;
 
 class LogHelper
 {
-    public static function log($action, $description, $model = null, $payload = null)
+    public static function log($action, $description, $model = null, $payload = null, $user = null)
     {
-        $currentUserId = Auth::id();
-        $userName = Auth::user()?->name ?? 'System';
+        $actor = $user ?: Auth::user();
+        $currentUserId = $actor?->id;
+        $userName = $actor?->name ?? 'System';
         $ua = Request::userAgent();
 
         $device = UserAgentParser::parse($ua);
