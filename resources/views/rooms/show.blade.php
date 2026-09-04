@@ -47,7 +47,7 @@
                             </div>
 
                             <!-- Thumbnail Grid -->
-                            <div class="grid grid-cols-4 md:grid-cols-5 gap-3">
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                                 @foreach($images as $index => $image)
                                 @php $imagePath = Storage::url($image); @endphp
                                 <div class="relative group">

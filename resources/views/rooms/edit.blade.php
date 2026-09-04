@@ -88,7 +88,7 @@
                             @if($existingImages && count($existingImages) > 0)
                             <div class="md:col-span-2">
                                 <label class="form-label mb-2">Foto Kamar Saat Ini</label>
-                                <div class="grid grid-cols-3 sm:grid-cols-5 gap-3" id="existing-images-container">
+                                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3" id="existing-images-container">
                                     @foreach($existingImages as $index => $image)
                                     <div class="relative group" id="existing-image-{{ $index }}">
                                         <img src="{{ Storage::url($image) }}"
@@ -145,15 +145,15 @@
                                 @enderror
 
                                 <!-- New Images Preview -->
-                                <div id="new-images-preview" data-existing-count="{{ $existingImages ? count($existingImages) : 0 }}" class="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-4 hidden"></div>
+                                <div id="new-images-preview" data-existing-count="{{ $existingImages ? count($existingImages) : 0 }}" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mt-4 hidden"></div>
                             </div>
                         </div>
 
-                        <div class="mt-8 flex items-center justify-end gap-3">
-                            <a href="{{ route('rooms.show', $room) }}" class="btn-secondary">
+                        <div class="mt-8 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3">
+                            <a href="{{ route('rooms.show', $room) }}" class="btn-secondary w-full sm:w-auto text-center">
                                 Batal
                             </a>
-                            <button type="submit" class="btn-primary">
+                            <button type="submit" class="btn-primary w-full sm:w-auto">
                                 Update Kamar
                             </button>
                         </div>

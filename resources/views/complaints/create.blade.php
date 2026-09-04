@@ -102,15 +102,15 @@
                                     @enderror
 
                                     <!-- Preview Container -->
-                                    <div id="preview-container" class="grid grid-cols-5 gap-4 mt-4 hidden"></div>
+                                    <div id="preview-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4 hidden"></div>
                                 </div>
                             </div>
 
-                            <div class="mt-8 flex items-center justify-end gap-3 border-t border-stone-100 pt-6">
-                                <a href="{{ route('complaints.index') }}" class="btn-secondary">
+                            <div class="mt-8 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 border-t border-stone-100 pt-6">
+                                <a href="{{ route('complaints.index') }}" class="btn-secondary w-full sm:w-auto text-center">
                                     Batal
                                 </a>
-                                <button type="submit" class="btn-primary">
+                                <button type="submit" class="btn-primary w-full sm:w-auto">
                                     Simpan
                                 </button>
                             </div>

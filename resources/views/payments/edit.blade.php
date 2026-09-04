@@ -176,9 +176,9 @@
                         </div>
 
                         {{-- Buttons --}}
-                        <div class="mt-6 flex flex-wrap items-center justify-end gap-3">
-                            <a href="{{ route('payments.index') }}" class="btn-secondary">Batal</a>
-                            <button type="submit" class="btn-primary">Simpan Perubahan</button>
+                        <div class="mt-6 flex flex-col-reverse sm:flex-row sm:flex-wrap sm:items-center sm:justify-end gap-3">
+                            <a href="{{ route('payments.index') }}" class="btn-secondary w-full sm:w-auto text-center">Batal</a>
+                            <button type="submit" class="btn-primary w-full sm:w-auto">Simpan Perubahan</button>
                         </div>
 
                     </form>

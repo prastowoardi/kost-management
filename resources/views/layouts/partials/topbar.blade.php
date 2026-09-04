@@ -55,7 +55,7 @@
                 x-transition:leave="transition ease-in duration-150"
                 x-transition:leave-start="opacity-100 scale-100"
                 x-transition:leave-end="opacity-0 scale-95"
-                class="fixed inset-x-3 top-16 z-50 overflow-hidden rounded-2xl bg-white shadow-lift ring-1 ring-stone-200/70 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80"
+                class="fixed inset-x-3 top-16 z-50 flex flex-col overflow-hidden rounded-2xl bg-white shadow-lift ring-1 ring-stone-200/70 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80"
                 style="display: none;">
 
                 <div class="flex items-center justify-between border-b border-stone-100 p-3">

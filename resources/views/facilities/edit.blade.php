@@ -75,11 +75,11 @@
                         </div>
 
                         {{-- Buttons --}}
-                        <div class="mt-8 flex items-center justify-end gap-3">
-                            <a href="{{ route('facilities.index') }}" class="btn-secondary">
+                        <div class="mt-8 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3">
+                            <a href="{{ route('facilities.index') }}" class="btn-secondary w-full sm:w-auto text-center">
                                 Batal
                             </a>
-                            <button type="submit" class="btn-primary">
+                            <button type="submit" class="btn-primary w-full sm:w-auto">
                                 Simpan Perubahan
                             </button>
                         </div>

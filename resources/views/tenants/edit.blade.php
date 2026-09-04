@@ -149,11 +149,11 @@
                             </div>
                         </div>
 
-                        <div class="mt-6 flex flex-wrap items-center justify-end gap-3 border-t border-stone-100 pt-5">
-                            <a href="{{ route('tenants.index') }}" class="btn-secondary">
+                        <div class="mt-6 flex flex-col-reverse sm:flex-row sm:flex-wrap sm:items-center sm:justify-end gap-3 border-t border-stone-100 pt-5">
+                            <a href="{{ route('tenants.index') }}" class="btn-secondary w-full sm:w-auto text-center">
                                 Batal
                             </a>
-                            <button type="submit" class="btn-primary">
+                            <button type="submit" class="btn-primary w-full sm:w-auto">
                                 Update
                             </button>
                         </div>
