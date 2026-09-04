@@ -10,7 +10,7 @@
 
 <!-- Sidebar -->
 <aside
-    class="fixed inset-y-0 left-0 z-50 flex w-[var(--sidebar-w,288px)] max-w-[85vw] flex-col overflow-y-auto border-r border-stone-200/70 bg-white shadow-lift transition-transform duration-300 ease-in-out lg:static lg:z-auto lg:translate-x-0 lg:shadow-none"
+    class="fixed inset-y-0 left-0 z-50 flex w-[var(--sidebar-w,288px)] max-w-[85vw] flex-col overflow-y-auto border-r border-stone-200/70 bg-white shadow-lift transition-transform duration-300 ease-in-out lg:sticky lg:top-0 lg:z-30 lg:h-screen lg:translate-x-0 lg:shadow-none"
     :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
 
     <!-- Brand -->
