@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Complaint;
 use App\Models\Payment;
 use App\Models\Tenant;
 use Illuminate\Http\Request;
@@ -107,25 +106,6 @@ class MobileTenantController extends Controller
         return response()->json([
             'status' => 'success',
             'data' => $payments,
-        ]);
-    }
-
-    public function storeComplaint(Request $request)
-    {
-        $request->validate([
-            'description' => 'required',
-        ]);
-
-        $complaint = Complaint::create([
-            'user_id' => $request->user()->id,
-            'description' => $request->description,
-            'status' => 'pending',
-        ]);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Keluhan berhasil dikirim',
-            'data' => $complaint,
         ]);
     }
 }

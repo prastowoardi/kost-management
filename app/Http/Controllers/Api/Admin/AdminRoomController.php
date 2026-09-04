@@ -6,6 +6,7 @@ use App\Helpers\LogHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Room;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 class AdminRoomController extends Controller
@@ -44,7 +45,27 @@ class AdminRoomController extends Controller
                 'status' => 'required|in:available,occupied,maintenance',
                 'size' => 'nullable|numeric|min:0',
                 'description' => 'nullable|string',
+                'images' => 'nullable|array|max:5',
+                'images.*' => 'image|mimes:jpeg,png,jpg|max:5120',
             ]);
+
+            if ($request->hasFile('images')) {
+                $oldImages = is_string($room->images)
+                    ? json_decode($room->images, true)
+                    : ($room->images ?? []);
+
+                foreach ($oldImages as $oldImage) {
+                    if (Storage::exists($oldImage)) {
+                        Storage::delete($oldImage);
+                    }
+                }
+
+                $newImages = [];
+                foreach ($request->file('images') as $image) {
+                    $newImages[] = $image->store('rooms');
+                }
+                $validated['images'] = json_encode($newImages);
+            }
 
             $room->update($validated);
 

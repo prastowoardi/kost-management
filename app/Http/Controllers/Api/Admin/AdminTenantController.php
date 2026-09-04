@@ -10,6 +10,7 @@ use App\Models\Tenant;
 use App\Services\TenantRegistrationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Throwable;
 
@@ -50,6 +51,11 @@ class AdminTenantController extends Controller
             'phone' => 'required',
             'id_card' => 'required',
             'password' => 'required|min:8',
+            'address' => 'nullable|string',
+            'entry_date' => 'nullable|date',
+            'emergency_contact_name' => 'nullable|string|max:255',
+            'emergency_contact_phone' => 'nullable|string|max:20',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
         ]);
 
         if ($validator->fails()) {
@@ -59,6 +65,11 @@ class AdminTenantController extends Controller
         return DB::transaction(function () use ($request) {
             try {
                 $room = Room::where('uuid', $request->room_id)->firstOrFail();
+
+                $photoPath = null;
+                if ($request->hasFile('photo')) {
+                    $photoPath = $request->file('photo')->store('tenants');
+                }
 
                 $tenant = $this->registration->registerWithUser([
                     'room_id' => $room->id,
@@ -70,6 +81,7 @@ class AdminTenantController extends Controller
                     'entry_date' => $request->entry_date ?? now(),
                     'emergency_contact_name' => $request->emergency_contact_name ?? '',
                     'emergency_contact_phone' => $request->emergency_contact_phone ?? '',
+                    'photo' => $photoPath,
                     'status' => 'active',
                 ], $request->password);
 
@@ -86,6 +98,12 @@ class AdminTenantController extends Controller
                 ]);
 
             } catch (\InvalidArgumentException $e) {
+                LogHelper::logError(
+                    'CREATE_TENANT_FAILED',
+                    'Gagal simpan tenant: '.$e->getMessage(),
+                    $e
+                );
+
                 return response()->json([
                     'status' => 'error',
                     'message' => $e->getMessage(),
@@ -170,14 +188,16 @@ class AdminTenantController extends Controller
                 'id_card' => 'required',
                 'address' => 'nullable|string',
                 'entry_date' => 'nullable|date',
-                'emergency_contact_name' => 'nullable|string',
-                'emergency_contact_phone' => 'nullable|string',
+                'exit_date' => 'nullable|date',
+                'emergency_contact_name' => 'nullable|string|max:255',
+                'emergency_contact_phone' => 'nullable|string|max:20',
                 'status' => 'nullable|in:active,inactive',
+                'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             ]);
 
             $room = Room::where('uuid', $request->room_id)->firstOrFail();
 
-            $tenant->update([
+            $updateData = [
                 'room_id' => $room->id,
                 'name' => $validated['name'],
                 'email' => $validated['email'],
@@ -185,10 +205,20 @@ class AdminTenantController extends Controller
                 'id_card' => $validated['id_card'],
                 'address' => $validated['address'] ?? $tenant->address,
                 'entry_date' => $validated['entry_date'] ?? $tenant->entry_date,
+                'exit_date' => $validated['exit_date'] ?? $tenant->exit_date,
                 'emergency_contact_name' => $validated['emergency_contact_name'] ?? $tenant->emergency_contact_name,
                 'emergency_contact_phone' => $validated['emergency_contact_phone'] ?? $tenant->emergency_contact_phone,
                 'status' => $validated['status'] ?? $tenant->status,
-            ]);
+            ];
+
+            if ($request->hasFile('photo')) {
+                if ($tenant->photo) {
+                    Storage::delete($tenant->photo);
+                }
+                $updateData['photo'] = $request->file('photo')->store('tenants');
+            }
+
+            $tenant->update($updateData);
 
             if ($tenant->user && $tenant->user->email !== $validated['email']) {
                 $tenant->user->update(['email' => $validated['email']]);

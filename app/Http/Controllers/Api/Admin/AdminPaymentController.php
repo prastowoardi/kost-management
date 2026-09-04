@@ -10,6 +10,7 @@ use App\Services\PaymentService;
 use App\Services\PushNotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Throwable;
@@ -31,6 +32,8 @@ class AdminPaymentController extends Controller
             'late_fee' => 'nullable|numeric|min:0',
             'payment_method' => 'required|in:cash,transfer,e-wallet',
             'notes' => 'nullable|string',
+            'receipt_file' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            'proof_of_payment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
 
         if ($validator->fails()) {
@@ -44,8 +47,29 @@ class AdminPaymentController extends Controller
             $validated = $validator->validated();
             $tenant = Tenant::with('room')->where('uuid', $validated['tenant_id'])->firstOrFail();
 
-            // Mendukung cicilan: validasi sisa tagihan & auto-note ada di service
+            $receiptPath = null;
+            $proofPath = null;
+            if ($request->hasFile('receipt_file')) {
+                $receiptPath = $request->file('receipt_file')->store('receipts');
+            }
+            if ($request->hasFile('proof_of_payment')) {
+                $proofPath = $request->file('proof_of_payment')->store('proofs');
+            }
+
+            unset($validated['receipt_file'], $validated['proof_of_payment']);
+
             $payment = $this->paymentService->createInstallmentPayment($tenant, $validated);
+
+            $updates = [];
+            if ($receiptPath) {
+                $updates['receipt_file'] = $receiptPath;
+            }
+            if ($proofPath) {
+                $updates['proof_of_payment'] = $proofPath;
+            }
+            if (! empty($updates)) {
+                $payment->update($updates);
+            }
 
             $payment->load(['tenant.user', 'room']);
 
@@ -84,6 +108,12 @@ class AdminPaymentController extends Controller
                 ],
             ]);
         } catch (ValidationException $e) {
+            LogHelper::logError(
+                'CREATE_PAYMENT_API_FAILED',
+                'Validasi gagal saat catat pembayaran: '.collect($e->errors())->flatten()->first(),
+                $e
+            );
+
             return response()->json([
                 'status' => 'error',
                 'message' => collect($e->errors())->flatten()->first() ?? 'Validasi gagal.',

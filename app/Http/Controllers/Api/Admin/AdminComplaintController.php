@@ -46,6 +46,7 @@ class AdminComplaintController extends Controller
             $complaint->update([
                 'status' => $request->status,
                 'response' => $request->response,
+                'resolved_date' => $request->status === 'resolved' ? now() : null,
             ]);
             $after = $complaint->fresh()->toArray();
 
@@ -83,6 +84,7 @@ class AdminComplaintController extends Controller
             $complaint->update([
                 'status' => $request->status,
                 'response' => $request->response,
+                'resolved_date' => $request->status === 'resolved' ? now() : null,
             ]);
             $after = $complaint->fresh()->toArray();
 

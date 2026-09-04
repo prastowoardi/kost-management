@@ -88,15 +88,26 @@ class MobileAuthController extends Controller
 
     public function logout(Request $request)
     {
-        $user = $request->user();
-        $user->update(['expo_push_token' => null]);
+        try {
+            $user = $request->user();
+            $user->update(['expo_push_token' => null]);
 
-        $user->currentAccessToken()->delete();
+            $user->currentAccessToken()->delete();
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Berhasil Logout',
-        ]);
+            LogHelper::log('LOGOUT_MOBILE', 'Logout via mobile');
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Berhasil Logout',
+            ]);
+        } catch (\Throwable $e) {
+            LogHelper::logError('LOGOUT_MOBILE_FAILED', 'Gagal logout', $e);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal logout',
+            ], 500);
+        }
     }
 
     public function getAdminStats()
