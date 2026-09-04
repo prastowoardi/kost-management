@@ -247,6 +247,7 @@ class FinanceController extends Controller
                 'amount' => 'required|numeric|min:0',
                 'transaction_date' => 'required|date',
                 'description' => 'nullable|string',
+                'notes' => 'nullable|string',
                 'receipt_file' => 'nullable|image|mimes:jpg,jpeg,png,pdf|max:5120',
             ]);
 

@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
 
-    <div class="page-container pt-4 sm:pt-5 pb-8 sm:pb-10" x-data="{ transactionType: '{{ old('type', 'income') }}' }">
+    <div class="page-container pt-4 sm:pt-5 pb-8 sm:pb-10" x-data="{ transactionType: @js(old('type', 'income')) }">
         <div class="mx-auto max-w-3xl">
             <div class="card animate-fade-in-up">
                 <div class="card-body">
@@ -60,7 +60,7 @@
                                         <optgroup label="Pemasukan" x-show="transactionType === 'income'">
                                             @foreach($incomeCategories as $cat)
                                             <option value="{{ $cat }}"
-                                                    x-bind:selected="transactionType === 'income' && '{{ old('category') }}' === '{{ $cat }}'"
+                                                    x-bind:selected="transactionType === 'income' && @js(old('category')) === @js($cat)"
                                                     x-show="transactionType === 'income'">
                                                 {{ $cat }}
                                             </option>
@@ -70,7 +70,7 @@
                                         <optgroup label="Pengeluaran" x-show="transactionType === 'expense'">
                                             @foreach($expenseCategories as $cat)
                                             <option value="{{ $cat }}"
-                                                    x-bind:selected="transactionType === 'expense' && '{{ old('category') }}' === '{{ $cat }}'"
+                                                    x-bind:selected="transactionType === 'expense' && @js(old('category')) === @js($cat)"
                                                     x-show="transactionType === 'expense'">
                                                 {{ $cat }}
                                             </option>

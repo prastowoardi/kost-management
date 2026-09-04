@@ -65,17 +65,19 @@
                         {{-- Baris 4: Bukti Transaksi --}}
                         <div class="md:col-span-2">
                             <p class="text-sm font-medium text-stone-500">Bukti Transaksi</p>
-                            @if($finance->payment && $finance->payment->receipt_file)
-                                {{-- CEK JIKA FILE ADALAH GAMBAR --}}
-                                @if(in_array(pathinfo($finance->payment->receipt_file, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png', 'gif']))
+                            @php
+                                $receiptPath = $finance->receipt_file ?? $finance->payment?->receipt_file;
+                            @endphp
+                            @if($receiptPath)
+                                @if(in_array(strtolower(pathinfo($receiptPath, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'gif']))
                                     <div class="mb-3 mt-2">
-                                        <img src="{{ Storage::url($finance->payment->receipt_file) }}"
+                                        <img src="{{ Storage::url($receiptPath) }}"
                                             alt="Bukti Transaksi"
                                             class="max-w-xs rounded-xl border border-stone-200 p-1 shadow-md">
                                     </div>
                                 @endif
 
-                                <a href="{{ Storage::url($finance->receipt_file ?? $finance->payment?->receipt_file) }}"
+                                <a href="{{ Storage::url($receiptPath) }}"
                                     target="_blank"
                                     class="btn-secondary btn-sm mt-2 inline-flex">
                                         <svg class="h-4 w-4 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
 
-    <div class="page-container pt-4 sm:pt-5 pb-8 sm:pb-10" x-data="{ transactionType: '{{ old('type', $finance->type) }}' }">
+    <div class="page-container pt-4 sm:pt-5 pb-8 sm:pb-10" x-data="{ transactionType: @js(old('type', $finance->type)) }">
         <div class="mx-auto max-w-3xl">
             <div class="card animate-fade-in-up">
                 <div class="card-body">

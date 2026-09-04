@@ -106,7 +106,7 @@
                                                         key: '{{ $cell['date']->format('Y-m-d') }}',
                                                         label: '{{ $cell['date']->translatedFormat('l, d F Y') }}'
                                                     },
-                                                    {{ json_encode($cell['events']) }})">
+                                                    @json($cell['events']))">
 
                                                 <div class="flex items-start justify-between px-0.5 pb-1">
                                                     <span class="ml-auto inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-[11px] font-bold
