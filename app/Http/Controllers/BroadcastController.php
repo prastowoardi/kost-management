@@ -87,19 +87,27 @@ class BroadcastController extends Controller
 
     public function sendPersonal(Request $request)
     {
-        $request->validate([
-            'message' => 'required',
-            'phone' => 'required',
-        ]);
+        try {
+            $request->validate([
+                'message' => 'required',
+                'phone' => 'required',
+            ]);
 
-        $sent = $this->whatsapp->sendMessage($request->phone, $request->message);
+            $sent = $this->whatsapp->sendMessage($request->phone, $request->message);
 
-        if ($sent) {
-            LogHelper::log('SEND_PERSONAL_CHAT', "Mengirim pesan personal ke {$request->phone}");
+            if ($sent) {
+                LogHelper::log('SEND_PERSONAL_CHAT', "Mengirim pesan personal ke {$request->phone}");
 
-            return back()->with('status', 'Pesan terkirim!');
+                return back()->with('status', 'Pesan terkirim!');
+            }
+
+            LogHelper::logError('SEND_PERSONAL_CHAT_FAILED', "Gagal kirim pesan personal ke {$request->phone}");
+
+            return back()->withErrors(['msg' => 'Gagal terhubung ke Gateway WA.']);
+        } catch (Throwable $e) {
+            LogHelper::logError('SEND_PERSONAL_CHAT_FAILED', 'Gagal kirim pesan personal', $e);
+
+            return back()->withErrors(['msg' => 'Gagal mengirim pesan.']);
         }
-
-        return back()->withErrors(['msg' => 'Gagal terhubung ke Gateway WA.']);
     }
 }

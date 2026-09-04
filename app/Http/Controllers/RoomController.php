@@ -101,74 +101,80 @@ class RoomController extends Controller
 
     public function update(Request $request, Room $room)
     {
-        $validated = $request->validate([
-            'room_number' => 'required|unique:rooms,room_number,'.$room->id,
-            'type' => 'required|in:singlenoac,singleac,shared',
-            'price' => 'required|numeric|min:0',
-            'capacity' => 'required|integer|min:1',
-            'status' => 'required|in:available,occupied,maintenance',
-            'size' => 'nullable|numeric|min:0',
-            'description' => 'nullable|string',
-            'facilities' => 'nullable|array',
-            'keep_images' => 'nullable|array',
-            'new_images' => 'nullable|array|max:5',
-            'new_images.*' => 'image|mimes:jpeg,png,jpg|max:5120',
-        ]);
+        try {
+            $validated = $request->validate([
+                'room_number' => 'required|unique:rooms,room_number,'.$room->id,
+                'type' => 'required|in:singlenoac,singleac,shared',
+                'price' => 'required|numeric|min:0',
+                'capacity' => 'required|integer|min:1',
+                'status' => 'required|in:available,occupied,maintenance',
+                'size' => 'nullable|numeric|min:0',
+                'description' => 'nullable|string',
+                'facilities' => 'nullable|array',
+                'keep_images' => 'nullable|array',
+                'new_images' => 'nullable|array|max:5',
+                'new_images.*' => 'image|mimes:jpeg,png,jpg|max:5120',
+            ]);
 
-        // Get old images data
-        $oldImages = is_string($room->images)
-            ? json_decode($room->images, true)
-            : ($room->images ?? []);
+            // Get old images data
+            $oldImages = is_string($room->images)
+                ? json_decode($room->images, true)
+                : ($room->images ?? []);
 
-        // Images to keep from old ones
-        $keepImages = $request->input('keep_images', []);
+            // Images to keep from old ones
+            $keepImages = $request->input('keep_images', []);
 
-        // Calculate deleted images
-        $deletedImages = array_diff($oldImages, $keepImages);
+            // Calculate deleted images
+            $deletedImages = array_diff($oldImages, $keepImages);
 
-        // Delete removed images from storage
-        foreach ($deletedImages as $deletedImage) {
-            if (Storage::exists($deletedImage)) {
-                Storage::delete($deletedImage);
+            // Delete removed images from storage
+            foreach ($deletedImages as $deletedImage) {
+                if (Storage::exists($deletedImage)) {
+                    Storage::delete($deletedImage);
+                }
             }
-        }
 
-        // Start with kept images
-        $finalImages = $keepImages;
+            // Start with kept images
+            $finalImages = $keepImages;
 
-        // Upload and add new images
-        if ($request->hasFile('new_images')) {
-            foreach ($request->file('new_images') as $image) {
-                $path = $image->store('rooms');
-                $finalImages[] = $path;
+            // Upload and add new images
+            if ($request->hasFile('new_images')) {
+                foreach ($request->file('new_images') as $image) {
+                    $path = $image->store('rooms');
+                    $finalImages[] = $path;
+                }
             }
+
+            // Update validated data with final images
+            $validated['images'] = json_encode($finalImages);
+
+            // Remove non-database fields
+            unset($validated['keep_images']);
+            unset($validated['new_images']);
+
+            $before = $room->toArray();
+            $room->update($validated);
+            $after = $room->fresh()->toArray();
+
+            // Sync facilities
+            if ($request->has('facilities')) {
+                $room->facilities()->sync($request->facilities);
+            } else {
+                $room->facilities()->detach();
+            }
+
+            LogHelper::log('UPDATE_ROOM', "Mengubah kamar {$room->room_number}", $room, [
+                'before' => $before,
+                'after' => $after,
+            ]);
+
+            return redirect()->route('rooms.show', $room)
+                ->with('success', 'Kamar berhasil diupdate!');
+        } catch (Throwable $e) {
+            LogHelper::logError('UPDATE_ROOM_FAILED', "Gagal update kamar #{$room->id}", $e);
+
+            return back()->with('error', 'Gagal mengupdate kamar')->withInput();
         }
-
-        // Update validated data with final images
-        $validated['images'] = json_encode($finalImages);
-
-        // Remove non-database fields
-        unset($validated['keep_images']);
-        unset($validated['new_images']);
-
-        $before = $room->toArray();
-        $room->update($validated);
-        $after = $room->fresh()->toArray();
-
-        // Sync facilities
-        if ($request->has('facilities')) {
-            $room->facilities()->sync($request->facilities);
-        } else {
-            $room->facilities()->detach();
-        }
-
-        LogHelper::log('UPDATE_ROOM', "Mengubah kamar {$room->room_number}", $room, [
-            'before' => $before,
-            'after' => $after,
-        ]);
-
-        return redirect()->route('rooms.show', $room)
-            ->with('success', 'Kamar berhasil diupdate!');
     }
 
     public function destroy(Room $room)
@@ -218,20 +224,26 @@ class RoomController extends Controller
 
     public function updateStatus(Request $request, Room $room)
     {
-        $validated = $request->validate([
-            'status' => 'required|in:available,occupied,maintenance',
-        ]);
+        try {
+            $validated = $request->validate([
+                'status' => 'required|in:available,occupied,maintenance',
+            ]);
 
-        $before = $room->toArray();
-        $room->update($validated);
-        $after = $room->fresh()->toArray();
+            $before = $room->toArray();
+            $room->update($validated);
+            $after = $room->fresh()->toArray();
 
-        LogHelper::log('UPDATE_ROOM_STATUS', "Mengubah status kamar {$room->room_number} dari {$before['status']} ke {$after['status']}", $room, [
-            'before' => $before,
-            'after' => $after,
-        ]);
+            LogHelper::log('UPDATE_ROOM_STATUS', "Mengubah status kamar {$room->room_number} dari {$before['status']} ke {$after['status']}", $room, [
+                'before' => $before,
+                'after' => $after,
+            ]);
 
-        return redirect()->back()
-            ->with('success', 'Status kamar berhasil diupdate');
+            return redirect()->back()
+                ->with('success', 'Status kamar berhasil diupdate');
+        } catch (Throwable $e) {
+            LogHelper::logError('UPDATE_ROOM_STATUS_FAILED', "Gagal update status kamar #{$room->id}", $e);
+
+            return back()->with('error', 'Gagal memperbarui status kamar');
+        }
     }
 }

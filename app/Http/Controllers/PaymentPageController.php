@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\LogHelper;
 use App\Models\Payment;
 use Illuminate\Http\Request;
+use Throwable;
 
 class PaymentPageController extends Controller
 {
@@ -20,23 +22,37 @@ class PaymentPageController extends Controller
 
     public function upload(Request $request, $hash)
     {
-        $payment = Payment::findOrFail(decrypt($hash));
+        try {
+            $payment = Payment::findOrFail(decrypt($hash));
 
-        $request->validate([
-            'proof' => 'required|image|max:2048',
-        ]);
-
-        if ($request->hasFile('proof')) {
-            $path = $request->file('proof')->store('proofs');
-
-            $payment->update([
-                'proof_of_payment' => basename($path),
-                'status' => 'pending',
+            $request->validate([
+                'proof' => 'required|image|max:2048',
             ]);
 
-            $this->notifyAdmin($payment);
+            if ($request->hasFile('proof')) {
+                $path = $request->file('proof')->store('proofs');
 
-            return back()->with('success', 'Bukti berhasil diunggah!');
+                $payment->update([
+                    'proof_of_payment' => basename($path),
+                    'status' => 'pending',
+                ]);
+
+                $this->notifyAdmin($payment);
+
+                LogHelper::log(
+                    'UPLOAD_PAYMENT_PROOF',
+                    "Upload bukti bayar untuk {$payment->invoice_number} (".($payment->tenant->name ?? '-').')',
+                    $payment
+                );
+
+                return back()->with('success', 'Bukti berhasil diunggah!');
+            }
+
+            return back()->with('error', 'Tidak ada file bukti yang diunggah.');
+        } catch (Throwable $e) {
+            LogHelper::logError('UPLOAD_PAYMENT_PROOF_FAILED', 'Gagal upload bukti bayar', $e);
+
+            return back()->with('error', 'Gagal mengunggah bukti pembayaran.');
         }
     }
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\LogHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Throwable;
 
 class BackupController extends Controller
 {
@@ -28,21 +29,29 @@ class BackupController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'keep' => 'nullable|integer|min:1|max:365',
-        ]);
+        try {
+            $request->validate([
+                'keep' => 'nullable|integer|min:1|max:365',
+            ]);
 
-        $keep = $request->integer('keep', 30);
+            $keep = $request->integer('keep', 30);
 
-        $exitCode = Artisan::call('database:backup', ['--keep' => $keep]);
+            $exitCode = Artisan::call('database:backup', ['--keep' => $keep]);
 
-        LogHelper::log('BACKUP_DATABASE', 'Membuat backup database manual');
+            if ($exitCode !== 0) {
+                LogHelper::logError('BACKUP_DATABASE_FAILED', 'Backup database gagal (exit code '.$exitCode.')');
 
-        if ($exitCode !== 0) {
-            return back()->with('error', 'Backup gagal dibuat. Lihat log untuk detail.');
+                return back()->with('error', 'Backup gagal dibuat. Lihat log untuk detail.');
+            }
+
+            LogHelper::log('BACKUP_DATABASE', 'Membuat backup database manual');
+
+            return back()->with('success', 'Backup database berhasil dibuat.');
+        } catch (Throwable $e) {
+            LogHelper::logError('BACKUP_DATABASE_FAILED', 'Gagal membuat backup database', $e);
+
+            return back()->with('error', 'Backup gagal dibuat.');
         }
-
-        return back()->with('success', 'Backup database berhasil dibuat.');
     }
 
     public function download(string $name)
@@ -64,11 +73,17 @@ class BackupController extends Controller
             abort(404);
         }
 
-        unlink($path);
+        try {
+            unlink($path);
 
-        LogHelper::log('DELETE_BACKUP', "Menghapus backup database {$name}");
+            LogHelper::log('DELETE_BACKUP', "Menghapus backup database {$name}");
 
-        return back()->with('success', 'Backup berhasil dihapus.');
+            return back()->with('success', 'Backup berhasil dihapus.');
+        } catch (Throwable $e) {
+            LogHelper::logError('DELETE_BACKUP_FAILED', "Gagal hapus backup {$name}", $e);
+
+            return back()->with('error', 'Gagal menghapus backup.');
+        }
     }
 
     private function backupDir(): string

@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\LogHelper;
 use App\Models\Notification;
+use Throwable;
 
 class NotificationController extends Controller
 {
@@ -26,15 +28,27 @@ class NotificationController extends Controller
 
     public function markRead(Notification $notification)
     {
-        $notification->update(['is_read' => true]);
+        try {
+            $notification->update(['is_read' => true]);
 
-        return response()->json(['ok' => true]);
+            return response()->json(['ok' => true]);
+        } catch (Throwable $e) {
+            LogHelper::logError('NOTIFICATION_READ_FAILED', "Gagal menandai notifikasi #{$notification->id} dibaca", $e);
+
+            return response()->json(['ok' => false], 500);
+        }
     }
 
     public function markAllRead()
     {
-        Notification::unread()->update(['is_read' => true]);
+        try {
+            Notification::unread()->update(['is_read' => true]);
 
-        return response()->json(['ok' => true]);
+            return response()->json(['ok' => true]);
+        } catch (Throwable $e) {
+            LogHelper::logError('NOTIFICATION_READ_ALL_FAILED', 'Gagal menandai semua notifikasi dibaca', $e);
+
+            return response()->json(['ok' => false], 500);
+        }
     }
 }

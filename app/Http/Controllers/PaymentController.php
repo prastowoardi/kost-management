@@ -14,6 +14,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 class PaymentController extends Controller
 {
@@ -98,34 +99,40 @@ class PaymentController extends Controller
 
     public function store(StorePaymentRequest $request)
     {
-        $validated = $request->validated();
+        try {
+            $validated = $request->validated();
 
-        $validated['period_month'] = $this->normalizePeriod($validated['period_month']);
+            $validated['period_month'] = $this->normalizePeriod($validated['period_month']);
 
-        $tenant = Tenant::findOrFail($validated['tenant_id']);
+            $tenant = Tenant::findOrFail($validated['tenant_id']);
 
-        if ($request->hasFile('receipt_file')) {
-            $validated['receipt_file'] = $request->file('receipt_file')->store('receipts');
+            if ($request->hasFile('receipt_file')) {
+                $validated['receipt_file'] = $request->file('receipt_file')->store('receipts');
+            }
+
+            // Mendukung cicilan: validasi sisa tagihan & auto-note ada di service
+            $payment = $this->paymentService->createInstallmentPayment($tenant, $validated);
+
+            $payment->load(['room', 'tenant']);
+
+            NotificationHelper::create(
+                'bayar_masuk',
+                'Pembayaran Masuk: '.$payment->invoice_number,
+                $payment->tenant->name.' — Rp '.number_format($payment->total, 0, ',', '.'),
+                route('payments.show', $payment)
+            );
+
+            $this->paymentService->createFinanceRecord($payment);
+            $this->sendWhatsAppReceipt($payment);
+
+            LogHelper::log('CREATE_PAYMENT', "Mencatat pembayaran {$payment->invoice_number} untuk {$payment->tenant->name}", $payment);
+
+            return redirect()->route('payments.index')->with('success', 'Pembayaran dicatat & Kwitansi dikirim!');
+        } catch (Throwable $e) {
+            LogHelper::logError('CREATE_PAYMENT_FAILED', 'Gagal mencatat pembayaran', $e);
+
+            return back()->with('error', 'Gagal mencatat pembayaran')->withInput();
         }
-
-        // Mendukung cicilan: validasi sisa tagihan & auto-note ada di service
-        $payment = $this->paymentService->createInstallmentPayment($tenant, $validated);
-
-        $payment->load(['room', 'tenant']);
-
-        NotificationHelper::create(
-            'bayar_masuk',
-            'Pembayaran Masuk: '.$payment->invoice_number,
-            $payment->tenant->name.' — Rp '.number_format($payment->total, 0, ',', '.'),
-            route('payments.show', $payment)
-        );
-
-        $this->paymentService->createFinanceRecord($payment);
-        $this->sendWhatsAppReceipt($payment);
-
-        LogHelper::log('CREATE_PAYMENT', "Mencatat pembayaran {$payment->invoice_number} untuk {$payment->tenant->name}", $payment);
-
-        return redirect()->route('payments.index')->with('success', 'Pembayaran dicatat & Kwitansi dikirim!');
     }
 
     private function sendWhatsAppReceipt($payment)
@@ -140,27 +147,42 @@ class PaymentController extends Controller
 
     public function sendGatewayWA(Payment $payment)
     {
-        $tenantName = $payment->tenant->name;
-        $period = Carbon::parse($payment->period_month)->translatedFormat('F Y');
-        $invoice = $payment->invoice_number;
-        $total = $payment->total;
+        try {
+            $tenantName = $payment->tenant->name;
+            $period = Carbon::parse($payment->period_month)->translatedFormat('F Y');
+            $invoice = $payment->invoice_number;
+            $total = $payment->total;
 
-        $message = $this->whatsapp->getPaymentConfirmationMessage($tenantName, $period, $invoice, $total);
-        $html = view('payments.receipt', compact('payment'))->render();
+            $message = $this->whatsapp->getPaymentConfirmationMessage($tenantName, $period, $invoice, $total);
+            $html = view('payments.receipt', compact('payment'))->render();
 
-        $success = $this->whatsapp->sendImage($payment->tenant->phone, $html, $message);
+            $success = $this->whatsapp->sendImage($payment->tenant->phone, $html, $message);
 
-        if ($success) {
+            if ($success) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Kwitansi dan pesan berhasil dikirim!',
+                ]);
+            }
+
+            LogHelper::logError('SEND_WA_PAYMENT_FAILED', "Gagal kirim kwitansi {$invoice} via gateway");
+            LogHelper::log(
+                'SEND_WA_PAYMENT',
+                "Kirim kwitansi {$invoice} untuk {$tenantName} — gagal (gateway)"
+            );
+
             return response()->json([
-                'status' => 'success',
-                'message' => 'Kwitansi dan pesan berhasil dikirim!',
-            ]);
-        }
+                'status' => 'error',
+                'message' => 'Gateway gagal mengirim pesan.',
+            ], 500);
+        } catch (Throwable $e) {
+            LogHelper::logError('SEND_WA_PAYMENT_FAILED', 'Gagal kirim kwitansi via gateway', $e);
 
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Gateway gagal mengirim pesan.',
-        ], 500);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal mengirim pesan.',
+            ], 500);
+        }
     }
 
     public function show(Payment $payment)
@@ -179,78 +201,96 @@ class PaymentController extends Controller
 
     public function update(UpdatePaymentRequest $request, Payment $payment)
     {
-        $validated = $request->validated();
+        try {
+            $validated = $request->validated();
 
-        $validated['period_month'] = $this->normalizePeriod($validated['period_month']);
+            $validated['period_month'] = $this->normalizePeriod($validated['period_month']);
 
-        $tenant = Tenant::findOrFail($validated['tenant_id']);
+            $tenant = Tenant::findOrFail($validated['tenant_id']);
 
-        $validated['room_id'] = $tenant->room_id;
-        $validated['total'] = $validated['amount'] + $validated['late_fee'];
+            $validated['room_id'] = $tenant->room_id;
+            $validated['total'] = $validated['amount'] + $validated['late_fee'];
 
-        if ($request->hasFile('receipt_file')) {
-            if ($payment->receipt_file) {
-                Storage::delete($payment->receipt_file);
+            if ($request->hasFile('receipt_file')) {
+                if ($payment->receipt_file) {
+                    Storage::delete($payment->receipt_file);
+                }
+                $validated['receipt_file'] = $request->file('receipt_file')
+                    ->store('receipts');
             }
-            $validated['receipt_file'] = $request->file('receipt_file')
-                ->store('receipts');
+
+            $before = $payment->toArray();
+            $payment->update($validated);
+            $payment->load(['room', 'tenant']);
+            $after = $payment->fresh()->toArray();
+
+            $this->paymentService->syncFinanceRecord($payment);
+
+            LogHelper::log('UPDATE_PAYMENT', "Mengubah pembayaran {$payment->invoice_number}", $payment, [
+                'before' => $before,
+                'after' => $after,
+            ]);
+
+            return redirect()->route('payments.index')
+                ->with('success', 'Pembayaran berhasil diupdate');
+        } catch (Throwable $e) {
+            LogHelper::logError('UPDATE_PAYMENT_FAILED', "Gagal update pembayaran #{$payment->id}", $e);
+
+            return back()->with('error', 'Gagal mengupdate pembayaran')->withInput();
         }
-
-        $before = $payment->toArray();
-        $payment->update($validated);
-        $payment->load(['room', 'tenant']);
-        $after = $payment->fresh()->toArray();
-
-        $this->paymentService->syncFinanceRecord($payment);
-
-        LogHelper::log('UPDATE_PAYMENT', "Mengubah pembayaran {$payment->invoice_number}", $payment, [
-            'before' => $before,
-            'after' => $after,
-        ]);
-
-        return redirect()->route('payments.index')
-            ->with('success', 'Pembayaran berhasil diupdate');
     }
 
     public function destroy(Payment $payment)
     {
-        $deletedData = $payment->toArray();
+        try {
+            $deletedData = $payment->toArray();
 
-        $this->paymentService->deleteFinanceRecord($payment);
+            $this->paymentService->deleteFinanceRecord($payment);
 
-        if ($payment->receipt_file) {
-            Storage::delete($payment->receipt_file);
+            if ($payment->receipt_file) {
+                Storage::delete($payment->receipt_file);
+            }
+
+            $payment->delete();
+
+            LogHelper::log('DELETE_PAYMENT', "Menghapus pembayaran {$deletedData['invoice_number']}", null, [
+                'deleted' => $deletedData,
+            ]);
+
+            return redirect()->route('payments.index')
+                ->with('success', 'Pembayaran berhasil dihapus');
+        } catch (Throwable $e) {
+            LogHelper::logError('DELETE_PAYMENT_FAILED', "Gagal hapus pembayaran #{$payment->id}", $e);
+
+            return back()->with('error', 'Gagal menghapus pembayaran');
         }
-
-        $payment->delete();
-
-        LogHelper::log('DELETE_PAYMENT', "Menghapus pembayaran {$deletedData['invoice_number']}", null, [
-            'deleted' => $deletedData,
-        ]);
-
-        return redirect()->route('payments.index')
-            ->with('success', 'Pembayaran berhasil dihapus');
     }
 
     public function updateStatus(Request $request, Payment $payment)
     {
-        $validated = $request->validate([
-            'status' => 'required|in:pending,paid,overdue',
-        ]);
+        try {
+            $validated = $request->validate([
+                'status' => 'required|in:pending,paid,overdue',
+            ]);
 
-        $before = $payment->toArray();
-        $payment->update($validated);
-        $payment->load(['room', 'tenant']);
-        $after = $payment->fresh()->toArray();
+            $before = $payment->toArray();
+            $payment->update($validated);
+            $payment->load(['room', 'tenant']);
+            $after = $payment->fresh()->toArray();
 
-        $this->paymentService->syncFinanceRecord($payment);
+            $this->paymentService->syncFinanceRecord($payment);
 
-        LogHelper::log('UPDATE_PAYMENT_STATUS', "Mengubah status pembayaran {$payment->invoice_number} dari {$before['status']} ke {$after['status']}", $payment, [
-            'before' => $before,
-            'after' => $after,
-        ]);
+            LogHelper::log('UPDATE_PAYMENT_STATUS', "Mengubah status pembayaran {$payment->invoice_number} dari {$before['status']} ke {$after['status']}", $payment, [
+                'before' => $before,
+                'after' => $after,
+            ]);
 
-        return back()->with('success', 'Status pembayaran berhasil diperbarui');
+            return back()->with('success', 'Status pembayaran berhasil diperbarui');
+        } catch (Throwable $e) {
+            LogHelper::logError('UPDATE_PAYMENT_STATUS_FAILED', "Gagal update status pembayaran #{$payment->id}", $e);
+
+            return back()->with('error', 'Gagal memperbarui status pembayaran');
+        }
     }
 
     public function downloadReceipt(Payment $payment)

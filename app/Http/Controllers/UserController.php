@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
+use Throwable;
 
 class UserController extends Controller
 {
@@ -25,23 +26,29 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->whereNull('deleted_at')],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => ['required', 'in:admin,staff,tenant'],
-            'is_active' => ['boolean'],
-        ]);
+        try {
+            $validated = $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->whereNull('deleted_at')],
+                'password' => ['required', 'confirmed', Rules\Password::defaults()],
+                'role' => ['required', 'in:admin,staff,tenant'],
+                'is_active' => ['boolean'],
+            ]);
 
-        $validated['password'] = Hash::make($validated['password']);
-        $validated['is_active'] = $request->has('is_active');
+            $validated['password'] = Hash::make($validated['password']);
+            $validated['is_active'] = $request->has('is_active');
 
-        $user = User::create($validated);
+            $user = User::create($validated);
 
-        LogHelper::log('CREATE_USER', "Menambah user {$user->name} ({$user->email})", $user);
+            LogHelper::log('CREATE_USER', "Menambah user {$user->name} ({$user->email})", $user);
 
-        return redirect()->route('users.index')
-            ->with('success', 'User berhasil ditambahkan');
+            return redirect()->route('users.index')
+                ->with('success', 'User berhasil ditambahkan');
+        } catch (Throwable $e) {
+            LogHelper::logError('CREATE_USER_FAILED', 'Gagal menambah user', $e);
+
+            return back()->with('error', 'Gagal menambah user')->withInput();
+        }
     }
 
     public function show(User $user)
@@ -56,33 +63,39 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)->whereNull('deleted_at')],
-            'role' => ['required', 'in:admin,staff,tenant'],
-            'is_active' => ['boolean'],
-        ]);
-
-        if ($request->filled('password')) {
-            $request->validate([
-                'password' => ['confirmed', Rules\Password::defaults()],
+        try {
+            $validated = $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)->whereNull('deleted_at')],
+                'role' => ['required', 'in:admin,staff,tenant'],
+                'is_active' => ['boolean'],
             ]);
-            $validated['password'] = Hash::make($request->password);
+
+            if ($request->filled('password')) {
+                $request->validate([
+                    'password' => ['confirmed', Rules\Password::defaults()],
+                ]);
+                $validated['password'] = Hash::make($request->password);
+            }
+
+            $validated['is_active'] = $request->has('is_active');
+
+            $before = $user->toArray();
+            $user->update($validated);
+            $after = $user->fresh()->toArray();
+
+            LogHelper::log('UPDATE_USER', "Mengubah user {$user->name} ({$user->email})", $user, [
+                'before' => $before,
+                'after' => $after,
+            ]);
+
+            return redirect()->route('users.index')
+                ->with('success', 'User berhasil diupdate');
+        } catch (Throwable $e) {
+            LogHelper::logError('UPDATE_USER_FAILED', "Gagal update user #{$user->id}", $e);
+
+            return back()->with('error', 'Gagal mengupdate user')->withInput();
         }
-
-        $validated['is_active'] = $request->has('is_active');
-
-        $before = $user->toArray();
-        $user->update($validated);
-        $after = $user->fresh()->toArray();
-
-        LogHelper::log('UPDATE_USER', "Mengubah user {$user->name} ({$user->email})", $user, [
-            'before' => $before,
-            'after' => $after,
-        ]);
-
-        return redirect()->route('users.index')
-            ->with('success', 'User berhasil diupdate');
     }
 
     public function destroy(User $user)
@@ -93,15 +106,21 @@ class UserController extends Controller
                 ->with('error', 'Tidak dapat menghapus akun sendiri');
         }
 
-        $deletedData = $user->toArray();
-        $user->delete();
+        try {
+            $deletedData = $user->toArray();
+            $user->delete();
 
-        LogHelper::log('DELETE_USER', "Menghapus user {$deletedData['name']} ({$deletedData['email']})", null, [
-            'deleted' => $deletedData,
-        ]);
+            LogHelper::log('DELETE_USER', "Menghapus user {$deletedData['name']} ({$deletedData['email']})", null, [
+                'deleted' => $deletedData,
+            ]);
 
-        return redirect()->route('users.index')
-            ->with('success', 'User berhasil dihapus');
+            return redirect()->route('users.index')
+                ->with('success', 'User berhasil dihapus');
+        } catch (Throwable $e) {
+            LogHelper::logError('DELETE_USER_FAILED', "Gagal hapus user #{$user->id}", $e);
+
+            return back()->with('error', 'Gagal menghapus user');
+        }
     }
 
     public function toggleStatus(User $user)
@@ -112,15 +131,21 @@ class UserController extends Controller
                 ->with('error', 'Tidak dapat menonaktifkan akun sendiri');
         }
 
-        $user->update([
-            'is_active' => ! $user->is_active,
-        ]);
+        try {
+            $user->update([
+                'is_active' => ! $user->is_active,
+            ]);
 
-        $status = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
+            $status = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
 
-        LogHelper::log('TOGGLE_USER_STATUS', "{$status} user {$user->name} ({$user->email})", $user);
+            LogHelper::log('TOGGLE_USER_STATUS', "{$status} user {$user->name} ({$user->email})", $user);
 
-        return redirect()->route('users.index')
-            ->with('success', "User berhasil {$status}");
+            return redirect()->route('users.index')
+                ->with('success', "User berhasil {$status}");
+        } catch (Throwable $e) {
+            LogHelper::logError('TOGGLE_USER_STATUS_FAILED', "Gagal toggle status user #{$user->id}", $e);
+
+            return back()->with('error', 'Gagal mengubah status user');
+        }
     }
 }

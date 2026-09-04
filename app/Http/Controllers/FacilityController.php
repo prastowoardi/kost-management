@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\LogHelper;
 use App\Models\Facility;
 use Illuminate\Http\Request;
+use Throwable;
 
 class FacilityController extends Controller
 {
@@ -25,20 +26,26 @@ class FacilityController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'type' => 'required|in:common,room',
-            'quantity' => 'required|integer|min:1',
-            'condition' => 'required|in:good,fair,poor',
-            'description' => 'nullable|string',
-        ]);
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'type' => 'required|in:common,room',
+                'quantity' => 'required|integer|min:1',
+                'condition' => 'required|in:good,fair,poor',
+                'description' => 'nullable|string',
+            ]);
 
-        $facility = Facility::create($validated);
+            $facility = Facility::create($validated);
 
-        LogHelper::log('CREATE_FACILITY', "Menambah fasilitas {$facility->name}", $facility);
+            LogHelper::log('CREATE_FACILITY', "Menambah fasilitas {$facility->name}", $facility);
 
-        return redirect()->route('facilities.index')
-            ->with('success', 'Fasilitas berhasil ditambahkan');
+            return redirect()->route('facilities.index')
+                ->with('success', 'Fasilitas berhasil ditambahkan');
+        } catch (Throwable $e) {
+            LogHelper::logError('CREATE_FACILITY_FAILED', 'Gagal menambah fasilitas', $e);
+
+            return back()->with('error', 'Gagal menambah fasilitas')->withInput();
+        }
     }
 
     public function edit(Facility $facility)
@@ -48,37 +55,49 @@ class FacilityController extends Controller
 
     public function update(Request $request, Facility $facility)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'type' => 'required|in:common,room',
-            'quantity' => 'required|integer|min:1',
-            'condition' => 'required|in:good,fair,poor',
-            'description' => 'nullable|string',
-        ]);
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'type' => 'required|in:common,room',
+                'quantity' => 'required|integer|min:1',
+                'condition' => 'required|in:good,fair,poor',
+                'description' => 'nullable|string',
+            ]);
 
-        $before = $facility->toArray();
-        $facility->update($validated);
-        $after = $facility->fresh()->toArray();
+            $before = $facility->toArray();
+            $facility->update($validated);
+            $after = $facility->fresh()->toArray();
 
-        LogHelper::log('UPDATE_FACILITY', "Mengubah fasilitas {$facility->name}", $facility, [
-            'before' => $before,
-            'after' => $after,
-        ]);
+            LogHelper::log('UPDATE_FACILITY', "Mengubah fasilitas {$facility->name}", $facility, [
+                'before' => $before,
+                'after' => $after,
+            ]);
 
-        return redirect()->route('facilities.index')
-            ->with('success', 'Fasilitas berhasil diupdate');
+            return redirect()->route('facilities.index')
+                ->with('success', 'Fasilitas berhasil diupdate');
+        } catch (Throwable $e) {
+            LogHelper::logError('UPDATE_FACILITY_FAILED', "Gagal update fasilitas #{$facility->id}", $e);
+
+            return back()->with('error', 'Gagal mengupdate fasilitas')->withInput();
+        }
     }
 
     public function destroy(Facility $facility)
     {
-        $deletedData = $facility->toArray();
-        $facility->delete();
+        try {
+            $deletedData = $facility->toArray();
+            $facility->delete();
 
-        LogHelper::log('DELETE_FACILITY', "Menghapus fasilitas {$deletedData['name']}", null, [
-            'deleted' => $deletedData,
-        ]);
+            LogHelper::log('DELETE_FACILITY', "Menghapus fasilitas {$deletedData['name']}", null, [
+                'deleted' => $deletedData,
+            ]);
 
-        return redirect()->route('facilities.index')
-            ->with('success', 'Fasilitas berhasil dihapus');
+            return redirect()->route('facilities.index')
+                ->with('success', 'Fasilitas berhasil dihapus');
+        } catch (Throwable $e) {
+            LogHelper::logError('DELETE_FACILITY_FAILED', "Gagal hapus fasilitas #{$facility->id}", $e);
+
+            return back()->with('error', 'Gagal menghapus fasilitas');
+        }
     }
 }
