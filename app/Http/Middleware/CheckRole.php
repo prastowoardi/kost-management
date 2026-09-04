@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Helpers\LogHelper;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -12,6 +13,10 @@ class CheckRole
     {
         if (! $request->user()) {
             if ($request->expectsJson()) {
+                LogHelper::logError('UNAUTHENTICATED', 'Akses ditolak: pengguna belum login.', null, [
+                    'path' => $request->path(),
+                ]);
+
                 return response()->json(['message' => 'Unauthenticated.'], 401);
             }
 
@@ -20,6 +25,11 @@ class CheckRole
 
         if (! in_array($request->user()->role, $roles)) {
             if ($request->expectsJson()) {
+                LogHelper::logError('FORBIDDEN_ROLE', "Akses ditolak: role '{$request->user()->role}' tidak diizinkan.", null, [
+                    'path' => $request->path(),
+                    'error_file' => 'CheckRole.php:28',
+                ]);
+
                 return response()->json(['message' => 'Unauthorized. You do not have permission to access this resource.'], 403);
             }
 

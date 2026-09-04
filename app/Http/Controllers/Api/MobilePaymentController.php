@@ -42,6 +42,8 @@ class MobilePaymentController extends Controller
         $tenant = Tenant::where('user_id', $user->id)->first();
 
         if (! $tenant) {
+            LogHelper::logError('GET_PAYMENT_HISTORY_FAILED', 'Gagal ambil histori pembayaran: tenant tidak ditemukan.');
+
             return response()->json([
                 'status' => 'error',
                 'message' => 'Data tenant tidak ditemukan',
@@ -121,6 +123,8 @@ class MobilePaymentController extends Controller
     public function verifyPayment(Request $request, $id)
     {
         if ($request->user()->role !== 'admin') {
+            LogHelper::logError('VERIFY_PAYMENT_FAILED', 'Gagal verifikasi pembayaran: bukan admin.');
+
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
 
@@ -134,6 +138,8 @@ class MobilePaymentController extends Controller
         $logAction = ($newStatus === 'paid') ? 'MENERIMA' : 'MENOLAK';
 
         if ($payment->status === 'paid' || $payment->status === 'overdue') {
+            LogHelper::logError('VERIFY_PAYMENT_FAILED', "Gagal verifikasi pembayaran #{$payment->invoice_number}: sudah diverifikasi sebelumnya.", null, ['payment_id' => $payment->id]);
+
             return response()->json(['message' => 'Sudah diverifikasi sebelumnya.'], 400);
         }
 
@@ -197,10 +203,14 @@ class MobilePaymentController extends Controller
             ->first();
 
         if (! $payment) {
+            LogHelper::logError('GET_PAYMENT_FAILED', 'Gagal ambil detail pembayaran: tidak ditemukan.', null, ['id' => $id, 'error_file' => 'MobilePaymentController.php:206']);
+
             return response()->json(['message' => 'Data pembayaran tidak ditemukan.'], 404);
         }
 
         if ($request->user()->role !== 'admin' && $payment->tenant->user_id !== $request->user()->id) {
+            LogHelper::logError('GET_PAYMENT_FAILED', 'Gagal ambil detail pembayaran: tidak berhak mengakses.', null, ['error_file' => 'MobilePaymentController.php:212']);
+
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
 

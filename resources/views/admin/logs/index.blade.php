@@ -115,7 +115,13 @@
             {{-- Timeline --}}
             <div class="space-y-2 sm:space-y-2">
                 @forelse($logs as $log)
-                    @php $isError = str_contains($log->action, 'FAILED'); @endphp
+                    @php
+                        $_payload = is_array($log->payload) ? $log->payload : [];
+                        $isError = str_contains($log->action, 'FAILED')
+                            || !empty($_payload['error_message'])
+                            || !empty($_payload['error_trace'])
+                            || in_array($log->action, ['FORBIDDEN_ROLE', 'ROUTE_NOT_FOUND', 'LOGIN_FAILED'], true);
+                    @endphp
                     <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm border {{ $isError ? 'border-red-200' : 'border-stone-100' }} overflow-hidden transition hover:shadow-md">
                         {{-- Baris utama --}}
                         <div class="flex items-start sm:items-center gap-2 sm:gap-4 px-3 sm:px-5 py-3 sm:py-4 cursor-pointer select-none" @click="selectedLog = selectedLog === {{ $log->id }} ? null : {{ $log->id }}">

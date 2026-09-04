@@ -71,7 +71,7 @@ class MobileAuthController extends Controller
         $user->tokens()->delete();
         $token = $user->createToken('mobile_token')->plainTextToken;
 
-        LogHelper::log('LOGIN_MOBILE', 'Login via mobile');
+        LogHelper::log('LOGIN_MOBILE', 'Login via mobile', $user, null, $user);
 
         return response()->json([
             'status' => 'success',
