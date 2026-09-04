@@ -33,6 +33,11 @@ Route::get('/', function () {
     return view('welcome', compact('sisaKamar'));
 });
 
+// Obsolete: some browsers auto-request /favicon.ico; serve the brand mark as PNG.
+Route::get('/favicon.ico', function () {
+    return response()->file(app()->publicPath('serrata.png'));
+});
+
 // Halaman Pembayaran Publik (Tanpa Login)
 Route::controller(PaymentPageController::class)->middleware('throttle:10,1')->group(function () {
     Route::get('/pay/{hash}', 'show')->name('public.pay');
