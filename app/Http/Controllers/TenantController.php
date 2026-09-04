@@ -10,6 +10,7 @@ use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Throwable;
 
 class TenantController extends Controller
 {
@@ -64,7 +65,17 @@ class TenantController extends Controller
         try {
             $tenant = $this->registration->registerWithUser($validated);
         } catch (\InvalidArgumentException $e) {
+            LogHelper::logError(
+                'CREATE_TENANT_FAILED',
+                'Gagal mendaftarkan tenant: '.$e->getMessage(),
+                $e
+            );
+
             return back()->withInput()->withErrors(['room_id' => $e->getMessage()]);
+        } catch (Throwable $e) {
+            LogHelper::logError('CREATE_TENANT_FAILED', 'Gagal mendaftarkan tenant', $e);
+
+            return back()->withInput()->withErrors(['room_id' => 'Gagal mendaftarkan tenant. Periksa kembali input.']);
         }
 
         LogHelper::log('CREATE_TENANT', "Menambah penghuni {$tenant->name}", $tenant);
@@ -105,93 +116,111 @@ class TenantController extends Controller
 
     public function update(Request $request, Tenant $tenant)
     {
-        $validated = $request->validate([
-            'room_id' => 'required|exists:rooms,id',
-            'name' => 'required|string|max:255',
-            'email' => ['required', 'email', Rule::unique('tenants')->ignore($tenant->id)->whereNull('deleted_at')],
-            'phone' => 'required|string|max:20',
-            'id_card' => ['required', 'string', Rule::unique('tenants')->ignore($tenant->id)->whereNull('deleted_at')],
-            'address' => 'required|string',
-            'entry_date' => 'required|date',
-            'exit_date' => 'nullable|date',
-            'status' => 'required|in:active,inactive',
-            'emergency_contact_name' => 'nullable|string|max:255',
-            'emergency_contact_phone' => 'nullable|string|max:20',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-        ]);
+        try {
+            $validated = $request->validate([
+                'room_id' => 'required|exists:rooms,id',
+                'name' => 'required|string|max:255',
+                'email' => ['required', 'email', Rule::unique('tenants')->ignore($tenant->id)->whereNull('deleted_at')],
+                'phone' => 'required|string|max:20',
+                'id_card' => ['required', 'string', Rule::unique('tenants')->ignore($tenant->id)->whereNull('deleted_at')],
+                'address' => 'required|string',
+                'entry_date' => 'required|date',
+                'exit_date' => 'nullable|date',
+                'status' => 'required|in:active,inactive',
+                'emergency_contact_name' => 'nullable|string|max:255',
+                'emergency_contact_phone' => 'nullable|string|max:20',
+                'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            ]);
 
-        $oldRoomId = $tenant->room_id;
-        $before = $tenant->toArray();
+            $oldRoomId = $tenant->room_id;
+            $before = $tenant->toArray();
 
-        if ($request->hasFile('photo')) {
-            if ($tenant->photo) {
-                Storage::delete($tenant->photo);
+            if ($request->hasFile('photo')) {
+                if ($tenant->photo) {
+                    Storage::delete($tenant->photo);
+                }
+                $validated['photo'] = $request->file('photo')->store('tenants');
             }
-            $validated['photo'] = $request->file('photo')->store('tenants');
-        }
 
-        $tenant->update($validated);
-        $after = $tenant->fresh()->toArray();
+            $tenant->update($validated);
+            $after = $tenant->fresh()->toArray();
 
-        if ($tenant->status == 'inactive') {
-            Room::where('id', $tenant->room_id)->update(['status' => 'available']);
-        } else {
-            if ($oldRoomId != $validated['room_id']) {
-                Room::where('id', $oldRoomId)->update(['status' => 'available']);
+            if ($tenant->status == 'inactive') {
+                Room::where('id', $tenant->room_id)->update(['status' => 'available']);
+            } else {
+                if ($oldRoomId != $validated['room_id']) {
+                    Room::where('id', $oldRoomId)->update(['status' => 'available']);
+                }
+                Room::where('id', $validated['room_id'])->update(['status' => 'occupied']);
             }
-            Room::where('id', $validated['room_id'])->update(['status' => 'occupied']);
+
+            LogHelper::log('UPDATE_TENANT', "Mengubah data penghuni {$tenant->name}", $tenant, [
+                'before' => $before,
+                'after' => $after,
+            ]);
+
+            return redirect()->route('tenants.index')
+                ->with('success', 'Data penghuni berhasil diupdate');
+        } catch (Throwable $e) {
+            LogHelper::logError('UPDATE_TENANT_FAILED', "Gagal update tenant #{$tenant->id}", $e);
+
+            return back()->with('error', 'Gagal mengupdate data penghuni')->withInput();
         }
-
-        LogHelper::log('UPDATE_TENANT', "Mengubah data penghuni {$tenant->name}", $tenant, [
-            'before' => $before,
-            'after' => $after,
-        ]);
-
-        return redirect()->route('tenants.index')
-            ->with('success', 'Data penghuni berhasil diupdate');
     }
 
     public function destroy(Tenant $tenant)
     {
-        $deletedData = $tenant->toArray();
+        try {
+            $deletedData = $tenant->toArray();
 
-        if ($tenant->photo) {
-            Storage::delete($tenant->photo);
+            if ($tenant->photo) {
+                Storage::delete($tenant->photo);
+            }
+
+            Room::find($tenant->room_id)->update(['status' => 'available']);
+
+            $tenant->delete();
+
+            LogHelper::log('DELETE_TENANT', "Menghapus penghuni {$deletedData['name']}", null, [
+                'deleted' => $deletedData,
+            ]);
+
+            return redirect()->route('tenants.index')
+                ->with('success', 'Penghuni berhasil dihapus');
+        } catch (Throwable $e) {
+            LogHelper::logError('DELETE_TENANT_FAILED', "Gagal hapus tenant #{$tenant->id}", $e);
+
+            return back()->with('error', 'Gagal menghapus penghuni');
         }
-
-        Room::find($tenant->room_id)->update(['status' => 'available']);
-
-        $tenant->delete();
-
-        LogHelper::log('DELETE_TENANT', "Menghapus penghuni {$deletedData['name']}", null, [
-            'deleted' => $deletedData,
-        ]);
-
-        return redirect()->route('tenants.index')
-            ->with('success', 'Penghuni berhasil dihapus');
     }
 
     public function updateStatus(Request $request, Tenant $tenant)
     {
-        $validated = $request->validate([
-            'status' => 'required|in:active,inactive',
-            'exit_date' => 'required_if:status,inactive|nullable|date',
-        ]);
+        try {
+            $validated = $request->validate([
+                'status' => 'required|in:active,inactive',
+                'exit_date' => 'required_if:status,inactive|nullable|date',
+            ]);
 
-        $before = $tenant->toArray();
-        $tenant->update($validated);
-        $after = $tenant->fresh()->toArray();
+            $before = $tenant->toArray();
+            $tenant->update($validated);
+            $after = $tenant->fresh()->toArray();
 
-        LogHelper::log('UPDATE_TENANT_STATUS', "Mengubah status penghuni {$tenant->name} dari {$before['status']} ke {$after['status']}", $tenant, [
-            'before' => $before,
-            'after' => $after,
-        ]);
+            LogHelper::log('UPDATE_TENANT_STATUS', "Mengubah status penghuni {$tenant->name} dari {$before['status']} ke {$after['status']}", $tenant, [
+                'before' => $before,
+                'after' => $after,
+            ]);
 
-        if ($validated['status'] == 'inactive') {
-            Room::find($tenant->room_id)->update(['status' => 'available']);
+            if ($validated['status'] == 'inactive') {
+                Room::find($tenant->room_id)->update(['status' => 'available']);
+            }
+
+            return redirect()->back()
+                ->with('success', 'Status penghuni berhasil diupdate');
+        } catch (Throwable $e) {
+            LogHelper::logError('UPDATE_TENANT_STATUS_FAILED', "Gagal update status tenant #{$tenant->id}", $e);
+
+            return back()->with('error', 'Gagal memperbarui status penghuni');
         }
-
-        return redirect()->back()
-            ->with('success', 'Status penghuni berhasil diupdate');
     }
 }

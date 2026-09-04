@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\LogHelper;
 use App\Models\Room;
 use App\Services\TenantRegistrationService;
 use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Throwable;
 
 class PublicRegistrationController extends Controller
 {
@@ -39,29 +41,47 @@ class PublicRegistrationController extends Controller
             'emergency_contact_phone' => 'nullable|string|max:20',
         ]);
 
-        if ($request->hasFile('photo')) {
-            $validated['photo'] = $request->file('photo')->store('tenants');
-        }
-
-        $receiptPath = null;
-        if ($request->hasFile('receipt_file')) {
-            $receiptPath = $request->file('receipt_file')->store('receipts');
-        }
-
-        $validated['status'] = 'active';
-
         try {
-            $tenant = $this->registration->registerWithPayment($validated, [
-                'payment_method' => $request->payment_method,
-                'receipt_file' => $receiptPath,
-            ]);
-        } catch (\InvalidArgumentException $e) {
-            return back()->withInput()->withErrors(['room_id' => $e->getMessage()]);
+            if ($request->hasFile('photo')) {
+                $validated['photo'] = $request->file('photo')->store('tenants');
+            }
+
+            $receiptPath = null;
+            if ($request->hasFile('receipt_file')) {
+                $receiptPath = $request->file('receipt_file')->store('receipts');
+            }
+
+            $validated['status'] = 'active';
+
+            try {
+                $tenant = $this->registration->registerWithPayment($validated, [
+                    'payment_method' => $request->payment_method,
+                    'receipt_file' => $receiptPath,
+                ]);
+            } catch (\InvalidArgumentException $e) {
+                LogHelper::logError(
+                    'PUBLIC_REGISTER_FAILED',
+                    'Gagal registrasi publik: '.$e->getMessage(),
+                    $e
+                );
+
+                return back()->withInput()->withErrors(['room_id' => $e->getMessage()]);
+            }
+
+            LogHelper::log(
+                'PUBLIC_REGISTER',
+                "Registrasi publik berhasil: {$tenant->name} (Kamar ".$tenant->room?->room_number.')',
+                $tenant->user
+            );
+
+            $this->sendWelcomeMessage($tenant);
+
+            return redirect()->route('public.register.success');
+        } catch (Throwable $e) {
+            LogHelper::logError('PUBLIC_REGISTER_FAILED', 'Gagal proses registrasi publik', $e);
+
+            return back()->withInput()->withErrors(['room_id' => 'Gagal memproses pendaftaran. Silakan coba lagi.']);
         }
-
-        $this->sendWelcomeMessage($tenant);
-
-        return redirect()->route('public.register.success');
     }
 
     private function sendWelcomeMessage($tenant)

@@ -24,6 +24,6 @@ class ComplaintImage extends Model
 
     public function getFullUrlAttribute()
     {
-        return Storage::url($this->image_path);
+        return Storage::url($this->path);
     }
 }

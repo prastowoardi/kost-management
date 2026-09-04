@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\LogHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Throwable;
 
 class ReceiptController extends Controller
 {
@@ -46,24 +48,32 @@ class ReceiptController extends Controller
 
     public function manualStore(Request $request)
     {
-        $request->validate([
-            'tenant_name' => 'required|string|max:255',
-            'room_number' => 'required|string',
-            'period' => 'required|string',
-            'total_amount' => 'required|numeric',
-            'invoice_number' => ['required', 'string', Rule::unique('manual_receipts', 'invoice_number')->whereNull('deleted_at')],
-        ]);
+        try {
+            $request->validate([
+                'tenant_name' => 'required|string|max:255',
+                'room_number' => 'required|string',
+                'period' => 'required|string',
+                'total_amount' => 'required|numeric',
+                'invoice_number' => ['required', 'string', Rule::unique('manual_receipts', 'invoice_number')->whereNull('deleted_at')],
+            ]);
 
-        $receipt = new \App\Models\ManualReceipt;
-        $receipt->invoice_number = $request->invoice_number;
-        $receipt->tenant_name = $request->tenant_name;
-        $receipt->room_number = $request->room_number;
-        $receipt->period = $request->period;
-        $receipt->total_amount = $request->total_amount;
-        $receipt->save();
+            $receipt = new \App\Models\ManualReceipt;
+            $receipt->invoice_number = $request->invoice_number;
+            $receipt->tenant_name = $request->tenant_name;
+            $receipt->room_number = $request->room_number;
+            $receipt->period = $request->period;
+            $receipt->total_amount = $request->total_amount;
+            $receipt->save();
 
-        return redirect()->route('admin.receipt.print', $receipt->id)
-            ->with('success', 'Kwitansi berhasil dibuat!');
+            LogHelper::log('CREATE_MANUAL_RECEIPT', "Membuat kwitansi manual {$receipt->invoice_number} untuk {$receipt->tenant_name}", $receipt);
+
+            return redirect()->route('admin.receipt.print', $receipt->id)
+                ->with('success', 'Kwitansi berhasil dibuat!');
+        } catch (Throwable $e) {
+            LogHelper::logError('CREATE_MANUAL_RECEIPT_FAILED', 'Gagal membuat kwitansi manual', $e);
+
+            return back()->with('error', 'Gagal membuat kwitansi')->withInput();
+        }
     }
 
     public function manualPrint($id)

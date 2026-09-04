@@ -52,39 +52,65 @@
                 </div>
             </div>
 
-            <x-filter-panel>
-                <div class="lg:col-span-4">
-                    <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center mb-3">
-                        <div class="flex-1 min-w-0">
-                            <select class="select2-action"
-                                    data-logs-url="{{ route('admin.logs') }}"
-                                    data-logs-params="{{ e(json_encode(request()->query())) }}">
-                                <option value="">Semua Aksi</option>
-                                @foreach($actions as $a)
-                                    <option value="{{ $a }}" {{ request('action') == $a ? 'selected' : '' }}>{{ $a }}</option>
-                                @endforeach
-                            </select>
+            <form method="GET" action="{{ route('admin.logs') }}">
+                <div class="mb-3 flex flex-wrap items-center gap-2">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-stone-400">Pengguna</span>
+                    <a href="{{ route('admin.logs', array_merge(request()->except('user_id'), ['user_id' => ''])) }}" class="px-3 py-1.5 text-xs font-bold rounded-lg transition {{ !request('user_id') ? 'bg-stone-800 text-white shadow' : 'bg-stone-100 text-stone-600 hover:bg-stone-200' }}">Semua</a>
+                    @foreach($users as $u)
+                        <a href="{{ route('admin.logs', array_merge(request()->except('user_id'), ['user_id' => $u->id])) }}" class="px-3 py-1.5 text-xs font-bold rounded-lg transition {{ request('user_id') == $u->id ? 'bg-stone-800 text-white shadow' : 'bg-stone-100 text-stone-600 hover:bg-stone-200' }}">{{ $u->name }}</a>
+                    @endforeach
+                </div>
+                <x-filter-panel reset="{{ route('admin.logs') }}">
+                    {{-- Pencarian --}}
+                    <x-filter-input name="search" label="Pencarian" placeholder="Cari deskripsi / aksi" />
+
+                    {{-- Aksi (select2) --}}
+                    <div>
+                        <label for="log-action" class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-stone-400">Aksi</label>
+                        <select id="log-action" name="action" class="log-select2 w-full cursor-pointer rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-800 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500">
+                            <option value="">Semua Aksi</option>
+                            @foreach($actions as $a)
+                                <option value="{{ $a }}" {{ request('action') == $a ? 'selected' : '' }}>{{ $a }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Sumber --}}
+                    <x-filter-select name="source" label="Sumber" :options="['' => 'Semua', 'web' => 'Web', 'api' => 'API']" />
+
+                    {{-- Status --}}
+                    <x-filter-select name="status" label="Status" :options="['' => 'Semua', 'error' => 'Error']" />
+
+                    {{-- Rentang Tanggal --}}
+                    <div class="lg:col-span-4" x-data="dateRangePicker" data-start-date="{{ request('date_from') }}" data-end-date="{{ request('date_to') }}">
+                        <div class="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-stone-400">Rentang Tanggal</div>
+                        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                            <div>
+                                <label for="date-from" class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-stone-400">Dari</label>
+                                <input type="date" id="date-from" name="date_from" value="{{ request('date_from') }}"
+                                    @change="endDate = null" x-model="startDate"
+                                    class="w-full cursor-pointer rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-800 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500">
+                            </div>
+                            <div>
+                                <label for="date-to" class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-stone-400">Sampai</label>
+                                <input type="date" id="date-to" name="date_to" value="{{ request('date_to') }}"
+                                    x-model="endDate" :min="startDate" :disabled="!startDate"
+                                    :class="!startDate && 'opacity-50'"
+                                    class="w-full cursor-pointer rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-800 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500">
+                            </div>
+                            <div class="col-span-2 sm:col-span-1 lg:col-span-2">
+                                <div class="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-stone-400">Cepat</div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    <button @click.prevent="setRange(0, 6)" type="button" class="rounded-lg bg-stone-100 px-3 py-1.5 text-xs font-medium text-stone-600 transition hover:bg-stone-200">7 hari</button>
+                                    <button @click.prevent="setRange(0, 29)" type="button" class="rounded-lg bg-stone-100 px-3 py-1.5 text-xs font-medium text-stone-600 transition hover:bg-stone-200">30 hari</button>
+                                    <button @click.prevent="setRangeMonth()" type="button" class="rounded-lg bg-stone-100 px-3 py-1.5 text-xs font-medium text-stone-600 transition hover:bg-stone-200">Bulan ini</button>
+                                    <button @click.prevent="setRangeMonth(-1)" type="button" class="rounded-lg bg-stone-100 px-3 py-1.5 text-xs font-medium text-stone-600 transition hover:bg-stone-200">Bulan lalu</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="flex flex-wrap items-center gap-2">
-                        <span class="text-[10px] font-bold uppercase tracking-wider text-stone-400 mr-1">Status</span>
-                        <a href="{{ route('admin.logs', array_merge(request()->query(), ['action' => null])) }}" class="px-3 py-1.5 text-xs font-bold rounded-lg transition {{ !request('action') ? 'bg-stone-800 text-white shadow' : 'bg-stone-100 text-stone-600 hover:bg-stone-200' }}">Semua</a>
-                        <a href="{{ route('admin.logs', array_merge(request()->query(), ['action' => 'FAILED'])) }}" class="px-3 py-1.5 text-xs font-bold rounded-lg transition {{ request('action') == 'FAILED' ? 'bg-red-600 text-white shadow' : 'bg-red-50 text-red-600 hover:bg-red-100' }}">Error</a>
-                        <span class="w-px h-5 bg-stone-200 mx-1"></span>
-                        <span class="text-[10px] font-bold uppercase tracking-wider text-stone-400 mr-1">Sumber</span>
-                        <a href="{{ route('admin.logs', array_merge(request()->query(), ['source' => null])) }}" class="px-3 py-1.5 text-xs font-bold rounded-lg transition {{ !request('source') ? 'bg-stone-800 text-white shadow' : 'bg-stone-100 text-stone-600 hover:bg-stone-200' }}">Semua</a>
-                        <a href="{{ route('admin.logs', array_merge(request()->query(), ['source' => 'web'])) }}" class="px-3 py-1.5 text-xs font-bold rounded-lg transition {{ request('source') == 'web' ? 'bg-brand-600 text-white shadow' : 'bg-brand-50 text-brand-600 hover:bg-brand-100' }}">Web</a>
-                        <a href="{{ route('admin.logs', array_merge(request()->query(), ['source' => 'api'])) }}" class="px-3 py-1.5 text-xs font-bold rounded-lg transition {{ request('source') == 'api' ? 'bg-emerald-600 text-white shadow' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' }}">API</a>
-                        @if(request('action') || request('source'))
-                            <span class="w-px h-5 bg-stone-200 mx-1"></span>
-                            <a href="{{ route('admin.logs') }}" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-red-50 text-red-600 border border-red-200 hover:bg-red-600 hover:text-white hover:border-red-600 transition flex items-center gap-1.5 shadow-sm">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                Reset
-                            </a>
-                        @endif
-                    </div>
-                </div>
-            </x-filter-panel>
+                </x-filter-panel>
+            </form>
 
             {{-- Timeline --}}
             <div class="space-y-2 sm:space-y-2">

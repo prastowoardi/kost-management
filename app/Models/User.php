@@ -68,4 +68,10 @@ class User extends Authenticatable
     {
         return $this->hasOne(\App\Models\Tenant::class, 'user_id');
     }
+
+    // Relationship with activity logs
+    public function activityLogs()
+    {
+        return $this->hasMany(\App\Models\ActivityLog::class, 'user_id');
+    }
 }

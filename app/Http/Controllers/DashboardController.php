@@ -111,8 +111,15 @@ class DashboardController extends Controller
             $success = $this->whatsapp->sendMessage($tenant->phone, $message, 20);
 
             if ($success) {
+                LogHelper::log(
+                    'SEND_REMINDER',
+                    "Mengirim reminder tagihan ke {$tenant->name} (Kamar {$tenant->room->room_number})"
+                );
+
                 return response()->json(['status' => 'success', 'message' => 'Pesan penagihan berhasil terkirim!']);
             }
+
+            LogHelper::logError('SEND_REMINDER_FAILED', "Gagal kirim reminder ke {$tenant->name}");
 
             return response()->json(['status' => 'error', 'message' => 'Gagal terhubung ke WhatsApp Gateway.'], 500);
 

@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use Throwable;
 
 class ProfileController extends Controller
 {
@@ -27,22 +28,28 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $before = $request->user()->toArray();
-        $request->user()->fill($request->validated());
+        try {
+            $before = $request->user()->toArray();
+            $request->user()->fill($request->validated());
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+            if ($request->user()->isDirty('email')) {
+                $request->user()->email_verified_at = null;
+            }
+
+            $request->user()->save();
+            $after = $request->user()->fresh()->toArray();
+
+            LogHelper::log('UPDATE_PROFILE', 'Mengubah profil', $request->user(), [
+                'before' => $before,
+                'after' => $after,
+            ]);
+
+            return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        } catch (Throwable $e) {
+            LogHelper::logError('UPDATE_PROFILE_FAILED', 'Gagal mengubah profil', $e);
+
+            return Redirect::route('profile.edit')->with('error', 'Gagal mengubah profil.');
         }
-
-        $request->user()->save();
-        $after = $request->user()->fresh()->toArray();
-
-        LogHelper::log('UPDATE_PROFILE', 'Mengubah profil', $request->user(), [
-            'before' => $before,
-            'after' => $after,
-        ]);
-
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
     /**
@@ -50,24 +57,30 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
-        ]);
+        try {
+            $request->validateWithBag('userDeletion', [
+                'password' => ['required', 'current_password'],
+            ]);
 
-        $user = $request->user();
-        $deletedData = $user->toArray();
+            $user = $request->user();
+            $deletedData = $user->toArray();
 
-        LogHelper::log('DELETE_ACCOUNT', 'Menghapus akun sendiri', null, [
-            'deleted' => $deletedData,
-        ]);
+            LogHelper::log('DELETE_ACCOUNT', 'Menghapus akun sendiri', null, [
+                'deleted' => $deletedData,
+            ]);
 
-        Auth::logout();
+            Auth::logout();
 
-        $user->delete();
+            $user->delete();
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
 
-        return Redirect::to('/');
+            return Redirect::to('/');
+        } catch (Throwable $e) {
+            LogHelper::logError('DELETE_ACCOUNT_FAILED', 'Gagal menghapus akun', $e);
+
+            return Redirect::route('profile.edit')->with('error', 'Gagal menghapus akun.');
+        }
     }
 }
