@@ -349,3 +349,26 @@
 .overflow-x-auto::-webkit-scrollbar-thumb:hover {
     @apply bg-stone-300;
 }
+
+/* Thin scrollbar untuk sidebar (muncul saat konten melebihi tinggi layar,
+   termasuk drawer mobile & daftar menu panjang pada layar kecil) */
+.sidebar-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(214 211 209) transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+    width: 5px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-stone-300;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+    @apply bg-stone-400;
+}

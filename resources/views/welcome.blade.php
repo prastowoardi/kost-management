@@ -14,116 +14,18 @@
         <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700" rel="stylesheet" />
 
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
-            @vite(['resources/css/app.css', 'resources/js/app.js'])
+            @vite(['resources/css/app.css', 'resources/css/welcome.css', 'resources/js/app.js'])
         @endif
-
-        <style>
-            body { 
-                font-family: 'Plus Jakarta Sans', sans-serif; 
-                scroll-behavior: smooth;
-            }
-            .gradient-text {
-                background: linear-gradient(90deg, #db2777, #7c3aed);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-            }
-            .bento-card {
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-            .bento-card:hover {
-                transform: translateY(-5px);
-            }
-            section[id] {
-                scroll-margin-top: 8rem;
-            }
-
-            /* --- Navbar --- */
-            #navbar {
-                animation: navbar-enter 0.6s ease-out both;
-            }
-            #navbar-bg {
-                max-width: 72rem;
-                padding-left: 1.25rem;
-                padding-right: 1.25rem;
-                background-color: transparent;
-                border: 1px solid transparent;
-                transition: background-color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease, max-width 0.5s ease;
-            }
-            #navbar.is-scrolled #navbar-bg {
-                max-width: 56rem;
-                background-color: rgb(255 255 255 / 0.85);
-                border-color: rgb(255 255 255 / 0.25);
-                box-shadow: 0 12px 32px -12px rgb(0 0 0 / 0.18);
-                backdrop-filter: blur(20px) saturate(1.4);
-                -webkit-backdrop-filter: blur(20px) saturate(1.4);
-            }
-            #logo-text,
-            #menu-text {
-                color: #0f172a;
-                transition: color 0.3s ease;
-            }
-            #menu-text {
-                display: none;
-                align-items: center;
-                gap: 2rem;
-            }
-            #menu-text a {
-                position: relative;
-                transition: color 0.3s ease;
-            }
-            #menu-text a:hover {
-                color: #f472b6;
-            }
-            #menu-text a::after {
-                content: "";
-                position: absolute;
-                left: 0;
-                right: 0;
-                bottom: -6px;
-                height: 2px;
-                border-radius: 999px;
-                background: linear-gradient(90deg, #db2777, #7c3aed);
-                transform: scaleX(0);
-                transform-origin: left;
-                transition: transform 0.3s ease;
-            }
-            #menu-text a:hover::after,
-            #menu-text a.active::after {
-                transform: scaleX(1);
-            }
-
-            @media (min-width: 640px) {
-                #navbar-bg {
-                    padding-left: 2rem;
-                    padding-right: 2rem;
-                }
-                #menu-text {
-                    display: flex;
-                }
-            }
-
-            @keyframes navbar-enter {
-                from { opacity: 0; transform: translateY(-16px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-            @media (prefers-color-scheme: dark) {
-                #logo-text,
-                #menu-text {
-                    color: #fff;
-                }
-                #navbar.is-scrolled #navbar-bg {
-                    background-color: rgb(15 23 42 / 0.75);
-                    border-color: rgb(255 255 255 / 0.12);
-                }
-            }
-        </style>
     </head>
     <body class="bg-[#f8fafc] dark:bg-[#0f172a] text-[#1e293b] antialiased">
 
         <nav id="navbar" class="fixed top-0 inset-x-0 z-50 px-4 py-4">
             <div id="navbar-bg" class="mx-auto flex h-16 max-w-6xl items-center justify-between rounded-2xl">
                 <div id="logo-text" class="flex items-center gap-2 text-xl font-extrabold tracking-tight">
-                    <span>🛖 Serrata</span><span class="text-pink-500">.</span>
+                    <svg class="h-7 w-7 text-pink-500 dark:text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75"></path>
+                    </svg>
+                    <span>Serrata</span><span class="text-pink-500">.</span>
                 </div>
                 <div id="menu-text" class="font-bold">
                     <a href="#fasilitas" class="text-sm">Fasilitas</a>
@@ -155,7 +57,10 @@
                 </div>
 
                 <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-300 rounded-full text-xs font-bold mb-6">
-                    <span>✨ Hunian chill</span>
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3l2 7 7 2-7 2-2 7-2-7-7-2 7-2z"></path>
+                    </svg>
+                    <span>Hunian chill</span>
                     <span class="w-1 h-1 bg-pink-300 rounded-full"></span>
                     <span>Sleman, Yogyakarta</span>
                 </div>
@@ -186,7 +91,10 @@
                 
                 <div class="flex flex-col sm:flex-row justify-center gap-4">
                     <a href="https://wa.me/6285111203521" class="flex items-center justify-center gap-2 bg-[#25D366] text-white px-8 py-4 rounded-2xl font-bold shadow-lg hover:bg-[#128C7E] transition">
-                        <span>💬 Chat Admin</span>
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                        </svg>
+                        <span>Chat Admin</span>
                     </a>
                 </div>
             </section>
@@ -206,11 +114,13 @@
                         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-6 md:p-8 flex flex-col justify-end text-white">
                             <div class="absolute inset-0 flex items-center justify-center">
                                 <div class="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 hover:scale-110 transition-transform">
-                                    <span class="text-3xl ml-1 text-white">▶</span>
+                                    <svg class="h-7 w-7 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M8 5v14l11-7z"></path>
+                                    </svg>
                                 </div>
                             </div>
                             <h3 class="text-xl md:text-2xl font-bold">Room Tour</h3>
-                            <p class="text-white/80 text-sm">Klik untuk putar video ✨</p>
+                            <p class="text-white/80 text-sm">Klik untuk putar video</p>
                         </div>
                     </div>
 
@@ -225,25 +135,41 @@
                 </div>
 
                 <div class="bg-rose-50 dark:bg-rose-900/20 p-8 rounded-[2.5rem] border border-rose-100 dark:border-rose-800 bento-card">
-                    <div class="text-4xl mb-4">👸</div>
+                    <div class="mb-5">
+                        <svg class="h-10 w-10 text-rose-500 dark:text-rose-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 18l2-9.5L11 11.5 12 5l1 6.5 4.5-3L19.5 18z"></path>
+                        </svg>
+                    </div>
                     <h4 class="font-bold text-lg text-rose-700 dark:text-rose-300">Khusus Putri</h4>
                     <p class="text-rose-600/70 dark:text-rose-400/80 text-sm">Lingkungan nyaman khusus mahasiswi/karyawati.</p>
                 </div>
 
                 <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 bento-card">
-                    <div class="text-3xl mb-4">📶</div>
+                    <div class="mb-5">
+                        <svg class="h-10 w-10 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.14 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"></path>
+                        </svg>
+                    </div>
                     <h4 class="font-bold text-lg dark:text-white">WiFi Kencang</h4>
                     <p class="text-slate-400 text-sm">Nugas atau drakoran lancar jaya.</p>
                 </div>
 
                 <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 bento-card">
-                    <div class="text-3xl mb-4">🛁</div>
+                    <div class="mb-5">
+                        <svg class="h-10 w-10 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4s-7 8.2-7 11a7 7 0 0014 0c0-2.8-7-11-7-11z"></path>
+                        </svg>
+                    </div>
                     <h4 class="font-bold text-lg dark:text-white">KM Dalam</h4>
                     <p class="text-slate-400 text-sm">Gak perlu antre, lebih privat.</p>
                 </div>
 
                 <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 bento-card">
-                    <div class="text-3xl mb-4">🍲</div>
+                    <div class="mb-5">
+                        <svg class="h-10 w-10 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2M7 2v20M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"></path>
+                        </svg>
+                    </div>
                     <h4 class="font-bold text-lg dark:text-white">Dapur Umum</h4>
                     <p class="text-slate-400 text-sm">Masak simple jadi lebih mudah.</p>
                 </div>
@@ -260,11 +186,21 @@
                             </p>
                             <div class="space-y-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 text-green-600 rounded-full flex items-center justify-center">🌴</div>
+                                    <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M11 20A7 7 0 019.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path>
+                                        </svg>
+                                    </div>
                                     <p class="text-sm font-medium dark:text-slate-300">Suasana Sejuk</p>
                                 </div>
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 text-orange-600 rounded-full flex items-center justify-center">🍕</div>
+                                    <div class="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full flex items-center justify-center">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8h1a4 4 0 110 8h-1M3 8h14v9a4 4 0 01-4 4H7a4 4 0 01-4-4V8z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 2v2M10 2v2M14 2v2"></path>
+                                        </svg>
+                                    </div>
                                     <p class="text-sm font-medium dark:text-slate-300">Akses ke tempat nongkrong mudah</p>
                                 </div>
                             </div>
