@@ -14,13 +14,17 @@ return new class extends Migration
             });
         }
 
-        Schema::table('payments', function (Blueprint $table) {
-            $table->dropUnique(['tenant_id', 'period_active']);
-        });
+        if (Schema::hasColumn('payments', 'period_active') && Schema::hasIndex('payments', ['tenant_id', 'period_active'])) {
+            Schema::table('payments', function (Blueprint $table) {
+                $table->dropUnique(['tenant_id', 'period_active']);
+            });
+        }
 
-        Schema::table('payments', function (Blueprint $table) {
-            $table->dropColumn('period_active');
-        });
+        if (Schema::hasColumn('payments', 'period_active')) {
+            Schema::table('payments', function (Blueprint $table) {
+                $table->dropColumn('period_active');
+            });
+        }
     }
 
     public function down(): void
