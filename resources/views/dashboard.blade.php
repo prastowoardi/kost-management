@@ -102,6 +102,9 @@
                 @endif
             </div>
 
+            {{-- SECTION ANALITIK (grafik tren, ageing tunggakan, okupansi) --}}
+            @include('dashboard.analytics')
+
             {{-- RINGKASAN STATISTIK --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
                 <div class="card flex items-center gap-4 p-5 animate-fade-in">

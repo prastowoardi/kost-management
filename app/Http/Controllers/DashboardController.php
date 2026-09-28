@@ -8,6 +8,7 @@ use App\Models\Finance;
 use App\Models\Payment;
 use App\Models\Room;
 use App\Models\Tenant;
+use App\Services\DashboardAnalyticsService;
 use App\Services\WhatsAppService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -19,9 +20,10 @@ class DashboardController extends Controller
 
     public function __construct(
         private WhatsAppService $whatsapp,
+        private DashboardAnalyticsService $analytics,
     ) {}
 
-    public function index()
+    public function index(Request $request)
     {
         $totalRooms = Room::count();
         $occupiedRooms = Room::where('status', 'occupied')->count();
@@ -81,6 +83,11 @@ class DashboardController extends Controller
 
         $recentComplaints = Complaint::with(['tenant', 'room'])->latest()->take(5)->get();
 
+        // Grafik dashboard (tren pendapatan, ageing tunggakan, okupansi).
+        // Resolusi 3/6/12 bulan diambil dari query string dan di-cache terpisah.
+        $analyticsMonths = $this->analytics->normalizeMonths((int) $request->query('months', 6));
+        $analytics = $this->analytics->snapshot($analyticsMonths);
+
         return view('dashboard', compact(
             'totalRooms',
             'occupiedRooms',
@@ -91,7 +98,8 @@ class DashboardController extends Controller
             'openComplaints',
             'duePayments',
             'recentPayments',
-            'recentComplaints'
+            'recentComplaints',
+            'analytics'
         ));
     }
 

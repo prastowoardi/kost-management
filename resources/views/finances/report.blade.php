@@ -131,37 +131,26 @@
         <div class="mb-6 card overflow-hidden">
             <div class="border-b border-stone-100 px-5 py-4">
                 <h3 class="section-title">Tren 12 Bulan Terakhir</h3>
+                <p class="mt-0.5 text-xs text-stone-400">Arahkan kursor ke grafik untuk melihat angka persisnya</p>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead>
-                        <tr>
-                            <th>Bulan</th>
-                            <th class="text-right">Pemasukan</th>
-                            <th class="text-right">Pengeluaran</th>
-                            <th class="text-right">Saldo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($monthlyTrend as $trend)
-                        <tr>
-                            <td class="font-medium text-stone-900">{{ $trend['month'] }}</td>
-                            <td class="text-right font-semibold text-emerald-600 tabular">
-                                Rp {{ number_format($trend['income'], 0, ',', '.') }}
-                            </td>
-                            <td class="text-right font-semibold text-red-600 tabular">
-                                Rp {{ number_format($trend['expense'], 0, ',', '.') }}
-                            </td>
-                            @php
-                                $trendBalance = $trend['balance']; // Sudah dihitung di controller
-                            @endphp
-                            <td class="text-right font-bold tabular {{ $trendBalance >= 0 ? 'text-brand-600' : 'text-orange-600' }}">
-                                Rp {{ number_format($trendBalance, 0, ',', '.') }}
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+            <div class="p-5">
+                <x-charts.trend
+                    :series="[
+                        [
+                            'key' => 'income',
+                            'label' => 'Pemasukan',
+                            'color' => '#0d9488',
+                            'values' => array_column($monthlyTrend, 'income'),
+                        ],
+                        [
+                            'key' => 'expense',
+                            'label' => 'Pengeluaran',
+                            'color' => '#ef4444',
+                            'values' => array_column($monthlyTrend, 'expense'),
+                        ],
+                    ]"
+                    :labels="array_column($monthlyTrend, 'month')"
+                    :height="280" />
             </div>
         </div>
 
@@ -242,4 +231,8 @@
         </div>
 
     </div>
+
+    @push('scripts')
+        @vite('resources/js/charts.js')
+    @endpush
 </x-app-layout>

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Tenant extends Model
 {
-    use \App\Models\Concerns\HasUuidColumn, HasFactory, SoftDeletes;
+    use \App\Models\Concerns\HasUuidColumn, \App\Models\Concerns\InvalidatesDashboardAnalytics, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'room_id',
