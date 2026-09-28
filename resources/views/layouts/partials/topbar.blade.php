@@ -128,12 +128,12 @@
 
             <x-slot name="content">
                 <x-dropdown-link :href="route('profile.edit')">
-                    <span class="flex items-center gap-2"><span>👤</span> {{ __('Profile') }}</span>
+                    <span class="flex items-center gap-2"> {{ __('Profile') }}</span>
                 </x-dropdown-link>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <x-dropdown-link :href="route('logout')" data-submit-closest-form>
-                        <span class="flex items-center gap-2 text-red-600"><span>↪</span> {{ __('Log Out') }}</span>
+                        <span class="flex items-center gap-2 text-red-600"> {{ __('Log Out') }}</span>
                     </x-dropdown-link>
                 </form>
             </x-slot>

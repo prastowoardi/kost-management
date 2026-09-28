@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\LogHelper;
 use App\Models\Category;
 use App\Models\Finance;
+use App\Services\DashboardAnalyticsService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -70,7 +71,7 @@ class FinanceController extends Controller
         ));
     }
 
-    public function report(Request $request)
+    public function report(Request $request, DashboardAnalyticsService $analytics)
     {
         $month = (int) $request->input('month', now()->month);
 
@@ -119,23 +120,9 @@ class FinanceController extends Controller
             ->groupBy('category')
             ->get();
 
-        // Monthly Trend (6 bulan)
-        $monthlyTrend = [];
-        for ($i = 5; $i >= 0; $i--) {
-            $date = now()->subMonths($i);
-            $m = $date->month;
-            $y = $date->year;
-
-            $income = Finance::income()->byMonthYear($m, $y)->sum('amount');
-            $expense = Finance::expense()->byMonthYear($m, $y)->sum('amount');
-
-            $monthlyTrend[] = [
-                'month' => $date->format('F Y'),
-                'income' => $income,
-                'expense' => $expense,
-                'balance' => $income - $expense,
-            ];
-        }
+        // Tren bulanan global (tidak ikut filter bulan/tahun di atas).
+        // Dipakai chart HTML dan tabel pada PDF, jadi keduanya konsisten.
+        $monthlyTrend = $analytics->revenueTrend(12);
 
         $data = compact(
             'finances',
