@@ -12,10 +12,12 @@ use App\Http\Controllers\Api\MobileAuthController;
 use App\Http\Controllers\Api\MobileComplaintController;
 use App\Http\Controllers\Api\MobilePaymentController;
 use App\Http\Controllers\Api\MobileTenantController;
+use App\Http\Controllers\Api\WaWebhookController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [MobileAuthController::class, 'login'])->middleware('throttle:5,1');
+Route::post('/wa/webhook', WaWebhookController::class);
 Route::get('health', function () {
     return response()->json(['status' => 'OK']);
 });

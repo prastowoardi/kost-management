@@ -4,7 +4,7 @@ process.stdout.write = function (chunk, encoding, callback) {
     return originalWrite.apply(process.stdout, arguments);
 };
 
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } = require("@whiskeysockets/baileys");
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, downloadMediaMessage } = require("@whiskeysockets/baileys");
 const { Boom } = require("@hapi/boom");
 const puppeteer = require('puppeteer');
 const qrcode = require("qrcode-terminal");
@@ -63,8 +63,41 @@ function requireApiKey(req, res, next) {
     next();
 }
 
+// ===== KONFIGURASI WEBHOOK PESAN MASUK =====
+// Gateway meneruskan pesan yang masuk ke Laravel supaya bisa di-parse
+// menjadi data (komplain, bukti bayar, transaksi keuangan, dll).
+// Fitur ini opsional: tanpa diset, bot inbound tidak aktif tetapi
+// pengiriman keluar (kwitansi/notifikasi) tetap berfungsi.
+const LARAVEL_WEBHOOK_URL = process.env.LARAVEL_WEBHOOK_URL;
+const WA_WEBHOOK_KEY = process.env.WA_WEBHOOK_KEY;
+
+if (!LARAVEL_WEBHOOK_URL || !WA_WEBHOOK_KEY) {
+    console.log('ℹ️  Webhook pesan masuk NONAKTIF (atur LARAVEL_WEBHOOK_URL & WA_WEBHOOK_KEY di .env untuk mengaktifkan bot).');
+}
+
+async function relayToLaravel(payload) {
+    if (!LARAVEL_WEBHOOK_URL || !WA_WEBHOOK_KEY) return;
+
+    try {
+        const res = await fetch(LARAVEL_WEBHOOK_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Webhook-Key': WA_WEBHOOK_KEY,
+            },
+            body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+            console.error(`⚠️  Webhook ke Laravel gagal (HTTP ${res.status}): ${await res.text()}`);
+        }
+    } catch (err) {
+        console.error('⚠️  Webhook error:', err.message);
+    }
+}
+
 const app = express();
-app.use(express.json({ limit: '2mb' }));
+app.use(express.json({ limit: '10mb' }));
 
 let sock;
 
@@ -141,6 +174,91 @@ async function connectToWhatsApp() {
 
     sock.ev.on('creds.update', saveCreds);
 
+    // ===== MAPPING LID → PHONE =====
+    // WhatsApp v7 mengirim pesan dengan JID @lid, bukan @s.whatsapp.net.
+    // Kita bangun mapping dari contacts.upsert + signalRepository sebagai fallback.
+    const lidToPhone = new Map();
+
+    sock.ev.on('contacts.upsert', (contacts) => {
+        for (const c of contacts) {
+            if (c.lid && c.phoneNumber) {
+                const lidNum = c.lid.split('@')[0];
+                const phoneNum = c.phoneNumber.split('@')[0].split(':')[0];
+                lidToPhone.set(lidNum, phoneNum);
+                console.log(`📇 Contact sync: LID ${lidNum} -> phone ${phoneNum}`);
+            }
+        }
+    });
+
+    async function resolveLidToPhone(lidJid) {
+        const lidNum = lidJid.split('@')[0];
+
+        // 1. cek dari contacts.upsert cache
+        if (lidToPhone.has(lidNum)) return lidToPhone.get(lidNum);
+
+        // 2. coba via signalRepository (Baileys internal mapping)
+        try {
+            const pnJid = await sock.signalRepository.lidMapping.getPNForLID(lidJid);
+            if (pnJid) {
+                const phone = pnJid.split('@')[0].split(':')[0];
+                lidToPhone.set(lidNum, phone);
+                console.log(`🔗 Resolved LID ${lidNum} -> phone ${phone} (via signalRepository)`);
+                return phone;
+            }
+        } catch (_) { /* ignore */ }
+
+        return null;
+    }
+
+    // ===== BOT PESAN MASUK =====
+    sock.ev.on('messages.upsert', (update) => {
+        (async () => {
+            const { messages, type } = update;
+            if (type !== 'notify') return;
+
+            for (const msg of messages) {
+                if (!msg.message || msg.key.fromMe) continue;
+
+                const jid = msg.key.remoteJid;
+                const server = jid.split('@')[1];
+                if (server !== 's.whatsapp.net' && server !== 'lid') continue;
+
+                let phone;
+                if (server === 'lid') {
+                    phone = await resolveLidToPhone(jid);
+                    if (!phone) {
+                        console.log(`⚠️  LID ${jid} belum ter-resolve. Pesan di-skip.`);
+                        continue;
+                    }
+                } else {
+                    phone = jid.split('@')[0];
+                }
+
+                const name = msg.pushName || '';
+                let text = extractIncomingText(msg);
+                let media = null;
+
+                if (msg.message.imageMessage) {
+                    console.log(`📩 GAMBAR masuk dari ${phone}, sedang diunduh...`);
+                    media = await downloadIncomingImage(msg);
+                }
+
+                console.log(`📩 PESAN MASUK dari ${name} (${phone}): ${text}${media ? ' [gambar]' : ''}`);
+                await relayToLaravel({ phone, name, text, media });
+            }
+        })().catch(err => console.error('❌ messages.upsert error:', err));
+    });
+
+    // Populate mapping dari contacts yang sudah ada di state
+    try {
+        const creds = sock.authState?.creds;
+        if (creds?.me?.lid && creds?.me?.id) {
+            const lidNum = creds.me.lid.split('@')[0];
+            const phoneNum = creds.me.id.split('@')[0];
+            lidToPhone.set(lidNum, phoneNum);
+        }
+    } catch (_) {}
+
     sock.ev.on('connection.update', (update) => {
         const { connection, lastDisconnect, qr } = update;
 
@@ -176,8 +294,46 @@ async function connectToWhatsApp() {
             }
         } else if (connection === 'open') {
             console.log('\n✅ WHATSAPP GATEWAY BERHASIL TERHUBUNG!');
+            const userJid = sock?.user?.id || 'unknown';
+            console.log(`📱 Nomor WhatsApp aktif: ${userJid.split('@')[0]}${sock?.user?.name ? ' (' + sock.user.name + ')' : ''}`);
         }
     });
+}
+
+function extractIncomingText(msg) {
+    const c = msg.message;
+    if (c.conversation) return c.conversation;
+    if (c.extendedTextMessage?.text) return c.extendedTextMessage.text;
+    if (c.imageMessage?.caption) return c.imageMessage.caption;
+    if (c.videoMessage?.caption) return c.videoMessage.caption;
+    if (c.documentMessage?.caption) return c.documentMessage.caption;
+    if (c.buttonsResponseMessage?.selectedDisplayText) return c.buttonsResponseMessage.selectedDisplayText;
+    if (c.listResponseMessage?.singleSelectReply?.selectedRowId) return c.listResponseMessage.singleSelectReply.selectedRowId;
+
+    return '';
+}
+
+async function downloadIncomingImage(msg) {
+    try {
+        let buffer;
+        // Baileys v7: downloadMediaMessage(msg, options); fallback ke signature lama.
+        try {
+            buffer = await downloadMediaMessage(msg, {}, {
+                logger: pino({ level: 'silent' }),
+                reuploadRequest: sock ? sock.updateMediaMessage : undefined,
+            });
+        } catch (_) {
+            buffer = await downloadMediaMessage(msg, 'buffer', {}, {
+                logger: pino({ level: 'silent' }),
+            });
+        }
+
+        const mime = msg.message.imageMessage?.mimetype || 'image/jpeg';
+        return { mimetype: mime, data: buffer.toString('base64') };
+    } catch (err) {
+        console.error('⚠️  Gagal mengunduh gambar pesan masuk:', err.message);
+        return null;
+    }
 }
 
 function isWhatsAppConnected() {
@@ -305,6 +461,14 @@ app.post('/send-image', requireApiKey, async (req, res) => {
     } finally {
         if (page) await page.close().catch(() => {});
     }
+});
+
+app.get('/status', requireApiKey, (req, res) => {
+    res.json({
+        status: isWhatsAppConnected() ? 'connected' : 'disconnected',
+        number: sock?.user?.id?.split('@')[0] ?? null,
+        name: sock?.user?.name ?? null,
+    });
 });
 
 app.listen(3000, () => {

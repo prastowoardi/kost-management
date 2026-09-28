@@ -38,7 +38,11 @@ return [
     'whatsapp' => [
         'gateway_url' => env('WHATSAPP_GATEWAY_URL', 'http://localhost:3000'),
         'gateway_api_key' => env('WHATSAPP_GATEWAY_API_KEY'),
-        'admin_phone' => env('WHATSAPP_ADMIN_PHONE', ''),
+        'webhook_key' => env('WHATSAPP_WEBHOOK_KEY', ''),
+        'admin_phones' => array_values(array_filter(array_map(
+            fn ($item) => trim($item),
+            explode(',', env('WHATSAPP_ADMIN_PHONES', env('WHATSAPP_ADMIN_PHONE', ''))),
+        ))),
     ],
 
 ];
