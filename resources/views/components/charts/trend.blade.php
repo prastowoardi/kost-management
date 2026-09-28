@@ -13,8 +13,13 @@
     $count = count($labels);
     $hasData = $count > 0 && collect($series)->contains(fn($s) => collect($s['values'] ?? [])->sum() > 0);
 
-    // Area plot (dalam koordinat viewBox, satuan relatif terhadap lebar total).
-    $viewW = 640;
+    // Lebar viewBox mengikuti lebar konten kartu di layar lebar (~1080px di
+    // dalam grid sidebar). Dipakai sebagai rasio awal untuk mode `h-auto`,
+    // supaya sebelum JS sempat jalan SVG tetap mengisi lebar card penuh —
+    // kalau viewBox jauh lebih kecil, `preserveAspectRatio` akan mengecilkan
+    // gambar dan menyisakan ruang kosong di kiri/kanan.
+    // charts.js kemudian menimpa viewBox dengan lebar pixel asli (data-chart-fit).
+    $viewW = 1080;
     $padL = 56;
     $padR = 14;
     $padT = 14;
@@ -42,7 +47,12 @@
             {{ $emptyText }}
         </div>
     @else
-        <svg viewBox="0 0 {{ $viewW }} {{ $height }}" class="h-auto w-full" role="img"
+        {{-- Tanpa JS: `h-auto` menjaga rasio viewBox, jadi grafik tetap
+             mengisi lebar card penuh. Setelah JS jalan, tinggi dikunci ke
+             `height` dan viewBox disamakan dengan lebar pixel asli, sehingga
+             1 unit = 1 px: teks, stroke, dan titik tidak ikut teregang. --}}
+        <svg viewBox="0 0 {{ $viewW }} {{ $height }}" data-chart-fit="{{ $height }}"
+            class="h-auto w-full" role="img"
             aria-label="Grafik tren {{ $count }} periode terakhir">
             <defs>
                 @foreach ($series as $i => $s)

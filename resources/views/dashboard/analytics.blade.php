@@ -90,7 +90,7 @@
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {{-- TREN PENDAPATAN --}}
-        <div class="card overflow-hidden lg:col-span-2">
+        <div class="card overflow-hidden lg:col-span-3">
             <div class="card-header bg-stone-50/60">
                 <div>
                     <h4 class="section-title">Tren Pendapatan</h4>
@@ -146,59 +146,6 @@
                         {{ Chart::rupiah($occupancy['occupied_revenue']) }}</p>
                     <p class="mt-1 text-[11px] text-stone-400">Dari {{ $occupancy['occupied_rooms'] }} kamar terisi</p>
                 </div>
-            </div>
-        </div>
-
-        {{-- TUNGGAKAN / AGEING --}}
-        <div class="card overflow-hidden">
-            <div class="card-header bg-stone-50/60">
-                <div>
-                    <h4 class="section-title">Umur Tunggakan</h4>
-                    <p class="mt-0.5 text-xs text-stone-400">Sisa tagihan per kelompok umur</p>
-                </div>
-                @if ($arrears['overdue_count'] > 0)
-                    <span class="badge-danger">{{ $arrears['overdue_count'] }} Telat</span>
-                @else
-                    <span class="badge-success">Bersih</span>
-                @endif
-            </div>
-            <div class="card-body">
-                <div class="mb-5 flex items-end justify-between gap-3 rounded-xl bg-red-50/70 p-4">
-                    <div>
-                        <p class="text-xs font-medium text-red-700">Total Tunggakan</p>
-                        <p class="mt-0.5 text-xl font-extrabold tabular text-red-700">
-                            {{ Chart::rupiah($arrears['total_outstanding']) }}</p>
-                    </div>
-                    <p class="text-right text-[11px] leading-tight text-red-600/80">
-                        {{ $arrears['overdue_amount'] > 0 ? Chart::rupiah($arrears['overdue_amount']) . ' sudah lewat jatuh tempo' : 'Tidak ada yang lewat jatuh tempo' }}
-                    </p>
-                </div>
-
-                <x-charts.bars :bars="$agingBars" empty-text="Semua penghuni lunas. Tidak ada sisa tagihan." />
-
-                @if ($arrears['top_debtors'] !== [])
-                    <div class="mt-5 border-t border-stone-100 pt-4">
-                        <p class="mb-2 text-[11px] font-bold uppercase tracking-wider text-stone-400">Tunggakan Terbesar
-                        </p>
-                        <ul class="space-y-2">
-                            @foreach ($arrears['top_debtors'] as $debtor)
-                                <li class="flex items-center justify-between gap-3 text-sm">
-                                    <span class="min-w-0">
-                                        <span
-                                            class="block truncate font-medium text-stone-700">{{ $debtor['name'] }}</span>
-                                        <span class="block text-[11px] text-stone-400">
-                                            Kamar {{ $debtor['room_number'] }} &middot;
-                                            {{ $debtor['unpaid_months'] }} bulan &middot;
-                                            {{ $debtor['overdue_days'] > 0 ? 'telat ' . $debtor['overdue_days'] . ' hari' : 'belum jatuh tempo' }}
-                                        </span>
-                                    </span>
-                                    <span
-                                        class="shrink-0 font-semibold tabular text-red-600">{{ Chart::compactNumber($debtor['outstanding']) }}</span>
-                                </li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
             </div>
         </div>
 

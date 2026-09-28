@@ -95,25 +95,68 @@ function initChartTooltips() {
 
     const tooltip = ensureTooltip();
 
-    const onOver = (event) => {
-        const target = event.target.closest('[data-tooltip]');
+    // `mouseover` hanya fired sekali saat kursor masuk satu slot hover, jadi
+    // tooltip dulu "nempel" di titik masuk dan tidak mengikuti kursor lagi.
+    // Posisi dihitung ulang di `mousemove`, dirapikan lewat requestAnimationFrame
+    // supaya tidak memaksa reflow pada setiap mousemove.
+    let activeTarget = null;
+    let pointerX = 0;
+    let pointerY = 0;
+    let frame = null;
 
-        if (!target || !document.body.contains(target)) {
-            hideTooltip(tooltip);
+    const repaint = () => {
+        frame = null;
+
+        if (!activeTarget || !document.body.contains(activeTarget)) {
             return;
         }
 
-        try {
-            const payload = JSON.parse(target.dataset.tooltip);
-            renderTooltip(tooltip, payload);
-            placeTooltip(tooltip, event.clientX, event.clientY);
-            tooltip.style.opacity = '1';
-        } catch (error) {
-            hideTooltip(tooltip);
+        placeTooltip(tooltip, pointerX, pointerY);
+        tooltip.style.opacity = '1';
+    };
+
+    const schedule = () => {
+        if (frame === null) {
+            frame = requestAnimationFrame(repaint);
         }
     };
 
-    document.addEventListener('mouseover', onOver);
+    const show = (target, x, y) => {
+        if (target !== activeTarget) {
+            activeTarget = target;
+
+            try {
+                renderTooltip(tooltip, JSON.parse(target.dataset.tooltip));
+            } catch (error) {
+                activeTarget = null;
+                hideTooltip(tooltip);
+                return;
+            }
+        }
+
+        pointerX = x;
+        pointerY = y;
+        schedule();
+    };
+
+    document.addEventListener('mouseover', (event) => {
+        const target = event.target.closest('[data-tooltip]');
+
+        if (!target || !document.body.contains(target)) {
+            return;
+        }
+
+        show(target, event.clientX, event.clientY);
+    });
+
+    // Kursor bergerak di dalam slot yang sama -> tooltip harus ikut bergerak.
+    document.addEventListener('mousemove', (event) => {
+        if (!activeTarget || !document.body.contains(activeTarget)) {
+            return;
+        }
+
+        show(activeTarget, event.clientX, event.clientY);
+    });
 
     // Kursor keluar viewport (mis. scroll cepat) tidak memicu mouseout pada target.
     document.addEventListener('mouseout', (event) => {
@@ -123,17 +166,80 @@ function initChartTooltips() {
 
         const to = event.relatedTarget;
 
-        if (!to || !to.closest || !to.closest('[data-tooltip]')) {
-            hideTooltip(tooltip);
+        // Pindah antar slot hover: biarkan `mouseover` yang menanganinya.
+        if (to && to.closest && to.closest('[data-tooltip]')) {
+            return;
         }
+
+        activeTarget = null;
+        hideTooltip(tooltip);
     });
 
-    document.addEventListener('scroll', () => hideTooltip(tooltip), true);
-    window.addEventListener('resize', () => hideTooltip(tooltip));
+    document.addEventListener('scroll', () => {
+        activeTarget = null;
+        hideTooltip(tooltip);
+    }, true);
+
+    window.addEventListener('resize', () => {
+        activeTarget = null;
+        hideTooltip(tooltip);
+    });
+}
+
+/**
+ * Chart tren dirender dengan lebar penuh, tapi tingginya harus tetap (px).
+ *
+ * Server merender `viewBox` dengan lebar nominal + `h-auto`, jadi sebelum JS
+ * jalan SVG sudah mengisi card tanpa margin kosong. Tapi `h-auto` membuat
+ * tinggi ikut membesar di layar lebar, jadi di sini tinggi dikunci dan
+ * `viewBox` disamakan dengan lebar pixel asli container: 1 unit viewBox = 1 px,
+ * sehingga teks, stroke, dan titik tidak ikut teregang.
+ */
+const FIT_TOLERANCE = 2;
+
+function initChartFit() {
+    document.querySelectorAll('svg[data-chart-fit]').forEach((svg) => {
+        const height = Number(svg.dataset.chartFit);
+
+        if (!height) {
+            return;
+        }
+
+        const apply = () => {
+            const width = Math.round(svg.clientWidth || 0);
+
+            if (!width) {
+                return;
+            }
+
+            svg.style.height = `${height}px`;
+
+            const box = svg.viewBox.baseVal;
+
+            if (box && Math.abs(box.width - width) < FIT_TOLERANCE && box.height === height) {
+                return;
+            }
+
+            svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+        };
+
+        apply();
+
+        if (typeof ResizeObserver === 'undefined') {
+            window.addEventListener('resize', apply);
+            return;
+        }
+
+        new ResizeObserver(apply).observe(svg);
+    });
 }
 
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initChartTooltips);
+    document.addEventListener('DOMContentLoaded', () => {
+        initChartFit();
+        initChartTooltips();
+    });
 } else {
+    initChartFit();
     initChartTooltips();
 }
