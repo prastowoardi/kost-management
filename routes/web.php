@@ -98,6 +98,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Logs
         Route::get('/logs', [LogController::class, 'index'])->name('admin.logs');
+        Route::get('/logs/{log}/trace', [LogController::class, 'trace'])->name('admin.logs.trace');
 
         // Notifications
         Route::prefix('notifications')->name('notifications.')->group(function () {

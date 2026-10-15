@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class LogController extends Controller
@@ -25,20 +26,26 @@ class LogController extends Controller
         }
 
         if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
+            $query->where('created_at', '>=', Carbon::parse($request->date_from)->startOfDay());
         }
 
         if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
+            $query->where('created_at', '<=', Carbon::parse($request->date_to)->endOfDay());
         }
 
         $perPage = min((int) $request->get('per_page', 20), 100);
         $logs = $query->latest()->paginate($perPage);
 
-        $totalLogs = ActivityLog::count();
-        $failedLogs = ActivityLog::where('action', 'like', '%FAILED%')->count();
-        $todayLogs = ActivityLog::whereDate('created_at', today())->count();
-        $actions = ActivityLog::select('action')->distinct()->pluck('action');
+        foreach ($logs as $log) {
+            $payload = $log->payload;
+            if (is_array($payload) && ! empty($payload['error_trace'])) {
+                unset($payload['error_trace']);
+                $log->setAttribute('payload', $payload);
+                $log->setAttribute('has_trace', true);
+            }
+        }
+
+        $stats = $this->aggregate();
 
         return response()->json([
             'status' => 'success',
@@ -50,11 +57,11 @@ class LogController extends Controller
                 'total' => $logs->total(),
             ],
             'stats' => [
-                'total' => $totalLogs,
-                'failed' => $failedLogs,
-                'today' => $todayLogs,
+                'total' => $stats->sum('total'),
+                'failed' => $stats->filter(fn ($s) => str_contains($s->action, 'FAILED'))->sum('total'),
+                'today' => $stats->sum('today'),
             ],
-            'actions' => $actions,
+            'actions' => $stats->pluck('action')->sort()->values(),
         ]);
     }
 
@@ -77,19 +84,26 @@ class LogController extends Controller
 
     public function stats()
     {
-        $total = ActivityLog::count();
-        $failed = ActivityLog::where('action', 'like', '%FAILED%')->count();
-        $today = ActivityLog::whereDate('created_at', today())->count();
-        $actions = ActivityLog::select('action')->distinct()->pluck('action');
+        $stats = $this->aggregate();
 
         return response()->json([
             'status' => 'success',
             'data' => [
-                'total' => $total,
-                'failed' => $failed,
-                'today' => $today,
-                'actions' => $actions,
+                'total' => $stats->sum('total'),
+                'failed' => $stats->filter(fn ($s) => str_contains($s->action, 'FAILED'))->sum('total'),
+                'today' => $stats->sum('today'),
+                'actions' => $stats->pluck('action')->sort()->values(),
             ],
         ]);
+    }
+
+    /**
+     * Satu query GROUP BY -> total, failed, today, dan daftar action sekaligus.
+     */
+    private function aggregate()
+    {
+        return ActivityLog::selectRaw('action, COUNT(*) as total, SUM(created_at >= ?) as today', [
+            now()->startOfDay(),
+        ])->groupBy('action')->get();
     }
 }

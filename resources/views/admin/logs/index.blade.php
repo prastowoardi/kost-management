@@ -1,7 +1,3 @@
-@push('scripts')
-@vite('resources/js/pages/admin-logs.js')
-@endpush
-
 <x-app-layout>
     <x-slot name="header">
         <h2 class="page-title">Log Aktivitas</h2>
@@ -64,10 +60,10 @@
                     {{-- Pencarian --}}
                     <x-filter-input name="search" label="Pencarian" placeholder="Cari deskripsi / aksi" />
 
-                    {{-- Aksi (select2) --}}
+                    {{-- Aksi --}}
                     <div>
                         <label for="log-action" class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-stone-400">Aksi</label>
-                        <select id="log-action" name="action" class="log-select2 w-full cursor-pointer rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-800 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500">
+                        <select id="log-action" name="action" class="w-full cursor-pointer rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-800 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500">
                             <option value="">Semua Aksi</option>
                             @foreach($actions as $a)
                                 <option value="{{ $a }}" {{ request('action') == $a ? 'selected' : '' }}>{{ $a }}</option>
@@ -119,7 +115,7 @@
                         $_payload = is_array($log->payload) ? $log->payload : [];
                         $isError = str_contains($log->action, 'FAILED')
                             || !empty($_payload['error_message'])
-                            || !empty($_payload['error_trace'])
+                            || !empty($log->has_trace)
                             || in_array($log->action, ['FORBIDDEN_ROLE', 'ROUTE_NOT_FOUND', 'LOGIN_FAILED'], true);
                     @endphp
                     <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm border {{ $isError ? 'border-red-200' : 'border-stone-100' }} overflow-hidden transition hover:shadow-md">
@@ -191,13 +187,16 @@
                                             @if(!empty($log->payload['error_file']) && $log->payload['error_file'] !== 'N/A')
                                                 <div class="text-stone-400 mt-1 font-mono text-[10px] break-all">{{ $log->payload['error_file'] }}</div>
                                             @endif
-                                            @if(!empty($log->payload['error_trace']))
-                                                <div x-data="{ showTrace: false }" class="mt-1">
-                                                    <button @click="showTrace = !showTrace" class="text-[10px] text-red-400 hover:text-red-600 underline">
+                                            @if(!empty($log->has_trace))
+                                                <div x-data="{ showTrace: false, trace: null, loading: false }" class="mt-1">
+                                                    <button type="button" @click="showTrace = !showTrace; if (showTrace && trace === null && !loading) { loading = true; fetch(@js(route('admin.logs.trace', $log)), { headers: { 'Accept': 'application/json' } }).then(r => r.json()).then(d => { trace = d.trace; loading = false; }).catch(() => { loading = false; trace = 'Gagal memuat trace.'; }) }" class="text-[10px] text-red-400 hover:text-red-600 underline">
                                                         <span x-show="!showTrace">Lihat trace</span>
                                                         <span x-show="showTrace">Sembunyikan trace</span>
                                                     </button>
-                                                    <pre x-show="showTrace" class="mt-1 text-[8px] sm:text-[9px] text-red-700 bg-red-100 p-2 rounded overflow-auto max-h-32 leading-tight font-mono">{{ $log->payload['error_trace'] }}</pre>
+                                                    <div x-show="showTrace" x-cloak>
+                                                        <span x-show="loading" class="mt-1 block text-[10px] text-stone-400">Memuat trace…</span>
+                                                        <pre x-show="!loading" x-text="trace" class="mt-1 text-[8px] sm:text-[9px] text-red-700 bg-red-100 p-2 rounded overflow-auto max-h-32 leading-tight font-mono"></pre>
+                                                    </div>
                                                 </div>
                                             @endif
                                         @else
