@@ -146,12 +146,15 @@ class FinanceController extends Controller
         return view('finances.report', $data);
     }
 
-    private function downloadPdf($data)
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function downloadPdf(array $data)
     {
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('finances.report-pdf', $data);
 
-        $filename = 'laporan-keuangan-'.
-                    preg_replace('/[^A-Za-z0-9\-]+/', '-', $data['periodLabel']).'.pdf';
+        $periodLabel = $data['periodLabel'] ?? 'laporan-keuangan';
+        $filename = 'laporan-keuangan-'.preg_replace('/[^A-Za-z0-9\-]+/', '-', $periodLabel).'.pdf';
 
         return $pdf->download($filename);
     }
@@ -260,7 +263,7 @@ class FinanceController extends Controller
         }
     }
 
-    public function show($id)
+    public function show(string $id)
     {
         $finance = Finance::where('uuid', $id)->first();
 

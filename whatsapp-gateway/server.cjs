@@ -5,7 +5,6 @@ process.stdout.write = function (chunk, encoding, callback) {
 };
 
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } = require("@whiskeysockets/baileys");
-const { Boom } = require("@hapi/boom");
 const puppeteer = require('puppeteer');
 const qrcode = require("qrcode-terminal");
 const express = require("express");
@@ -13,9 +12,14 @@ const pino = require("pino");
 const crypto = require("crypto");
 const os = require("os");
 const fs = require("fs");
+const PQueue = require('p-queue').default || require('p-queue');
+
+// Import monitoring & alerting
+const { updateMetrics, getHealthStatus, metrics } = require('./monitoring');
+const { sendAlert } = require('./alerts');
+require('./health-checker'); // Auto-start periodic checks
 
 // Loader .env sederhana agar WA_API_KEY bisa dibaca saat dijalankan via pm2
-// tanpa dependency tambahan (file .env diletakkan di folder whatsapp-gateway).
 (function loadEnv() {
     const envPath = `${__dirname}/.env`;
     if (!fs.existsSync(envPath)) return;
@@ -33,8 +37,6 @@ const fs = require("fs");
 })();
 
 // ===== AUTENTIKASI API KEY =====
-// Semua request wajib mengirim header X-API-Key yang cocok dengan WA_API_KEY.
-// Tanpa ini, siapa pun yang bisa menjangkau port gateway bisa memakai nomor WA.
 const API_KEY = process.env.WA_API_KEY;
 
 if (!API_KEY || API_KEY.length < 32) {
@@ -46,12 +48,7 @@ if (!API_KEY || API_KEY.length < 32) {
 
 function verifyApiKey(req) {
     const provided = req.get('X-API-Key') || '';
-
-    if (provided.length !== API_KEY.length) {
-        return false;
-    }
-
-    // timingSafeEqual mencegah serangan timing pada perbandingan string
+    if (provided.length !== API_KEY.length) return false;
     return crypto.timingSafeEqual(Buffer.from(provided), Buffer.from(API_KEY));
 }
 
@@ -67,6 +64,7 @@ const app = express();
 app.use(express.json({ limit: '2mb' }));
 
 let sock;
+
 
 // Deteksi Path Chrome agar Puppeteer bisa jalan di Windows/Mac/Linux
 const chromePath = (() => {
@@ -85,6 +83,8 @@ const chromePath = (() => {
 // Instance browser di-reuse antar request (launch Chrome itu mahal).
 // Jika browser crash/terputus, instance baru akan diluncurkan otomatis.
 let browser = null;
+let renderPage = null;
+const renderQueue = new PQueue({ concurrency: 1, timeout: 120000 });
 
 async function getBrowser() {
     if (browser && browser.connected) {
@@ -105,7 +105,7 @@ async function getBrowser() {
     // --no-sandbox hanya dipakai jika benar-benar berjalan sebagai root
     // (mis. container/VPS). Jika bukan root, sandbox Chrome tetap aktif.
     const isRoot = os.platform() !== 'win32' && typeof process.getuid === 'function' && process.getuid() === 0;
-    const args = ['--disable-dev-shm-usage'];
+    const args = ['--disable-dev-shm-usage', '--disable-background-networking', '--disable-renderer-backgrounding', '--disable-background-timer-throttling'];
     if (isRoot) {
         args.push('--no-sandbox', '--disable-setuid-sandbox');
     }
@@ -118,9 +118,29 @@ async function getBrowser() {
     browser.once('disconnected', () => {
         console.log('⚠️  Chrome terputus, akan diluncurkan ulang saat dibutuhkan.');
         browser = null;
+        renderPage = null;
     });
 
     return browser;
+}
+
+async function getRenderPage() {
+    const browserInstance = await getBrowser();
+    if (renderPage && !renderPage.isClosed()) {
+        return renderPage;
+    }
+    renderPage = await browserInstance.newPage();
+    await renderPage.setJavaScriptEnabled(false);
+    await renderPage.setRequestInterception(true);
+    renderPage.on('request', (request) => {
+        if (/^https?:/i.test(request.url())) {
+            request.abort();
+        } else {
+            request.continue();
+        }
+    });
+    await renderPage.setViewport({ width: 750, height: 1000, deviceScaleFactor: 2 });
+    return renderPage;
 }
 
 async function connectToWhatsApp() {
@@ -168,6 +188,8 @@ async function connectToWhatsApp() {
 
             const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
 
+            updateMetrics('connection', false, error);
+
             if (shouldReconnect) {
                 console.log("    Action    : Menyambung ulang dalam 5 detik...\n");
                 setTimeout(() => connectToWhatsApp(), 5000);
@@ -176,6 +198,7 @@ async function connectToWhatsApp() {
             }
         } else if (connection === 'open') {
             console.log('\n✅ WHATSAPP GATEWAY BERHASIL TERHUBUNG!');
+            updateMetrics('connection', true);
         }
     });
 }
@@ -224,26 +247,28 @@ app.post('/send-message', requireApiKey, async (req, res) => {
     }
 
     if (!isWhatsAppConnected()) {
+        updateMetrics('connection', false);
         return res.status(503).json({ status: 'error', message: 'WhatsApp belum terhubung, coba beberapa saat lagi' });
     }
 
     try {
         const jid = `${formattedNumber}@s.whatsapp.net`;
-
         await sock.sendMessage(jid, { text: message });
         
         console.log(`✅ Pesan Berhasil Dikirim ke: ${formattedNumber}`);
         console.log(`Pesan: ${message}`);
+        
+        updateMetrics('message', true);
         res.json({ status: 'success' });
     } catch (err) {
         console.error("❌ Gagal kirim teks:", err.message);
+        updateMetrics('message', false, err);
         res.status(500).json({ status: 'error', message: err.message });
     }
 });
 
 app.post('/send-image', requireApiKey, async (req, res) => {
     const { number, html, message } = req.body;
-    let page = null;
 
     if (!html) {
         console.log('⚠️  /send-image: html missing. body keys =', req.body ? Object.keys(req.body) : null, 'contentType =', req.get('content-type'));
@@ -252,62 +277,74 @@ app.post('/send-image', requireApiKey, async (req, res) => {
 
     const formattedNumber = normalizeNumber(number);
     if (!formattedNumber) return res.status(400).json({ status: 'error', message: 'Field "number" wajib diisi dan harus berupa nomor WA yang valid' });
-    if (!isWhatsAppConnected()) return res.status(503).json({ status: 'error', message: 'WhatsApp belum terhubung, coba beberapa saat ini' });
+    if (!isWhatsAppConnected()) {
+        updateMetrics('connection', false);
+        return res.status(503).json({ status: 'error', message: 'WhatsApp belum terhubung, coba beberapa saat ini' });
+    }
 
     try {
-        const jid = `${formattedNumber}@s.whatsapp.net`;
+        const result = await renderQueue.add(async () => {
+            const jid = `${formattedNumber}@s.whatsapp.net`;
+            let page = null;
 
-        console.log(`\n--- Proses Render Kwitansi ---`);
-        console.log(`Tujuan: ${formattedNumber}`);
-        const browserInstance = await getBrowser();
-        page = await browserInstance.newPage();
+            console.log(`\n--- Proses Render Kwitansi ---`);
+            console.log(`Tujuan: ${formattedNumber}`);
 
-        // Hardening: HTML dari request tidak boleh mengeksekusi script
-        // atau memuat resource eksternal (mencegah XSS & SSRF).
-        await page.setJavaScriptEnabled(false);
-        await page.setRequestInterception(true);
-        page.on('request', (request) => {
-            if (/^https?:/i.test(request.url())) {
-                request.abort();
-            } else {
-                request.continue();
+            try {
+                page = await getRenderPage();
+                updateMetrics('chrome', true);
+
+                await page.setContent(html, { waitUntil: 'domcontentloaded' });
+                await page.waitForSelector('.card', { timeout: 5000 }).catch(() => {});
+                try {
+                    await page.evaluateHandle('document.fonts.ready');
+                } catch (_) {}
+
+                const element = await page.$('.card');
+                if (!element) throw new Error("Elemen dengan class '.card' tidak ditemukan di HTML!");
+
+                const imageBuffer = await element.screenshot({ omitBackground: true });
+
+                await sock.sendMessage(jid, { 
+                    image: imageBuffer, 
+                    caption: message 
+                });
+
+                console.log(`Pesan: ${message}`);
+                console.log(`✅ Kwitansi Berhasil dikirim ke ${formattedNumber}`);
+                
+                updateMetrics('image', true);
+                updateMetrics('message', true);
+            } catch (err) {
+                if (page && !page.isClosed()) {
+                    try {
+                        await page.goto('about:blank', { waitUntil: 'domcontentloaded' }).catch(() => {});
+                    } catch (_) {}
+                }
+                throw err;
             }
         });
 
-        // Set ukuran layar agar screenshot pas
-        await page.setViewport({ width: 750, height: 1000, deviceScaleFactor: 2 });
-        
-        // Masukkan HTML dari Laravel
-        await page.setContent(html, { waitUntil: 'domcontentloaded' });
-
-        // Tunggu render
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        const element = await page.$('.card');
-        if (!element) throw new Error("Elemen dengan class '.card' tidak ditemukan di HTML!");
-
-        // Ambil foto elemen .card
-        const imageBuffer = await element.screenshot({ omitBackground: true });
-
-        // Kirim
-        await sock.sendMessage(jid, { 
-            image: imageBuffer, 
-            caption: message 
-        });
-
-        console.log(`Pesan: ${message}`);
-        console.log(`✅ Kwitansi Berhasil dikirim ke ${formattedNumber}`);
         res.json({ status: 'success' });
-
     } catch (err) {
         console.error("❌ Gagal render/kirim gambar:", err.message);
+        updateMetrics('message', false, err);
         res.status(500).json({ status: 'error', message: err.message });
-    } finally {
-        if (page) await page.close().catch(() => {});
     }
 });
 
+// Health check endpoint (public - no API key required)
+app.get('/health', (req, res) => {
+    const health = getHealthStatus();
+    res.json(health);
+});
+
 app.listen(3000, () => {
-    console.log("Server API berjalan di port 3000");
+    console.log("🚀 Server API berjalan di port 3000");
+    console.log("📊 Health check: http://localhost:3000/health");
+    
+    // Send startup alert
+    sendAlert('WhatsApp Gateway Started', 'Service berhasil dijalankan dan siap menerima request.', 'info');
+    
     connectToWhatsApp();
 });
