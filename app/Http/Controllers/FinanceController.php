@@ -159,7 +159,7 @@ class FinanceController extends Controller
         return $pdf->download($filename);
     }
 
-    public function dashboard()
+    public function dashboard(DashboardAnalyticsService $analytics)
     {
         $currentMonth = now()->month;
         $currentYear = now()->year;
@@ -177,36 +177,13 @@ class FinanceController extends Controller
             ->take(10)
             ->get();
 
-        $monthlyDataRaw = Finance::selectRaw("
-            DATE_FORMAT(transaction_date, '%m') as month_num,
-            SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) as income,
-            SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) as expense
-        ")
-            ->whereYear('transaction_date', $currentYear)
-            ->groupBy('month_num')
-            ->orderBy('month_num')
-            ->get()
-            ->keyBy('month_num');
-
-        $monthlyTrend = [];
-        $today = now();
-
-        for ($m = 1; $m <= $today->month; $m++) {
-            $monthKey = str_pad($m, 2, '0', STR_PAD_LEFT);
-            $data = $monthlyDataRaw->get($monthKey);
-
-            $income = $data->income ?? 0;
-            $expense = $data->expense ?? 0;
-
-            $monthlyTrend[] = [
-                'month' => \Carbon\Carbon::createFromDate($currentYear, $m, 1)->format('M Y'),
-                'income' => $income,
-                'expense' => $expense,
-                'balance' => $income - $expense,
-            ];
-        }
-
-        $monthlyTrend = array_reverse($monthlyTrend);
+        $trend = $analytics->revenueTrend(12);
+        $monthlyTrend = array_map(fn ($item) => [
+            'month' => $item['label'],
+            'income' => $item['income'],
+            'expense' => $item['expense'],
+            'balance' => $item['balance'],
+        ], $trend);
 
         return view('finances.dashboard', compact(
             'monthlyIncome',
