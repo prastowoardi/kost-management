@@ -1,0 +1,122 @@
+@page {
+    margin: 28px 36px;
+}
+
+body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 11px;
+    line-height: 1.5;
+    color: #222222;
+}
+
+.header {
+    text-align: center;
+    border-bottom: 2px solid #333333;
+    padding-bottom: 10px;
+    margin-bottom: 16px;
+}
+
+.header h1 {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.header p {
+    margin: 3px 0 0 0;
+    font-size: 10px;
+    color: #555555;
+}
+
+.doc-meta {
+    text-align: center;
+    margin-bottom: 16px;
+    font-size: 10px;
+    color: #444444;
+}
+
+.doc-meta .contract-title {
+    font-size: 12px;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.doc-meta .contract-number {
+    display: block;
+    margin-top: 3px;
+}
+
+.section-title {
+    font-weight: bold;
+    font-size: 11px;
+    margin-top: 12px;
+    margin-bottom: 4px;
+    text-decoration: underline;
+}
+
+table.party {
+    width: 100%;
+    margin-bottom: 10px;
+    font-size: 11px;
+}
+
+table.party td {
+    padding: 2px 4px;
+    vertical-align: top;
+}
+
+table.party td.label {
+    width: 160px;
+    font-weight: 600;
+}
+
+table.party td.colon {
+    width: 12px;
+}
+
+ol {
+    margin: 4px 0 10px 18px;
+    padding: 0;
+}
+
+li {
+    margin-bottom: 4px;
+    text-align: justify;
+}
+
+.paragraph {
+    text-align: justify;
+    margin-bottom: 8px;
+}
+
+.paragraph.closing {
+    margin-top: 10px;
+}
+
+.signatures {
+    margin-top: 25px;
+    width: 100%;
+}
+
+.signatures table {
+    width: 100%;
+    border: none;
+}
+
+.signatures td {
+    width: 50%;
+    text-align: center;
+    vertical-align: top;
+    padding: 0 10px;
+}
+
+.sig-space {
+    height: 65px;
+}
+
+.sig-name {
+    font-weight: bold;
+    text-decoration: underline;
+}

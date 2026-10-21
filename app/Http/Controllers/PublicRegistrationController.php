@@ -43,7 +43,7 @@ class PublicRegistrationController extends Controller
 
         try {
             if ($request->hasFile('photo')) {
-                $validated['photo'] = $request->file('photo')->store('tenants');
+                $validated['photo'] = $request->file('photo')->store('tenants', 'private');
             }
 
             $receiptPath = null;

@@ -140,19 +140,19 @@
                                 <div class="form-group">
                                     <label class="form-label">Bukti Pembayaran (Optional)</label>
 
-                                    @if($payment->receipt_file)
+                                    @if($payment->receipt_path)
                                         <p class="text-sm text-stone-500 mb-2">File saat ini:
-                                            <a href="{{ Storage::url($payment->receipt_file) }}" target="_blank"
+                                            <a href="{{ $payment->receipt_url }}" target="_blank"
                                                 class="font-medium text-brand-600 underline hover:text-brand-700">Lihat / Download</a>
                                         </p>
 
                                         {{-- PREVIEW GAMBAR/FILE --}}
                                         @php
-                                            $mime = Storage::mimeType($payment->receipt_file);
+                                            $mime = Storage::exists($payment->receipt_path) ? Storage::mimeType($payment->receipt_path) : 'image/jpeg';
                                         @endphp
 
                                         @if (str_starts_with($mime, 'image'))
-                                            <img src="{{ Storage::url($payment->receipt_file) }}"
+                                            <img src="{{ $payment->receipt_url }}"
                                                 alt="Bukti Pembayaran"
                                                 class="mb-4 max-w-xs rounded-xl border border-stone-200 object-cover shadow-sm">
                                         @elseif ($mime == 'application/pdf')

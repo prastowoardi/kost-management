@@ -11,7 +11,13 @@ class PaymentPageController extends Controller
 {
     public function show($hash)
     {
-        $payment = Payment::with(['tenant.room'])->where('id', decrypt($hash))->firstOrFail();
+        try {
+            $id = decrypt($hash);
+        } catch (Throwable) {
+            abort(404);
+        }
+
+        $payment = Payment::with(['tenant.room'])->where('id', $id)->firstOrFail();
 
         if ($payment->status === 'paid') {
             return view('payments.success', compact('payment'));
@@ -23,17 +29,24 @@ class PaymentPageController extends Controller
     public function upload(Request $request, $hash)
     {
         try {
-            $payment = Payment::findOrFail(decrypt($hash));
+            $paymentId = decrypt($hash);
+        } catch (Throwable) {
+            abort(404);
+        }
 
-            $request->validate([
-                'proof' => 'required|image|max:2048',
-            ]);
+        $payment = Payment::findOrFail($paymentId);
 
+        $request->validate([
+            'proof' => 'required|image|max:5120',
+        ]);
+
+        try {
             if ($request->hasFile('proof')) {
-                $path = $request->file('proof')->store('proofs');
+                $path = $request->file('proof')->store('receipts');
 
                 $payment->update([
-                    'proof_of_payment' => basename($path),
+                    'receipt_file' => $path,
+                    'proof_of_payment' => $path,
                     'status' => 'pending',
                 ]);
 

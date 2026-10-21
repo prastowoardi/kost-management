@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class Payment extends Model
 {
@@ -80,6 +82,33 @@ class Payment extends Model
         $dueDate = $this->created_at->addMonth();
 
         return now()->greaterThanOrEqualTo($dueDate);
+    }
+
+    /**
+     * Resolusi path file bukti bayar dari receipt_file atau proof_of_payment.
+     */
+    public function getReceiptPathAttribute(): ?string
+    {
+        $path = $this->receipt_file ?: $this->proof_of_payment;
+        if (! $path) {
+            return null;
+        }
+
+        if (! Str::contains($path, '/')) {
+            return 'proofs/'.$path;
+        }
+
+        return $path;
+    }
+
+    /**
+     * URL file bukti bayar untuk tampilan web.
+     */
+    public function getReceiptUrlAttribute(): ?string
+    {
+        $path = $this->receipt_path;
+
+        return $path ? Storage::url($path) : null;
     }
 
     /**

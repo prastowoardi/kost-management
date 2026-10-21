@@ -128,6 +128,8 @@ class PaymentController extends Controller
             LogHelper::log('CREATE_PAYMENT', "Mencatat pembayaran {$payment->invoice_number} untuk {$payment->tenant->name}", $payment);
 
             return redirect()->route('payments.index')->with('success', 'Pembayaran dicatat & Kwitansi dikirim!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;
         } catch (Throwable $e) {
             LogHelper::logError('CREATE_PAYMENT_FAILED', 'Gagal mencatat pembayaran', $e);
 

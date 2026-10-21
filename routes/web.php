@@ -59,6 +59,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/profile', 'destroy')->name('profile.destroy');
     });
 
+    // Foto / Berkas KTP Penghuni (Akses terproteksi: admin, staff, atau penyewa bersangkutan)
+    Route::get('tenants/{tenant}/photo', [TenantController::class, 'photo'])->name('tenants.photo');
+
     /* --- Role: ADMIN & STAFF --- */
     Route::middleware('role:admin,staff')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -73,6 +76,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('rooms/{room}/status', [RoomController::class, 'updateStatus'])->name('rooms.updateStatus');
 
         Route::resource('tenants', TenantController::class);
+        Route::get('tenants/{tenant}/contract-pdf', [TenantController::class, 'contractPdf'])->name('tenants.contractPdf');
 
         Route::resource('payments', PaymentController::class);
         Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt');
@@ -111,8 +115,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::prefix('reports')->name('reports.')->group(function () {
             Route::get('/payments', [ReportController::class, 'payments'])->name('payments');
             Route::get('/finances', [ReportController::class, 'finances'])->name('finances');
-            Route::get('/rooms', [ReportController::class, 'rooms'])->name('rooms');
-            Route::get('/tenants', [ReportController::class, 'tenants'])->name('tenants');
         });
 
         // Broadcast & Chat

@@ -72,6 +72,15 @@ class Tenant extends Model
         return (int) Carbon::now()->startOfDay()->diffInDays($dueDate, false);
     }
 
+    public function getPhotoUrlAttribute(): ?string
+    {
+        if (! $this->photo) {
+            return null;
+        }
+
+        return route('tenants.photo', $this);
+    }
+
     public function room()
     {
         return $this->belongsTo(Room::class);

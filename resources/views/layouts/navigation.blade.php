@@ -161,6 +161,13 @@
             </div>
 
             @if(auth()->user()->isAdmin())
+                <x-sidebar-link :href="route('users.index')" :active="request()->routeIs('users.*')">
+                    <x-slot name="icon">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    </x-slot>
+                    {{ __('Manajemen Pengguna') }}
+                </x-sidebar-link>
+
                 <x-sidebar-link :href="route('settings.backup.index')" :active="request()->routeIs('settings.backup.*')">
                     <x-slot name="icon">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>

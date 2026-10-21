@@ -7,8 +7,10 @@ use App\Models\Room;
 use App\Models\Tenant;
 use App\Services\TenantRegistrationService;
 use App\Services\WhatsAppService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Throwable;
 
@@ -59,7 +61,7 @@ class TenantController extends Controller
         ]);
 
         if ($request->hasFile('photo')) {
-            $validated['photo'] = $request->file('photo')->store('tenants');
+            $validated['photo'] = $request->file('photo')->store('tenants', 'private');
         }
 
         try {
@@ -137,9 +139,10 @@ class TenantController extends Controller
 
             if ($request->hasFile('photo')) {
                 if ($tenant->photo) {
-                    Storage::delete($tenant->photo);
+                    Storage::disk('private')->delete($tenant->photo);
+                    Storage::disk('local')->delete($tenant->photo);
                 }
-                $validated['photo'] = $request->file('photo')->store('tenants');
+                $validated['photo'] = $request->file('photo')->store('tenants', 'private');
             }
 
             $tenant->update($validated);
@@ -174,7 +177,8 @@ class TenantController extends Controller
             $deletedData = $tenant->toArray();
 
             if ($tenant->photo) {
-                Storage::delete($tenant->photo);
+                Storage::disk('private')->delete($tenant->photo);
+                Storage::disk('local')->delete($tenant->photo);
             }
 
             Room::find($tenant->room_id)->update(['status' => 'available']);
@@ -222,5 +226,52 @@ class TenantController extends Controller
 
             return back()->with('error', 'Gagal memperbarui status penghuni');
         }
+    }
+
+    /**
+     * Akses aman foto / berkas identitas KTP penghuni.
+     * Hanya admin, staff, atau penyewa bersangkutan yang diizinkan (UU PDP).
+     */
+    public function photo(Tenant $tenant)
+    {
+        $user = auth()->user();
+        if (! $user) {
+            abort(401);
+        }
+
+        if (! $user->isAdmin() && ! $user->isStaff() && $user->id !== $tenant->user_id) {
+            abort(403, 'Akses data identitas tidak diizinkan.');
+        }
+
+        if (! $tenant->photo) {
+            abort(404);
+        }
+
+        $disk = null;
+        foreach (['private', 'local', 'public'] as $candidateDisk) {
+            if (Storage::disk($candidateDisk)->exists($tenant->photo)) {
+                $disk = $candidateDisk;
+                break;
+            }
+        }
+
+        if (! $disk) {
+            abort(404);
+        }
+
+        return Storage::disk($disk)->response($tenant->photo);
+    }
+
+    /**
+     * Unduh Surat Perjanjian Sewa Kos (SPK / Kontrak) Digital.
+     */
+    public function contractPdf(Tenant $tenant)
+    {
+        $tenant->loadMissing(['room', 'user']);
+        $pdf = Pdf::loadView('tenants.contract_pdf', compact('tenant'));
+        $safeName = Str::slug($tenant->name);
+        $roomNumber = $tenant->room->room_number ?? 'kamar';
+
+        return $pdf->download("SPK-{$roomNumber}-{$safeName}.pdf");
     }
 }

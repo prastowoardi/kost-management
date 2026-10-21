@@ -152,12 +152,12 @@
                                     <td>
                                         <div class="flex items-center justify-center gap-1">
 
-                                            @if ($finance->type == 'income' && $finance->payment && $finance->payment->receipt_file)
+                                            @if ($finance->type == 'income' && $finance->payment && $finance->payment->receipt_path)
                                                 <button type="button"
                                                     @click="
                                                         selectedReceipt = {
                                                             invoice_number: '{{ $finance->payment->invoice_number ?? 'INV-' . date('Ymd') . '-' . $finance->id }}',
-                                                            file_url: '{{ Storage::url($finance->payment->receipt_file) }}'
+                                                            file_url: '{{ $finance->payment->receipt_url }}'
                                                         };
                                                         openDetail = true;
                                                     "
