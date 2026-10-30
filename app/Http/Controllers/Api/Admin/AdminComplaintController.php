@@ -24,7 +24,7 @@ class AdminComplaintController extends Controller
 
     public function show($id)
     {
-        $complaint = Complaint::with(['tenant', 'room', 'images'])->where('uuid', $id)->first();
+        $complaint = Complaint::with(['tenant', 'room', 'images'])->where(is_numeric($id) ? 'id' : 'uuid', $id)->first();
 
         if (! $complaint) {
             return response()->json(['success' => false, 'message' => 'Data tidak ditemukan'], 404);
@@ -41,7 +41,7 @@ class AdminComplaintController extends Controller
                 'response' => 'nullable|string',
             ]);
 
-            $complaint = Complaint::where('uuid', $id)->firstOrFail();
+            $complaint = Complaint::where(is_numeric($id) ? 'id' : 'uuid', $id)->firstOrFail();
             $before = $complaint->toArray();
             $complaint->update([
                 'status' => $request->status,
@@ -79,7 +79,7 @@ class AdminComplaintController extends Controller
                 'response' => 'nullable|string',
             ]);
 
-            $complaint = Complaint::with('tenant.user')->where('uuid', $id)->firstOrFail();
+            $complaint = Complaint::with('tenant.user')->where(is_numeric($id) ? 'id' : 'uuid', $id)->firstOrFail();
             $before = $complaint->toArray();
             $complaint->update([
                 'status' => $request->status,

@@ -71,7 +71,6 @@ class MobileComplaintController extends Controller
                     $img = new ComplaintImage;
                     $img->complaint_id = $complaint->id;
                     $img->image_path = $path;
-                    $img->path = $path;
                     $img->save();
                 }
             }
@@ -100,7 +99,7 @@ class MobileComplaintController extends Controller
 
     public function show(Request $request, $id)
     {
-        $complaint = Complaint::with('images')->where('uuid', $id)->first();
+        $complaint = Complaint::with('images')->where(is_numeric($id) ? 'id' : 'uuid', $id)->first();
 
         if (! $complaint) {
             return response()->json([

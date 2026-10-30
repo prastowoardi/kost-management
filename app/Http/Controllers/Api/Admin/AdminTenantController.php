@@ -64,7 +64,7 @@ class AdminTenantController extends Controller
 
         return DB::transaction(function () use ($request) {
             try {
-                $room = Room::where('uuid', $request->room_id)->firstOrFail();
+                $room = Room::where(is_numeric($request->room_id) ? 'id' : 'uuid', $request->room_id)->firstOrFail();
 
                 $photoPath = null;
                 if ($request->hasFile('photo')) {
@@ -121,7 +121,7 @@ class AdminTenantController extends Controller
 
     public function payments($uuid)
     {
-        $tenant = Tenant::where('uuid', $uuid)->firstOrFail();
+        $tenant = Tenant::where(is_numeric($uuid) ? 'id' : 'uuid', $uuid)->firstOrFail();
 
         $payments = Payment::where('tenant_id', $tenant->id)
             ->with(['room'])
@@ -137,7 +137,7 @@ class AdminTenantController extends Controller
     public function destroy($uuid)
     {
         try {
-            $tenant = Tenant::where('uuid', $uuid)->firstOrFail();
+            $tenant = Tenant::where(is_numeric($uuid) ? 'id' : 'uuid', $uuid)->firstOrFail();
             $name = $tenant->name;
 
             $tenant->update(['status' => 'inactive']);
@@ -183,7 +183,7 @@ class AdminTenantController extends Controller
     public function update(Request $request, $uuid)
     {
         try {
-            $tenant = Tenant::where('uuid', $uuid)->firstOrFail();
+            $tenant = Tenant::where(is_numeric($uuid) ? 'id' : 'uuid', $uuid)->firstOrFail();
 
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
@@ -200,7 +200,7 @@ class AdminTenantController extends Controller
                 'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             ]);
 
-            $room = Room::where('uuid', $request->room_id)->firstOrFail();
+            $room = Room::where(is_numeric($request->room_id) ? 'id' : 'uuid', $request->room_id)->firstOrFail();
 
             $updateData = [
                 'room_id' => $room->id,

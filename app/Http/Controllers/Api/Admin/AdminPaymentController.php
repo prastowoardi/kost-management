@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Helpers\LogHelper;
 use App\Http\Controllers\Controller;
+use App\Jobs\SendWhatsAppReceiptJob;
 use App\Models\Payment;
 use App\Models\Tenant;
 use App\Services\PaymentService;
@@ -45,7 +46,7 @@ class AdminPaymentController extends Controller
 
         try {
             $validated = $validator->validated();
-            $tenant = Tenant::with('room')->where('uuid', $validated['tenant_id'])->firstOrFail();
+            $tenant = Tenant::with('room')->where(is_numeric($validated['tenant_id']) ? 'id' : 'uuid', $validated['tenant_id'])->firstOrFail();
 
             $receiptPath = null;
             $proofPath = null;
@@ -88,6 +89,14 @@ class AdminPaymentController extends Controller
                 \Illuminate\Support\Facades\Log::info('NOTIF: skipped - no user or no push token');
             }
 
+            if ($tenant->phone) {
+                try {
+                    SendWhatsAppReceiptJob::dispatch($payment->id);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('WA Job dispatch error: '.$e->getMessage());
+                }
+            }
+
             LogHelper::log(
                 'CREATE_PAYMENT_API',
                 "Mencatat pembayaran {$payment->invoice_number} untuk {$tenant->name}",
@@ -102,6 +111,7 @@ class AdminPaymentController extends Controller
                     'invoice' => $payment->invoice_number,
                     'total' => $payment->total,
                     'tenant_name' => $tenant->name,
+                    'tenant_phone' => $tenant->phone,
                     'room_number' => $tenant->room?->room_number,
                     'period' => Carbon::parse($payment->period_month)->translatedFormat('F Y'),
                     'payment_date' => $payment->payment_date,
@@ -131,7 +141,7 @@ class AdminPaymentController extends Controller
 
     public function show($uuid)
     {
-        $payment = Payment::where('uuid', $uuid)
+        $payment = Payment::where(is_numeric($uuid) ? 'id' : 'uuid', $uuid)
             ->with(['tenant.user', 'room'])
             ->firstOrFail();
 

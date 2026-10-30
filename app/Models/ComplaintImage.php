@@ -11,7 +11,7 @@ class ComplaintImage extends Model
 {
     use \App\Models\Concerns\HasUuidColumn, HasFactory, SoftDeletes;
 
-    protected $fillable = ['complaint_id', 'image_path', 'path'];
+    protected $fillable = ['complaint_id', 'image_path'];
 
     protected $hidden = ['id'];
 

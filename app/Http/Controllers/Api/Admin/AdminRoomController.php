@@ -20,7 +20,7 @@ class AdminRoomController extends Controller
 
     public function show($uuid)
     {
-        $room = Room::where('uuid', $uuid)
+        $room = Room::where(is_numeric($uuid) ? 'id' : 'uuid', $uuid)
             ->with(['activeTenant.user', 'facilities', 'payments' => function ($q) {
                 $q->latest()->limit(5);
             }])
@@ -35,7 +35,7 @@ class AdminRoomController extends Controller
     public function update(Request $request, $uuid)
     {
         try {
-            $room = Room::where('uuid', $uuid)->firstOrFail();
+            $room = Room::where(is_numeric($uuid) ? 'id' : 'uuid', $uuid)->firstOrFail();
 
             $validated = $request->validate([
                 'room_number' => 'required|unique:rooms,room_number,'.$room->id,
@@ -93,7 +93,7 @@ class AdminRoomController extends Controller
     public function updateStatus(Request $request, $uuid)
     {
         try {
-            $room = Room::where('uuid', $uuid)->firstOrFail();
+            $room = Room::where(is_numeric($uuid) ? 'id' : 'uuid', $uuid)->firstOrFail();
 
             $validated = $request->validate([
                 'status' => 'required|in:available,occupied,maintenance',

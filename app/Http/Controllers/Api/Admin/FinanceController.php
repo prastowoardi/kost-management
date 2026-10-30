@@ -23,7 +23,7 @@ class FinanceController extends Controller
 
     public function show($id)
     {
-        $finance = Finance::where('uuid', $id)->firstOrFail();
+        $finance = Finance::where(is_numeric($id) ? 'id' : 'uuid', $id)->firstOrFail();
 
         return response()->json($finance);
     }
@@ -72,7 +72,7 @@ class FinanceController extends Controller
     public function destroy($id)
     {
         try {
-            $finance = Finance::where('uuid', $id)->firstOrFail();
+            $finance = Finance::where(is_numeric($id) ? 'id' : 'uuid', $id)->firstOrFail();
             $deletedData = $finance->toArray();
             $finance->delete();
 

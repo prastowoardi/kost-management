@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Helpers\LogHelper;
 use App\Http\Controllers\Controller;
+use App\Jobs\SendWhatsAppReceiptJob;
 use App\Models\Payment;
 use App\Models\Tenant;
 use App\Services\PaymentService;
@@ -132,7 +133,7 @@ class MobilePaymentController extends Controller
             'status' => 'required|in:approved,accepted,rejected',
         ]);
 
-        $payment = Payment::with(['tenant.user', 'room'])->where('uuid', $id)->firstOrFail();
+        $payment = Payment::with(['tenant.user', 'room'])->where(is_numeric($id) ? 'id' : 'uuid', $id)->firstOrFail();
 
         $newStatus = ($request->status === 'rejected') ? 'overdue' : 'paid';
         $logAction = ($newStatus === 'paid') ? 'MENERIMA' : 'MENOLAK';
@@ -151,6 +152,14 @@ class MobilePaymentController extends Controller
 
             if ($newStatus === 'paid') {
                 $this->paymentService->syncFinanceRecord($payment);
+
+                if ($payment->tenant?->phone) {
+                    try {
+                        SendWhatsAppReceiptJob::dispatch($payment->id);
+                    } catch (\Throwable $e) {
+                        \Illuminate\Support\Facades\Log::warning('WA Job dispatch error: '.$e->getMessage());
+                    }
+                }
             }
 
             LogHelper::log(
@@ -199,7 +208,7 @@ class MobilePaymentController extends Controller
     public function show(Request $request, $id)
     {
         $payment = Payment::with(['tenant.user', 'room'])
-            ->where('uuid', $id)
+            ->where(is_numeric($id) ? 'id' : 'uuid', $id)
             ->first();
 
         if (! $payment) {
