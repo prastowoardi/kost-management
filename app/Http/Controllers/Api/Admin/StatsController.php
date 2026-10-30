@@ -13,6 +13,8 @@ class StatsController extends Controller
         $total_rooms = Room::count();
         $occupied_rooms = Room::where('status', 'occupied')->count();
         $vacant_rooms = Room::where('status', 'available')->count();
+        $pending_payments = Payment::whereIn('status', ['pending', 'waiting'])->count();
+        $pending_complaints = \App\Models\Complaint::whereIn('status', ['open', 'in_progress', 'pending'])->count();
 
         $monthly_income = Payment::whereMonth('payment_date', now()->month)
             ->whereYear('payment_date', now()->year)
@@ -51,6 +53,8 @@ class StatsController extends Controller
             'total_rooms' => $total_rooms,
             'occupied_rooms' => $occupied_rooms,
             'vacant_rooms' => $vacant_rooms,
+            'pending_payments' => $pending_payments,
+            'pending_complaints' => $pending_complaints,
             'monthly_income' => (int) $monthly_income,
             'monthly_reports' => $monthly_reports,
             'payment_history' => $payment_history,
