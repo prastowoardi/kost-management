@@ -71,6 +71,18 @@ class UserController extends Controller
                 'is_active' => ['boolean'],
             ]);
 
+            $validated['is_active'] = $request->has('is_active');
+
+            // Prevent self-demotion or self-deactivation by active admin
+            if ($user->id === auth()->id()) {
+                if ($validated['role'] !== 'admin') {
+                    return back()->with('error', 'Tidak dapat mengubah role akun sendiri dari Admin.')->withInput();
+                }
+                if (! $validated['is_active']) {
+                    return back()->with('error', 'Tidak dapat menonaktifkan akun sendiri.')->withInput();
+                }
+            }
+
             if ($request->filled('password')) {
                 $request->validate([
                     'password' => ['confirmed', Rules\Password::defaults()],
@@ -78,7 +90,10 @@ class UserController extends Controller
                 $validated['password'] = Hash::make($request->password);
             }
 
-            $validated['is_active'] = $request->has('is_active');
+            // Revoke tokens if deactivated
+            if (! $validated['is_active']) {
+                $user->tokens()->delete();
+            }
 
             $before = $user->toArray();
             $user->update($validated);
@@ -108,6 +123,7 @@ class UserController extends Controller
 
         try {
             $deletedData = $user->toArray();
+            $user->tokens()->delete();
             $user->delete();
 
             LogHelper::log('DELETE_USER', "Menghapus user {$deletedData['name']} ({$deletedData['email']})", null, [
@@ -135,6 +151,10 @@ class UserController extends Controller
             $user->update([
                 'is_active' => ! $user->is_active,
             ]);
+
+            if (! $user->is_active) {
+                $user->tokens()->delete();
+            }
 
             $status = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
 

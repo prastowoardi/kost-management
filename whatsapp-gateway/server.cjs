@@ -218,13 +218,34 @@ function normalizeNumber(number) {
     return '62' + digits;
 }
 
+function maskPhone(number) {
+    if (!number) return '';
+    const str = String(number);
+    if (str.length <= 6) return '***';
+    return str.slice(0, 4) + '****' + str.slice(-2);
+}
+
 function logBody(req) {
+    let sanitizedBody = null;
+    if (req.body && typeof req.body === 'object') {
+        sanitizedBody = { ...req.body };
+        if (sanitizedBody.number) {
+            sanitizedBody.number = maskPhone(sanitizedBody.number);
+        }
+        if (sanitizedBody.html) {
+            sanitizedBody.html = `[HTML Content: ${sanitizedBody.html.length} chars]`;
+        }
+        if (sanitizedBody.message && sanitizedBody.message.length > 50) {
+            sanitizedBody.message = sanitizedBody.message.slice(0, 50) + '...';
+        }
+    }
+
     const summary = {
         ip: req.ip,
         path: req.path,
         contentType: req.get('content-type'),
         keys: req.body ? Object.keys(req.body) : null,
-        body: req.body,
+        body: sanitizedBody,
     };
     console.log('📥 REQUEST INCOMING:', JSON.stringify(summary));
 }
@@ -339,9 +360,12 @@ app.get('/health', (req, res) => {
     res.json(health);
 });
 
-app.listen(3000, () => {
-    console.log("🚀 Server API berjalan di port 3000");
-    console.log("📊 Health check: http://localhost:3000/health");
+const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '127.0.0.1';
+
+app.listen(PORT, HOST, () => {
+    console.log(`🚀 Server API berjalan di http://${HOST}:${PORT}`);
+    console.log(`📊 Health check: http://${HOST}:${PORT}/health`);
     
     // Send startup alert
     sendAlert('WhatsApp Gateway Started', 'Service berhasil dijalankan dan siap menerima request.', 'info');

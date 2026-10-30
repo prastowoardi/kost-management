@@ -67,7 +67,7 @@ class ReceiptController extends Controller
 
             LogHelper::log('CREATE_MANUAL_RECEIPT', "Membuat kwitansi manual {$receipt->invoice_number} untuk {$receipt->tenant_name}", $receipt);
 
-            return redirect()->route('admin.receipt.print', $receipt->id)
+            return redirect()->route('admin.receipt.print', $receipt->uuid)
                 ->with('success', 'Kwitansi berhasil dibuat!');
         } catch (Throwable $e) {
             LogHelper::logError('CREATE_MANUAL_RECEIPT_FAILED', 'Gagal membuat kwitansi manual', $e);
@@ -78,7 +78,9 @@ class ReceiptController extends Controller
 
     public function manualPrint($id)
     {
-        $payment = \App\Models\ManualReceipt::where('uuid', $id)->firstOrFail();
+        $payment = \App\Models\ManualReceipt::where('uuid', $id)
+            ->orWhere('id', $id)
+            ->firstOrFail();
 
         return view('admin.receipt.manual_print', compact('payment'));
     }

@@ -76,9 +76,33 @@ class LogController extends Controller
             ], 404);
         }
 
+        $payload = $log->payload;
+        if (is_array($payload) && ! empty($payload['error_trace'])) {
+            unset($payload['error_trace']);
+            $log->setAttribute('payload', $payload);
+            $log->setAttribute('has_trace', true);
+        }
+
         return response()->json([
             'status' => 'success',
             'data' => $log,
+        ]);
+    }
+
+    public function trace($id)
+    {
+        $log = ActivityLog::find($id);
+
+        if (! $log) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Log tidak ditemukan',
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'trace' => $log->payload['error_trace'] ?? null,
         ]);
     }
 

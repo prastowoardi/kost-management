@@ -68,7 +68,7 @@ class AdminTenantController extends Controller
 
                 $photoPath = null;
                 if ($request->hasFile('photo')) {
-                    $photoPath = $request->file('photo')->store('tenants');
+                    $photoPath = $request->file('photo')->store('tenants', 'private');
                 }
 
                 $tenant = $this->registration->registerWithUser([
@@ -143,6 +143,11 @@ class AdminTenantController extends Controller
             $tenant->update(['status' => 'inactive']);
             $tenant->room?->update(['status' => 'available']);
 
+            if ($tenant->photo) {
+                Storage::disk('private')->delete($tenant->photo);
+                Storage::disk('local')->delete($tenant->photo);
+            }
+
             if ($tenant->user) {
                 $tenant->user->tokens()->delete();
                 $tenant->user->delete();
@@ -213,9 +218,10 @@ class AdminTenantController extends Controller
 
             if ($request->hasFile('photo')) {
                 if ($tenant->photo) {
-                    Storage::delete($tenant->photo);
+                    Storage::disk('private')->delete($tenant->photo);
+                    Storage::disk('local')->delete($tenant->photo);
                 }
-                $updateData['photo'] = $request->file('photo')->store('tenants');
+                $updateData['photo'] = $request->file('photo')->store('tenants', 'private');
             }
 
             $tenant->update($updateData);

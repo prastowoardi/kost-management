@@ -11,7 +11,7 @@ class ComplaintImage extends Model
 {
     use \App\Models\Concerns\HasUuidColumn, HasFactory, SoftDeletes;
 
-    protected $fillable = ['complaint_id', 'path'];
+    protected $fillable = ['complaint_id', 'image_path', 'path'];
 
     protected $hidden = ['id'];
 
@@ -22,8 +22,15 @@ class ComplaintImage extends Model
 
     protected $appends = ['full_url'];
 
+    public function getPathAttribute($value)
+    {
+        return $value ?: ($this->attributes['image_path'] ?? null);
+    }
+
     public function getFullUrlAttribute()
     {
-        return Storage::url($this->path);
+        $path = $this->path ?: ($this->attributes['image_path'] ?? null);
+
+        return $path ? Storage::url($path) : null;
     }
 }

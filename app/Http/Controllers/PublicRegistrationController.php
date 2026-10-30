@@ -90,7 +90,9 @@ class PublicRegistrationController extends Controller
             $tenant->name,
             $tenant->room->room_number,
             date('d M Y', strtotime($tenant->entry_date)),
-            $tenant->room->price
+            $tenant->room->price,
+            $tenant->initial_password ?? null,
+            $tenant->email
         );
 
         // Kirim via queue agar registrasi publik tidak menunggu gateway

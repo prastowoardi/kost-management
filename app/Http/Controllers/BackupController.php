@@ -14,7 +14,7 @@ class BackupController extends Controller
         $dir = $this->backupDir();
         $files = [];
 
-        foreach (glob($dir.'/backup-*.sql.gz') ?: [] as $file) {
+        foreach (glob($dir.'/backup-*.{sql,sqlite}.gz', GLOB_BRACE) ?: glob($dir.'/backup-*.sql.gz') ?: [] as $file) {
             $files[] = [
                 'name' => basename($file),
                 'size' => round(filesize($file) / 1024 / 1024, 2),
@@ -56,31 +56,43 @@ class BackupController extends Controller
 
     public function download(string $name)
     {
-        $path = $this->backupDir().'/'.$name;
+        $cleanName = basename($name);
 
-        if (! str_starts_with($name, 'backup-') || ! str_ends_with($name, '.sql.gz') || ! file_exists($path)) {
+        if ($cleanName !== $name || ! preg_match('/^backup-[0-9_\-]+\.(sql|sqlite)\.gz$/', $name)) {
             abort(404);
         }
 
-        return response()->download($path, $name);
+        $path = $this->backupDir().'/'.$cleanName;
+
+        if (! file_exists($path)) {
+            abort(404);
+        }
+
+        return response()->download($path, $cleanName);
     }
 
     public function destroy(string $name)
     {
-        $path = $this->backupDir().'/'.$name;
+        $cleanName = basename($name);
 
-        if (! str_starts_with($name, 'backup-') || ! str_ends_with($name, '.sql.gz') || ! file_exists($path)) {
+        if ($cleanName !== $name || ! preg_match('/^backup-[0-9_\-]+\.(sql|sqlite)\.gz$/', $name)) {
+            abort(404);
+        }
+
+        $path = $this->backupDir().'/'.$cleanName;
+
+        if (! file_exists($path)) {
             abort(404);
         }
 
         try {
             unlink($path);
 
-            LogHelper::log('DELETE_BACKUP', "Menghapus backup database {$name}");
+            LogHelper::log('DELETE_BACKUP', "Menghapus backup database {$cleanName}");
 
             return back()->with('success', 'Backup berhasil dihapus.');
         } catch (Throwable $e) {
-            LogHelper::logError('DELETE_BACKUP_FAILED', "Gagal hapus backup {$name}", $e);
+            LogHelper::logError('DELETE_BACKUP_FAILED', "Gagal hapus backup {$cleanName}", $e);
 
             return back()->with('error', 'Gagal menghapus backup.');
         }

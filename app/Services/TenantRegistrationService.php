@@ -7,6 +7,7 @@ use App\Models\Room;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class TenantRegistrationService
 {
@@ -25,16 +26,19 @@ class TenantRegistrationService
                 throw new \InvalidArgumentException('Kamar sudah terisi atau tidak tersedia.');
             }
 
+            $plainPassword = $password ?: Str::password(10, letters: true, numbers: true, symbols: false);
+
             $user = User::create([
                 'name' => $tenantData['name'],
                 'email' => $tenantData['email'],
-                'password' => $password ?? 'password123',
+                'password' => $plainPassword,
                 'role' => 'tenant',
             ]);
 
             $tenantData['user_id'] = $user->id;
 
             $tenant = Tenant::create($tenantData);
+            $tenant->initial_password = $plainPassword;
             $tenant->load('room');
 
             $room->update(['status' => 'occupied']);

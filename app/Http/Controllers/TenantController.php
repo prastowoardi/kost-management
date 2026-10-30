@@ -95,8 +95,12 @@ class TenantController extends Controller
             ], 201);
         }
 
+        $pwdMsg = ! empty($tenant->initial_password)
+            ? " Akun login: {$tenant->email} (Password: {$tenant->initial_password})"
+            : '';
+
         return redirect()->route('tenants.index')
-            ->with('success', 'Penghuni berhasil ditambahkan. Password default: password123')
+            ->with('success', 'Penghuni berhasil ditambahkan.'.$pwdMsg)
             ->with('wa_url', $waUrl);
     }
 

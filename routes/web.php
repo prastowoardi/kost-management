@@ -100,10 +100,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::delete('/{finance}', [FinanceController::class, 'destroy'])->name('destroy');
         });
 
-        // Logs
-        Route::get('/logs', [LogController::class, 'index'])->name('admin.logs');
-        Route::get('/logs/{log}/trace', [LogController::class, 'trace'])->name('admin.logs.trace');
-
         // Notifications
         Route::prefix('notifications')->name('notifications.')->group(function () {
             Route::get('/', [NotificationController::class, 'index'])->name('index');
@@ -129,6 +125,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     /* --- Role: ADMIN ONLY --- */
     Route::middleware('role:admin')->group(function () {
+        // Logs & Audit Trail (Admin Only)
+        Route::get('/logs', [LogController::class, 'index'])->name('admin.logs');
+        Route::get('/logs/{log}/trace', [LogController::class, 'trace'])->name('admin.logs.trace');
+
         Route::resource('users', UserController::class);
         Route::put('users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggleStatus');
 
@@ -148,13 +148,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
     });
 
-    /* --- Role: TENANT ONLY --- */
-    Route::middleware('role:tenant')->prefix('tenant')->name('tenant.')->group(function () {
-        Route::get('/dashboard', [TenantController::class, 'tenantDashboard'])->name('dashboard');
-        Route::get('/payments', [TenantController::class, 'tenantPayments'])->name('payments');
-        Route::get('/complaints', [ComplaintController::class, 'tenantComplaints'])->name('complaints');
-        Route::post('/complaints', [ComplaintController::class, 'storeByTenant'])->name('complaints.store');
-    });
+    /* --- Role: TENANT ONLY (Akses utama penghuni via Mobile App API) --- */
+    // Rute web khusus penghuni dinonaktifkan sementara untuk mencegah exception.
+    // Penghuni mengelola pembayaran dan keluhan melalui aplikasi mobile.
+    // Route::middleware('role:tenant')->prefix('tenant')->name('tenant.')->group(function () {
+    //     Route::get('/dashboard', [TenantController::class, 'tenantDashboard'])->name('dashboard');
+    //     Route::get('/payments', [TenantController::class, 'tenantPayments'])->name('payments');
+    //     Route::get('/complaints', [ComplaintController::class, 'tenantComplaints'])->name('complaints');
+    //     Route::post('/complaints', [ComplaintController::class, 'storeByTenant'])->name('complaints.store');
+    // });
 });
 
 Route::middleware(['auth', 'verified', 'role:admin,staff'])->prefix('bo-admin')->name('admin.receipt.')->group(function () {

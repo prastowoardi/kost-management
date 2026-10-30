@@ -79,9 +79,12 @@ Route::middleware(['auth:sanctum', 'role:admin,staff'])
         Route::post('/tenants/delete/{uuid}', [AdminTenantController::class, 'destroy']);
         Route::get('/tenants/{uuid}/payments', [AdminTenantController::class, 'payments']);
 
-        Route::get('/logs/stats', [AdminLogController::class, 'stats']);
-        Route::get('/logs', [AdminLogController::class, 'index']);
-        Route::get('/logs/{id}', [AdminLogController::class, 'show']);
+        Route::middleware('role:admin')->group(function () {
+            Route::get('/logs/stats', [AdminLogController::class, 'stats']);
+            Route::get('/logs', [AdminLogController::class, 'index']);
+            Route::get('/logs/{id}', [AdminLogController::class, 'show']);
+            Route::get('/logs/{id}/trace', [AdminLogController::class, 'trace']);
+        });
 
         Route::get('/categories', [FinanceController::class, 'getApiCategories']);
         Route::apiResource('/finances', FinanceController::class);

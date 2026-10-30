@@ -31,6 +31,10 @@ return Application::configure(basePath: dirname(__DIR__))
             CheckActive::class,
         ]);
 
+        $middleware->appendToGroup('api', [
+            CheckActive::class,
+        ]);
+
         $middleware->statefulApi();
     })
     ->withExceptions(function (Exceptions $exceptions) {

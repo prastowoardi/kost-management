@@ -33,6 +33,11 @@ class User extends Authenticatable
         'is_active' => 'boolean',
     ];
 
+    protected $attributes = [
+        'is_active' => true,
+        'role' => 'tenant',
+    ];
+
     // Check if user is admin
     public function isAdmin(): bool
     {

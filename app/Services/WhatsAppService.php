@@ -24,22 +24,32 @@ class WhatsAppService
         ]);
     }
 
+    private function maskPhone(string $phone): string
+    {
+        if (strlen($phone) <= 6) {
+            return '***';
+        }
+
+        return substr($phone, 0, 4).'****'.substr($phone, -2);
+    }
+
     public function sendMessage(string $phone, string $message, int $timeout = 10): bool
     {
         try {
-            Log::debug('WA sendMessage payload', ['phone' => $phone, 'message' => $message]);
+            $masked = $this->maskPhone($phone);
+            Log::debug('WA sendMessage payload', ['phone' => $masked, 'message_len' => strlen($message)]);
             $response = $this->client($timeout)->post("{$this->gatewayUrl}/send-message", [
                 'number' => $phone,
                 'message' => $message,
             ]);
 
             if ($response->successful()) {
-                Log::info("WA Terkirim ke {$phone}");
+                Log::info("WA Terkirim ke {$masked}");
 
                 return true;
             }
 
-            Log::error("WA Gateway Error ke {$phone}: ".$response->body());
+            Log::error("WA Gateway Error ke {$masked}: ".$response->body());
 
             return false;
         } catch (\Exception $e) {
@@ -52,7 +62,8 @@ class WhatsAppService
     public function sendImage(string $phone, string $html, string $caption, int $timeout = 60): bool
     {
         try {
-            Log::debug('WA sendImage payload', ['phone' => $phone, 'caption' => $caption, 'html_len' => strlen($html)]);
+            $masked = $this->maskPhone($phone);
+            Log::debug('WA sendImage payload', ['phone' => $masked, 'caption_len' => strlen($caption), 'html_len' => strlen($html)]);
             $response = $this->client($timeout)->post("{$this->gatewayUrl}/send-image", [
                 'number' => $phone,
                 'html' => $html,
@@ -60,12 +71,12 @@ class WhatsAppService
             ]);
 
             if ($response->successful()) {
-                Log::info("WA Image terkirim ke {$phone}");
+                Log::info("WA Image terkirim ke {$masked}");
 
                 return true;
             }
 
-            Log::error("WA Image Gateway Error ke {$phone}: ".$response->body());
+            Log::error("WA Image Gateway Error ke {$masked}: ".$response->body());
 
             return false;
         } catch (\Exception $e) {
@@ -126,12 +137,20 @@ class WhatsAppService
                 'Sekali lagi, selamat bergabung di keluarga besar Serrata Kost! Kalau ada apa-apa, jangan sungkan hubungi kami ya. Enjoy your stay! 🏠💖';
     }
 
-    public function getRegistrationMessages(string $name, string $roomNumber, string $entryDate, float $price): array
+    public function getRegistrationMessages(string $name, string $roomNumber, string $entryDate, float $price, ?string $password = null, ?string $email = null): array
     {
         $message1 = "Halo {$name}! Pendaftaran kamu di Serrata Kost BERHASIL. 👋✨\n\n".
                     "Kamar: *{$roomNumber}*\n".
-                    "Tgl Masuk: {$entryDate}\n\n".
-                    'Tunggu sebentar ya, mimin kirimkan tata tertib kost di bawah ini. 👇';
+                    "Tgl Masuk: {$entryDate}\n\n";
+
+        if ($email && $password) {
+            $message1 .= "🔐 *Akun Aplikasi Anda:*\n".
+                         "Email: *{$email}*\n".
+                         "Password Sementara: *{$password}*\n".
+                         "_Silakan login ke aplikasi dan segera ganti password Anda._\n\n";
+        }
+
+        $message1 .= 'Tunggu sebentar ya, mimin kirimkan tata tertib kost di bawah ini. 👇';
 
         $message2 = "Ini dia *'Rules of the House'* di Serrata Kost: 📝\n\n".
                     "📍 UMUM\n".

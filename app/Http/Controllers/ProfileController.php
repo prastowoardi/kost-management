@@ -63,12 +63,18 @@ class ProfileController extends Controller
 
         try {
             $user = $request->user();
+
+            if ($user->isAdmin() && \App\Models\User::where('role', 'admin')->where('is_active', true)->where('id', '!=', $user->id)->count() === 0) {
+                return Redirect::route('profile.edit')->with('error', 'Tidak dapat menghapus akun administrator terakhir dalam sistem.');
+            }
+
             $deletedData = $user->toArray();
 
             LogHelper::log('DELETE_ACCOUNT', 'Menghapus akun sendiri', null, [
                 'deleted' => $deletedData,
             ]);
 
+            $user->tokens()->delete();
             Auth::logout();
 
             $user->delete();
