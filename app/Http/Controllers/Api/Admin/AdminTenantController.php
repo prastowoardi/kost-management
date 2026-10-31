@@ -30,9 +30,50 @@ class AdminTenantController extends Controller
 
     public function activeTenants()
     {
-        return \App\Models\Tenant::with(['user', 'room'])
+        $tenants = \App\Models\Tenant::with(['user', 'room'])
+            ->with(['payments' => function ($q) {
+                $q->whereNull('deleted_at')
+                    ->where('status', 'paid')
+                    ->select('id', 'tenant_id', 'period_month', 'status', 'total', 'amount');
+            }])
             ->where('status', 'active')
-            ->get();
+            ->get()
+            ->map(function (\App\Models\Tenant $tenant) {
+                $paidMonths = $tenant->payments
+                    ->pluck('period_month')
+                    ->filter()
+                    ->map(fn ($d) => \Carbon\Carbon::parse($d)->format('Y-m'))
+                    ->unique()
+                    ->values()
+                    ->all();
+
+                $lastPaidDate = $tenant->payments
+                    ->pluck('period_month')
+                    ->filter()
+                    ->map(fn ($d) => \Carbon\Carbon::parse($d)->startOfMonth())
+                    ->max();
+
+                $lastPaidPeriod = $lastPaidDate ? $lastPaidDate->format('Y-m') : null;
+
+                if ($lastPaidDate) {
+                    $nextPeriod = $lastPaidDate->copy()->addMonth()->startOfMonth()->format('Y-m');
+                } else {
+                    $nextPeriod = $tenant->entry_date
+                        ? \Carbon\Carbon::parse($tenant->entry_date)->startOfMonth()->format('Y-m')
+                        : now()->format('Y-m');
+                }
+
+                $tenant->setAttribute('paid_periods', $paidMonths);
+                $tenant->setAttribute('last_paid_period', $lastPaidPeriod);
+                $tenant->setAttribute('next_period', $nextPeriod);
+
+                return $tenant;
+            });
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $tenants,
+        ]);
     }
 
     public function allRooms()
