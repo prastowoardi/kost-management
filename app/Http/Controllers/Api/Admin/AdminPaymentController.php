@@ -103,6 +103,10 @@ class AdminPaymentController extends Controller
                 $payment
             );
 
+            $carbonPaymentDate = $payment->payment_date ? Carbon::parse($payment->payment_date) : now();
+            $paymentTime = $payment->created_at ? $payment->created_at->timezone('Asia/Jakarta')->format('H:i') : now()->timezone('Asia/Jakarta')->format('H:i');
+            $formattedDateWithTime = $carbonPaymentDate->locale('id')->isoFormat('D MMMM Y') . ' jam ' . $paymentTime . ' WIB';
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Pembayaran berhasil dicatat!',
@@ -114,7 +118,10 @@ class AdminPaymentController extends Controller
                     'tenant_phone' => $tenant->phone,
                     'room_number' => $tenant->room?->room_number,
                     'period' => Carbon::parse($payment->period_month)->translatedFormat('F Y'),
-                    'payment_date' => $payment->payment_date,
+                    'payment_date' => $carbonPaymentDate->format('Y-m-d'),
+                    'payment_time' => $paymentTime,
+                    'payment_datetime' => $formattedDateWithTime,
+                    'formatted_payment_date' => $formattedDateWithTime,
                 ],
             ]);
         } catch (ValidationException $e) {

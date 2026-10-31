@@ -35,9 +35,19 @@ class Payment extends Model
     protected $hidden = ['id'];
 
     protected $casts = [
-        'payment_date' => 'date',
-        'period_month' => 'date',
+        'payment_date' => 'date:Y-m-d',
+        'period_month' => 'date:Y-m-d',
+        'created_at' => 'datetime:Y-m-d H:i:s',
+        'updated_at' => 'datetime:Y-m-d H:i:s',
     ];
+
+    /**
+     * Prepare a date for array / JSON serialization in application timezone.
+     */
+    protected function serializeDate(\DateTimeInterface $date)
+    {
+        return $date->format('Y-m-d H:i:s');
+    }
 
     public function finance()
     {
