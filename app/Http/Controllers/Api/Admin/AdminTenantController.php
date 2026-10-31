@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Helpers\LogHelper;
 use App\Http\Controllers\Controller;
+use App\Jobs\SendWhatsAppMessageJob;
 use App\Models\Payment;
 use App\Models\Room;
 use App\Models\Tenant;
 use App\Services\TenantRegistrationService;
+use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -18,6 +20,7 @@ class AdminTenantController extends Controller
 {
     public function __construct(
         private TenantRegistrationService $registration,
+        private WhatsAppService $whatsapp,
     ) {}
 
     public function index()
@@ -91,10 +94,26 @@ class AdminTenantController extends Controller
                     $tenant->user
                 );
 
+                $message = $this->whatsapp->getWelcomeMessage($tenant->name);
+
+                $cleanPhone = preg_replace('/[^0-9]/', '', (string) $tenant->phone);
+                $waPhone = str_starts_with($cleanPhone, '0') ? '62'.substr($cleanPhone, 1) : $cleanPhone;
+                $waUrl = 'https://wa.me/'.$waPhone.'?text='.urlencode($message);
+
+                if (! empty($tenant->phone)) {
+                    try {
+                        SendWhatsAppMessageJob::dispatch($tenant->phone, $message);
+                    } catch (\Throwable $e) {
+                        \Illuminate\Support\Facades\Log::warning('SendWhatsAppMessageJob dispatch error: '.$e->getMessage());
+                    }
+                }
+
                 return response()->json([
                     'status' => 'success',
                     'message' => 'Tenant berhasil didaftarkan!',
                     'data' => $tenant->fresh()->load(['user', 'room']),
+                    'wa_url' => $waUrl,
+                    'message_text' => $message,
                 ]);
 
             } catch (\InvalidArgumentException $e) {

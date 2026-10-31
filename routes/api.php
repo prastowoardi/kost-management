@@ -52,6 +52,7 @@ Route::middleware(['auth:sanctum', 'role:admin,staff'])
     ->group(function () {
 
         Route::get('/stats', [StatsController::class, 'index']);
+        Route::post('/send-reminder', [StatsController::class, 'sendReminder']);
 
         Route::get('/payments/pending', function () {
             return \App\Models\Payment::with(['tenant.user', 'room'])
