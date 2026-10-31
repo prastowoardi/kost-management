@@ -20,9 +20,10 @@ class StatsController extends Controller
         protected WhatsAppService $whatsapp,
     ) {}
 
-    public function index()
+    public function index(Request $request)
     {
         $now = now();
+        $adminName = $request->user()?->name ?? 'Admin';
 
         // 1. Room Occupancy
         $total_rooms = Room::count();
@@ -126,6 +127,7 @@ class StatsController extends Controller
             });
 
         return response()->json([
+            'admin_name' => $adminName,
             'total_rooms' => $total_rooms,
             'occupied_rooms' => $occupied_rooms,
             'vacant_rooms' => $vacant_rooms,

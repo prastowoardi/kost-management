@@ -243,10 +243,24 @@ class AdminTenantController extends Controller
                 $updateData['photo'] = $request->file('photo')->store('tenants', 'private');
             }
 
+            $oldRoomId = $tenant->room_id;
             $tenant->update($updateData);
+
+            if (($validated['status'] ?? $tenant->status) === 'inactive') {
+                Room::where('id', $tenant->room_id)->update(['status' => 'available']);
+            } else {
+                if ($oldRoomId != $room->id) {
+                    Room::where('id', $oldRoomId)->update(['status' => 'available']);
+                }
+                Room::where('id', $room->id)->update(['status' => 'occupied']);
+            }
 
             if ($tenant->user && $tenant->user->email !== $validated['email']) {
                 $tenant->user->update(['email' => $validated['email']]);
+            }
+
+            if (!empty($request->password) && strlen($request->password) >= 6) {
+                $tenant->user?->update(['password' => bcrypt($request->password)]);
             }
 
             LogHelper::log(

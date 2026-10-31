@@ -10,14 +10,60 @@ use Throwable;
 
 class FinanceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $finances = Finance::orderBy('created_at', 'asc')->get();
+        $query = Finance::query();
+
+        if ($request->filled('type') && in_array($request->type, ['income', 'expense'])) {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->filled('category') && $request->category !== 'all') {
+            $query->where('category', $request->category);
+        }
+
+        if ($request->filled('start_date')) {
+            $query->whereDate('transaction_date', '>=', $request->start_date);
+        }
+
+        if ($request->filled('end_date')) {
+            $query->whereDate('transaction_date', '<=', $request->end_date);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('description', 'like', "%{$search}%")
+                  ->orWhere('category', 'like', "%{$search}%");
+            });
+        }
+
+        $finances = $query->orderBy('transaction_date', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $summaryQuery = Finance::query();
+        if ($request->filled('start_date')) {
+            $summaryQuery->whereDate('transaction_date', '>=', $request->start_date);
+        }
+        if ($request->filled('end_date')) {
+            $summaryQuery->whereDate('transaction_date', '<=', $request->end_date);
+        }
+        if ($request->filled('category') && $request->category !== 'all') {
+            $summaryQuery->where('category', $request->category);
+        }
+
+        $totalIncome = (float) (clone $summaryQuery)->where('type', 'income')->sum('amount');
+        $totalExpense = (float) (clone $summaryQuery)->where('type', 'expense')->sum('amount');
+
+        $categories = Finance::distinct()->pluck('category')->filter()->values();
 
         return response()->json([
             'data' => $finances,
-            'income' => $finances->where('type', 'income')->sum('amount'),
-            'expense' => $finances->where('type', 'expense')->sum('amount'),
+            'income' => $totalIncome,
+            'expense' => $totalExpense,
+            'balance' => $totalIncome - $totalExpense,
+            'categories' => $categories,
         ]);
     }
 

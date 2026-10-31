@@ -166,7 +166,7 @@
                                         <img src="https://upload.wikimedia.org/wikipedia/commons/c/c0/Logo-jago.svg" class="h-5">
                                     </div>
                                     <div class="flex items-center justify-between gap-2">
-                                        <p id="acc_jago" class="tabular text-lg font-black text-orange-500 leading-none">109781903718</p>
+                                        <p id="acc_jago" class="tabular text-lg font-black text-orange-500 leading-none">108528656318</p>
                                         <button type="button" data-copy="acc_jago" class="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-orange-100 bg-orange-50 px-2.5 py-1.5 text-xs font-semibold text-orange-600 transition hover:bg-orange-100 active:scale-95">
                                             <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
                                             Salin
