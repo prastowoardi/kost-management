@@ -215,7 +215,7 @@ class FinanceController extends Controller
                 'transaction_date' => 'required|date',
                 'description' => 'nullable|string',
                 'notes' => 'nullable|string',
-                'receipt_file' => 'nullable|image|mimes:jpg,jpeg,png,pdf|max:5120',
+                'receipt_file' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
             ]);
 
             if ($request->hasFile('receipt_file')) {
@@ -285,7 +285,7 @@ class FinanceController extends Controller
                 'transaction_date' => 'required|date',
                 'description' => 'required|string',
                 'notes' => 'nullable|string',
-                'receipt_file' => 'nullable|image|mimes:jpg,jpeg,png,pdf|max:5120',
+                'receipt_file' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
             ]);
 
             if ($request->hasFile('receipt_file')) {
