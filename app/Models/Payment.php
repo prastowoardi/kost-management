@@ -34,6 +34,8 @@ class Payment extends Model
 
     protected $hidden = ['id'];
 
+    protected $appends = ['receipt_path', 'receipt_url'];
+
     protected $casts = [
         'payment_date' => 'date:Y-m-d',
         'period_month' => 'date:Y-m-d',
@@ -112,13 +114,34 @@ class Payment extends Model
     }
 
     /**
-     * URL file bukti bayar untuk tampilan web.
+     * URL file bukti bayar untuk tampilan web dan mobile API.
+     * Cerdas mendeteksi lokasi file di disk lokal (public) maupun cloud (AWS / Cloudflare R2).
      */
     public function getReceiptUrlAttribute(): ?string
     {
         $path = $this->receipt_path;
+        if (! $path) {
+            return null;
+        }
 
-        return $path ? Storage::url($path) : null;
+        $defaultDisk = config('filesystems.default', 'public');
+
+        // Jika default disk diatur ke s3 / Cloudflare R2:
+        if ($defaultDisk === 's3') {
+            return Storage::disk('s3')->url($path);
+        }
+
+        // Cek disk public lokal terlebih dahulu:
+        if (Storage::disk('public')->exists($path)) {
+            return Storage::disk('public')->url($path);
+        }
+
+        // Jika tidak ada di lokal public tapi S3 dikonfigurasi, arahkan ke URL S3/R2
+        if (filled(config('filesystems.disks.s3.bucket')) && filled(config('filesystems.disks.s3.key'))) {
+            return Storage::disk('s3')->url($path);
+        }
+
+        return Storage::url($path);
     }
 
     /**

@@ -88,5 +88,6 @@ Route::middleware(['auth:sanctum', 'role:admin,staff'])
         });
 
         Route::get('/categories', [FinanceController::class, 'getApiCategories']);
+        Route::match(['put', 'patch', 'post'], '/finances/{id}', [FinanceController::class, 'update']);
         Route::apiResource('/finances', FinanceController::class);
     });

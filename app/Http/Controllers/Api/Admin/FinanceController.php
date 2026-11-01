@@ -38,9 +38,17 @@ class FinanceController extends Controller
             });
         }
 
-        $finances = $query->orderBy('transaction_date', 'desc')
+        $finances = $query->with('payment')
+            ->orderBy('transaction_date', 'desc')
             ->orderBy('created_at', 'desc')
             ->get();
+
+        $finances->transform(function ($item) {
+            if (! $item->receipt_file && $item->receipt_path) {
+                $item->receipt_file = $item->receipt_path;
+            }
+            return $item;
+        });
 
         $summaryQuery = Finance::query();
         if ($request->filled('start_date')) {
@@ -69,7 +77,13 @@ class FinanceController extends Controller
 
     public function show($id)
     {
-        $finance = Finance::where(is_numeric($id) ? 'id' : 'uuid', $id)->firstOrFail();
+        $finance = Finance::with('payment')
+            ->where(is_numeric($id) ? 'id' : 'uuid', $id)
+            ->firstOrFail();
+
+        if (! $finance->receipt_file && $finance->receipt_path) {
+            $finance->receipt_file = $finance->receipt_path;
+        }
 
         return response()->json($finance);
     }
@@ -111,6 +125,67 @@ class FinanceController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Gagal menyimpan data',
+            ], 500);
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
+        $finance = Finance::where(is_numeric($id) ? 'id' : 'uuid', $id)->firstOrFail();
+
+        $cleanAmount = preg_replace('/[^0-9]/', '', $request->amount);
+        $request->merge(['amount' => $cleanAmount]);
+
+        $validated = $request->validate([
+            'type' => 'required|in:income,expense',
+            'category' => 'required|string|max:255',
+            'amount' => 'required|numeric|min:0',
+            'transaction_date' => 'required|date',
+            'description' => 'nullable|string',
+            'notes' => 'nullable|string',
+            'receipt_file' => 'nullable|image|mimes:jpg,jpeg,png,pdf|max:5120',
+        ]);
+
+        if ($request->boolean('remove_receipt') || $request->input('remove_receipt') === '1' || $request->input('remove_receipt') === 'true') {
+            if ($finance->receipt_file) {
+                \Illuminate\Support\Facades\Storage::delete($finance->receipt_file);
+            }
+            $validated['receipt_file'] = null;
+        }
+
+        if ($request->hasFile('receipt_file')) {
+            if ($finance->receipt_file) {
+                \Illuminate\Support\Facades\Storage::delete($finance->receipt_file);
+            }
+            $validated['receipt_file'] = $request->file('receipt_file')->store('receipts');
+        }
+
+        try {
+            $before = $finance->toArray();
+            $finance->update($validated);
+            $finance->touch();
+
+            LogHelper::log('UPDATE_FINANCE', 'Mengubah transaksi keuangan via API: #'.$finance->id, $finance, [
+                'before' => $before,
+                'after' => $finance->fresh()->toArray(),
+            ]);
+
+            $fresh = $finance->fresh(['payment']);
+            if (! $fresh->receipt_file && $fresh->receipt_path) {
+                $fresh->receipt_file = $fresh->receipt_path;
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Transaksi berhasil diperbarui',
+                'data' => $fresh,
+            ]);
+        } catch (Throwable $e) {
+            LogHelper::logError('UPDATE_FINANCE_FAILED', "Gagal update transaksi #{$id} dari API", $e);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal memperbarui transaksi',
             ], 500);
         }
     }
