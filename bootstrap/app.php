@@ -39,11 +39,15 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (Throwable $e, $request) {
+            // Abaikan pencatatan 404 (Route not found / Bot scanning) ke Activity Log
+            // agar tidak memenuhi database activity log admin
+            if ($e instanceof NotFoundHttpException) {
+                return null;
+            }
+
             $action = 'UNHANDLED_EXCEPTION';
 
-            if ($e instanceof NotFoundHttpException) {
-                $action = 'ROUTE_NOT_FOUND';
-            } elseif ($e instanceof AccessDeniedHttpException) {
+            if ($e instanceof AccessDeniedHttpException) {
                 $action = 'ACCESS_DENIED';
             } elseif ($e instanceof HttpException) {
                 $action = 'HTTP_'.$e->getStatusCode().'_ERROR';

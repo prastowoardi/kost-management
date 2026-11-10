@@ -166,4 +166,15 @@ Route::middleware(['auth', 'verified', 'role:admin,staff'])->prefix('bo-admin')-
     Route::get('/receipt/history', [ReceiptController::class, 'manualHistory'])->name('history');
 });
 
+// Route preview untuk melihat tampilan semua halaman error
+Route::get('/preview-error/{code}', function ($code) {
+    if (!view()->exists("errors.{$code}")) {
+        abort(404);
+    }
+
+    return response()->view("errors.{$code}", [
+        'exception' => new \Exception("Ini adalah contoh pesan kendala untuk testing error {$code}."),
+    ], (int)$code);
+})->where('code', '[0-9]+');
+
 require __DIR__.'/auth.php';
