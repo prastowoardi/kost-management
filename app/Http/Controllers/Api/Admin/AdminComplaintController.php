@@ -96,15 +96,12 @@ class AdminComplaintController extends Controller
             $user = $complaint->tenant->user;
 
             if ($user && $user->expo_push_token) {
-                $statusLabel = [
-                    'in_progress' => 'sedang diproses',
-                    'resolved' => 'telah selesai',
-                ][$request->status] ?? 'diperbarui';
-
-                $this->pushNotification->send(
+                $this->pushNotification->sendComplaintUpdate(
                     $user->expo_push_token,
-                    'Update Laporan: '.$complaint->title,
-                    "Laporan kamu $statusLabel. ".($request->response ? 'Pesan: '.$request->response : '')
+                    $complaint->title,
+                    $request->status,
+                    $request->response,
+                    $complaint->id
                 );
             }
 

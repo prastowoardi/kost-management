@@ -39,10 +39,37 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/update-push-token', function (Request $request) {
         $request->validate(['token' => 'required']);
+        \App\Models\User::where('expo_push_token', $request->token)
+            ->where('id', '!=', $request->user()->id)
+            ->update(['expo_push_token' => null]);
         $request->user()->update(['expo_push_token' => $request->token]);
         \App\Helpers\LogHelper::log('UPDATE_PUSH_TOKEN', 'User '.$request->user()->name.' memperbarui Push Token device');
 
-        return response()->json(['message' => 'Token updated']);
+        return response()->json(['message' => 'Token updated', 'token' => $request->token]);
+    });
+
+    Route::post('/test-push-notification', function (Request $request) {
+        $user = $request->user();
+        if (! $user->expo_push_token) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User belum memiliki Push Token. Pastikan sudah membuka aplikasi di HP fisik dan mengizinkan notifikasi.',
+            ], 400);
+        }
+
+        $service = app(\App\Services\PushNotificationService::class);
+        $success = $service->send(
+            $user->expo_push_token,
+            '🔔 Test Notifikasi Serrata Kost',
+            'Halo ' . $user->name . '! Notifikasi berhasil diterima di HP Anda. Integrasi push notification aktif!',
+            ['type' => 'test_notification', 'timestamp' => now()->toIso8601String()]
+        );
+
+        return response()->json([
+            'status' => $success ? 'success' : 'error',
+            'message' => $success ? 'Notifikasi berhasil dikirim!' : 'Gagal mengirim notifikasi via Expo service',
+            'token' => $user->expo_push_token,
+        ]);
     });
 });
 
