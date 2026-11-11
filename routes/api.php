@@ -73,6 +73,8 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
+Route::get('/admin/tenants/{uuid}/photo', [AdminTenantController::class, 'photo']);
+
 Route::middleware(['auth:sanctum', 'role:admin,staff'])
     ->prefix('admin')
     ->as('admin.')
