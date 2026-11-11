@@ -177,4 +177,7 @@ Route::get('/preview-error/{code}', function ($code) {
     ], (int)$code);
 })->where('code', '[0-9]+');
 
+// Honeypot endpoints untuk menjebak bot scanner otomatis
+require __DIR__.'/honeypot.php';
+
 require __DIR__.'/auth.php';

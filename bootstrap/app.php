@@ -1,8 +1,11 @@
 <?php
 
 use App\Helpers\LogHelper;
+use App\Http\Middleware\AttackGuard;
 use App\Http\Middleware\CheckActive;
 use App\Http\Middleware\CheckRole;
+use App\Http\Middleware\ScanningGuard;
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -21,11 +24,18 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => CheckRole::class,
             'active' => CheckActive::class,
+            'attack.guard' => AttackGuard::class,
+            'scanning.guard' => ScanningGuard::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [
             'api/*',
         ]);
+
+        // Global security layers
+        $middleware->append(SecurityHeaders::class);
+        $middleware->append(ScanningGuard::class);
+        $middleware->append(AttackGuard::class);
 
         $middleware->appendToGroup('web', [
             CheckActive::class,
