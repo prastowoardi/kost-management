@@ -25,7 +25,19 @@ class AdminTenantController extends Controller
 
     public function index()
     {
-        return \App\Models\Tenant::with(['user', 'room'])->get();
+        return \App\Models\Tenant::with([
+            'user',
+            'room',
+            'payments' => function ($q) {
+                $q->whereNull('deleted_at')
+                    ->where('status', 'paid')
+                    ->select('id', 'tenant_id', 'period_month', 'status', 'total', 'amount');
+            },
+            'complaints:id,tenant_id,status',
+        ])
+        ->withCount(['payments', 'complaints'])
+        ->orderBy('created_at', 'desc')
+        ->get();
     }
 
     public function activeTenants()
@@ -192,6 +204,41 @@ class AdminTenantController extends Controller
             'status' => 'success',
             'data' => $payments,
         ]);
+    }
+
+    public function photo(Request $request, $uuid)
+    {
+        $token = $request->bearerToken() ?: $request->query('token');
+        if ($token) {
+            $tokenObj = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+            if ($tokenObj) {
+                auth()->setUser($tokenObj->tokenable);
+            }
+        }
+
+        $user = auth('sanctum')->user() ?? auth()->user();
+        if (! $user || (! $user->isAdmin() && ! $user->isStaff())) {
+            abort(403, 'Akses foto identitas KTP tidak diizinkan.');
+        }
+
+        $tenant = Tenant::where(is_numeric($uuid) ? 'id' : 'uuid', $uuid)->firstOrFail();
+        if (! $tenant->photo) {
+            abort(404, 'Foto KTP tidak ditemukan.');
+        }
+
+        $disk = null;
+        foreach (['private', 'local', 'public'] as $candidateDisk) {
+            if (Storage::disk($candidateDisk)->exists($tenant->photo)) {
+                $disk = $candidateDisk;
+                break;
+            }
+        }
+
+        if (! $disk) {
+            abort(404, 'File foto tidak ditemukan di storage.');
+        }
+
+        return Storage::disk($disk)->response($tenant->photo);
     }
 
     public function destroy($uuid)

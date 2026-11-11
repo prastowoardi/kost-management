@@ -34,7 +34,7 @@ class Tenant extends Model
         'exit_date' => 'date',
     ];
 
-    protected $appends = ['calculated_due_date', 'days_left'];
+    protected $appends = ['calculated_due_date', 'days_left', 'photo_url'];
 
     public function getCalculatedDueDateAttribute()
     {
@@ -76,6 +76,10 @@ class Tenant extends Model
     {
         if (! $this->photo) {
             return null;
+        }
+
+        if (request()->is('api/*')) {
+            return url('/api/admin/tenants/' . ($this->uuid ?: $this->id) . '/photo');
         }
 
         return route('tenants.photo', $this);
