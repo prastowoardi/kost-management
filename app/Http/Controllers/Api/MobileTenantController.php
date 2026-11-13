@@ -94,6 +94,7 @@ class MobileTenantController extends Controller
             'days_left_msg' => $lateStatus,
             'payment_status' => $paymentStatus,
             'bill_amount' => $tenant->room->price ?? 0,
+            'latest_payment_id' => $latestPayment ? ($latestPayment->uuid ?: $latestPayment->id) : null,
         ]);
     }
 

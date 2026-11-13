@@ -118,11 +118,21 @@ class StatsController extends Controller
             ->get()
             ->map(function ($pay) {
                 return [
+                    'id' => $pay->id,
+                    'uuid' => $pay->uuid,
                     'name' => $pay->tenant->name ?? 'N/A',
+                    'tenant_phone' => $pay->tenant->phone ?? null,
                     'room' => $pay->tenant->room->room_number ?? '-',
                     'amount' => (int) $pay->amount,
-                    'date' => $pay->payment_date ? Carbon::parse($pay->payment_date)->format('d M Y') : '-',
+                    'date' => $pay->payment_date ? Carbon::parse($pay->payment_date)->format('d M Y') : ($pay->created_at ? $pay->created_at->format('d M Y') : '-'),
+                    'payment_date_raw' => $pay->payment_date ? Carbon::parse($pay->payment_date)->format('Y-m-d') : null,
+                    'period_month' => $pay->period_month ? Carbon::parse($pay->period_month)->format('Y-m') : null,
+                    'payment_method' => $pay->payment_method ?: 'transfer',
+                    'notes' => $pay->notes,
+                    'receipt_url' => $pay->receipt_url,
+                    'receipt_file' => $pay->receipt_file ?: $pay->proof_of_payment,
                     'status' => ucfirst(strtolower($pay->status)),
+                    'status_raw' => strtolower($pay->status),
                 ];
             });
 
