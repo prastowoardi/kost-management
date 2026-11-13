@@ -65,23 +65,32 @@ jobs:
             sudo chmod -R 775 storage bootstrap/cache public/storage
 
             echo "🔁 Restart services"
-            sudo systemctl restart php8.2-fpm
+            PHP_FPM_SERVICE="php$(php -r 'echo PHP_MAJOR_VERSION.\".\".PHP_MINOR_VERSION;')-fpm"
+            sudo systemctl restart "$PHP_FPM_SERVICE" || sudo systemctl restart php8.5-fpm
             sudo nginx -t && sudo systemctl reload nginx
 
-            # echo "📦 Update WhatsApp Gateway"
-            cd whatsapp-gateway
-            pm2 restart wa-gateway
-            # npm install --production
-            # pm2 restart wa-gateway || pm2 start server.cjs --name "wa-gateway"
-            cd ..
-
-            # WA dikirim via queue — cek worker, jalankan hanya jika belum berjalan
-            echo "🔄 Cek Queue Worker..."
-            if [ -z "$(pm2 pid laravel-worker 2>/dev/null)" ]; then
-              echo "🚀 Queue Worker tidak berjalan, menjalankan..."
-              pm2 start "php artisan queue:work --tries=3 --timeout=120" --name "laravel-worker" || pm2 restart laravel-worker
+            echo "📦 Cek status WhatsApp Gateway..."
+            if ! sudo pm2 describe wa-gateway >/dev/null 2>&1; then
+              echo "🚀 WhatsApp Gateway belum terdaftar di PM2, menjalankan service..."
+              cd whatsapp-gateway
+              sudo pm2 start server.cjs --name "wa-gateway"
+              sudo pm2 save
+              cd ..
+            elif [ -z "$(sudo pm2 pid wa-gateway 2>/dev/null)" ] || ! curl -s -m 3 http://127.0.0.1:3000/health | grep -q '"status":"healthy"'; then
+              echo "⚠️ WhatsApp Gateway tidak aktif atau berstatus error/unhealthy, me-restart..."
+              sudo pm2 restart wa-gateway
             else
-              echo "✅ Queue Worker sudah berjalan, dilewati."
+              echo "✅ WhatsApp Gateway sudah berjalan normal & terhubung (healthy), restart dilewati."
+            fi
+
+            # WA dikirim via queue — cek worker, jalankan atau restart
+            echo "🔄 Cek Queue Worker..."
+            if [ -z "$(sudo pm2 pid laravel-worker 2>/dev/null)" ]; then
+              echo "🚀 Queue Worker tidak berjalan, menjalankan..."
+              sudo pm2 start "php artisan queue:work --tries=3 --timeout=120" --name "laravel-worker"
+            else
+              echo "✅ Queue Worker sudah berjalan, me-restart worker..."
+              sudo pm2 restart laravel-worker || true
             fi
 
             echo "🔺 Disable maintenance mode"
