@@ -13,6 +13,9 @@ Schedule::call(function () {
     Broadcast::where('created_at', '<', now()->subMonths(3))->delete();
 })->daily();
 
+Schedule::command('model:prune')
+    ->dailyAt('03:00');
+
 Schedule::command('database:backup --keep=30')
     ->dailyAt('02:00')
     ->withoutOverlapping();

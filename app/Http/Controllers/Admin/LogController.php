@@ -7,12 +7,13 @@ use App\Models\ActivityLog;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class LogController extends Controller
 {
     public function index(Request $request)
     {
-        $query = ActivityLog::with('user')->latest();
+        $query = ActivityLog::with('user:id,name')->latest();
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -61,16 +62,22 @@ class LogController extends Controller
             }
         }
 
-        // Satu query GROUP BY -> actions (dropdown) + total/failed/today (3 kartu stats)
-        $stats = ActivityLog::selectRaw('action, COUNT(*) as total, SUM(created_at >= ?) as today', [
-            now()->startOfDay(),
-        ])->groupBy('action')->get();
+        // Cache query GROUP BY (5 menit) -> actions (dropdown) + total/failed/today (3 kartu stats)
+        $stats = Cache::remember('admin_logs_stats_'.now()->toDateString(), 300, function () {
+            return ActivityLog::selectRaw('action, COUNT(*) as total, SUM(created_at >= ?) as today', [
+                now()->startOfDay(),
+            ])->groupBy('action')->get();
+        });
 
         $actions = $stats->pluck('action')->sort()->values();
         $totalLogs = (int) $stats->sum('total');
         $failedLogs = (int) $stats->filter(fn ($s) => str_contains($s->action, 'FAILED'))->sum('total');
         $todayLogs = (int) $stats->sum('today');
-        $users = User::whereHas('activityLogs')->orderBy('name')->get(['id', 'name']);
+
+        // Cache daftar user (30 menit)
+        $users = Cache::remember('admin_logs_users', 1800, function () {
+            return User::whereHas('activityLogs')->orderBy('name')->get(['id', 'name']);
+        });
 
         return view('admin.logs.index', compact('logs', 'totalLogs', 'failedLogs', 'todayLogs', 'actions', 'users'));
     }

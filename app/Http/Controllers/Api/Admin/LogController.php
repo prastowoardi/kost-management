@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class LogController extends Controller
 {
@@ -122,12 +123,14 @@ class LogController extends Controller
     }
 
     /**
-     * Satu query GROUP BY -> total, failed, today, dan daftar action sekaligus.
+     * Cache query GROUP BY (5 menit) -> total, failed, today, dan daftar action sekaligus.
      */
     private function aggregate()
     {
-        return ActivityLog::selectRaw('action, COUNT(*) as total, SUM(created_at >= ?) as today', [
-            now()->startOfDay(),
-        ])->groupBy('action')->get();
+        return Cache::remember('admin_logs_stats_'.now()->toDateString(), 300, function () {
+            return ActivityLog::selectRaw('action, COUNT(*) as total, SUM(created_at >= ?) as today', [
+                now()->startOfDay(),
+            ])->groupBy('action')->get();
+        });
     }
 }
